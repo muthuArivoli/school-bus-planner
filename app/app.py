@@ -5,9 +5,9 @@ app = Flask(__name__)
 def hello_geek():
     return '<h1>Hello from Flask & Docker</h2>'
 
-@app.route('/')
+@app.route('/login')
 def login():
-    return 'Login Please'
+    return 'Login now'
 
 
 if __name__ == "__main__":
