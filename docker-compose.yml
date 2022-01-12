@@ -16,6 +16,7 @@ services:
         target: /var/lib/postgresql/data
   
   app:
+    build: ./app
     image: marivoli/school-bus
     container_name: app
     ports:
