@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    container_name: postgres-db
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=bus
+      - POSTGRES_DB=db
+    volumes:
+      - type: bind
+        source: ./db
+        target: /var/lib/postgresql/data
