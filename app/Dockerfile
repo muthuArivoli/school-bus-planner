@@ -2,7 +2,8 @@ FROM ubuntu:20.04
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python-dev-is-python3 \
-    python3-pip && \
+    python3-pip \
+    libpq-dev gcc && \
     apt-get clean && \
     # Clear apt caches to reduce image size
     rm -rf /var/lib/apt/lists/*
