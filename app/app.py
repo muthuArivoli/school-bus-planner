@@ -6,7 +6,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:bus@db:5
 app.config['SQLALCHEM_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-from models import User
+from models import User, Student, School, Route
 
 db.create_all()
 
