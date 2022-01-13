@@ -1,6 +1,8 @@
 from app import db
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine
+from sqlalchemy.orm import sessionmaker
+
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -53,3 +55,11 @@ class Student(db.Model):
     def __repr__(self):
         return "<Student(full_name='{}', student_id='{}', school_id={}, route_id={}, user_id={})>"\
             .format(self.full_name, self.student_id, self.school_id, self.route_id, self.user_id)
+
+engine = create_engine('postgresql+psycopg2://postgres:bus@db:5432/db', echo = True)
+Session = sessionmaker(bind = engine)
+session = Session()
+
+c1 = User(email='cac.100199@gmail.com', full_name='Claudia Chapman', uaddress='10 Warren Ave', pswd='S@cred18', admin_flag=0)
+session.add(c1)
+session.commit()
