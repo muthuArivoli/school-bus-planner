@@ -2,6 +2,12 @@ version: "3.9"
 
 services:
 
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
   db:
     image: postgres
     container_name: postgres-db
@@ -25,3 +31,7 @@ services:
       - type: bind
         source: ./app
         target: /app
+    environment:
+      - SQL_HOST=db
+      - SQL_PORT=5432
+    

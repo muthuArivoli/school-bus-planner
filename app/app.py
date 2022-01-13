@@ -1,10 +1,14 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-import crud
 
 app = Flask(__name__)
-app.config['SQLALCHEM_TRACK_MODIFICATIONS']
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:bus@db:5432/db'
+app.config['SQLALCHEM_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+from models import User
+
+db.create_all()
 
 @app.route('/')
 def hello_geek():
@@ -14,9 +18,6 @@ def hello_geek():
 def login():
     return 'Login now'
 
-@app.route('/adminview')
-def admin():
-    return 'Admin'
 
 if __name__ == "__main__":
     app.run(debug=True)
