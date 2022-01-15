@@ -34,4 +34,17 @@ services:
     environment:
       - SQL_HOST=db
       - SQL_PORT=5432
-    
+
+  client: 
+    build: ./client
+    container_name: client
+    ports: 
+      - 3000:3000
+    volumes:
+      - './client:/app'
+      - '/app/node_modules'
+    depends_on:
+      - app
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
