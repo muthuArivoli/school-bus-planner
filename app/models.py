@@ -56,10 +56,10 @@ class Student(db.Model):
         return "<Student(full_name='{}', student_id='{}', school_id={}, route_id={}, user_id={})>"\
             .format(self.full_name, self.student_id, self.school_id, self.route_id, self.user_id)
 
-engine = create_engine('postgresql+psycopg2://postgres:bus@db:5432/db', echo = True)
-Session = sessionmaker(bind = engine)
-session = Session()
+# engine = create_engine('postgresql+psycopg2://postgres:bus@db:5432/db', echo = True)
+# Session = sessionmaker(bind = engine)
+# session = Session()
 
-c1 = User(email='cac.100199@gmail.com', full_name='Claudia Chapman', uaddress='10 Warren Ave', pswd='S@cred18', admin_flag=0)
-session.add(c1)
-session.commit()
+# c1 = User(email='cac.100199@gmail.com', full_name='Claudia Chapman', uaddress='10 Warren Ave', pswd='S@cred18', admin_flag=0)
+# session.add(c1)
+# session.commit()
