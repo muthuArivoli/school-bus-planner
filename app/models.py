@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine
 from sqlalchemy.orm import sessionmaker
 
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -12,6 +13,9 @@ class User(db.Model):
     uaddress = db.Column(db.String())
     pswd = db.Column(db.String())
     admin_flag = db.Column(db.Boolean())
+
+    def as_dict(self):
+       return {"email": getattr(self, 'email'), "name": getattr(self, 'full_name'), "address": getattr(self, 'uaddress'), "admin_flag": getattr(self,'admin_flag')}
 
     def __repr__(self):
         return "<User(email='{}', full_name='{}', uaddress={}, pswd={}, admin_flag={})>"\
@@ -24,6 +28,8 @@ class School(db.Model):
     name = db.Column(db.String())
     address = db.Column(db.String())
     
+    def as_dict(self):
+        return {"name": getattr(self, 'name'), "address": getattr(self, 'address')}
 
     def __repr__(self):
         return "<School(name='{}', address='{}')>"\
@@ -36,6 +42,9 @@ class Route(db.Model):
     name = db.Column(db.String())
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     description = db.Column(db.String())
+
+    def as_dict(self):
+        return {"name": getattr(self, 'name'), "school_id": getattr(self, 'school_id'), "description": getattr(self, "description")}
 
     def __repr__(self):
         return "<Route(name='{}', school_id='{}', description={})>"\
@@ -51,6 +60,10 @@ class Student(db.Model):
     route_id = db.Column(db.Integer, ForeignKey('routes.id'))
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
 
+    def as_dict(self):
+        return{"name": getattr(self, 'full_name'), "student_id": getattr(self, "student_id")}
+
+        
     def __repr__(self):
         return "<Student(full_name='{}', student_id='{}', school_id={}, route_id={}, user_id={})>"\
             .format(self.full_name, self.student_id, self.school_id, self.route_id, self.user_id)

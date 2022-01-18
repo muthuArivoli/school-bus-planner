@@ -35,9 +35,31 @@ def login():
         return json.dumps({'success': True})
     return json.dumps({'login': True})
 
-@app.route('/createuser', methods=['POST'])
+
+@app.route('/user/<username>', methods=['GET', 'POST', 'DELETE'])
+@app.route('/user', methods=['GET','POST'])
 @cross_origin()
-def create_user():
+def users(username=None):
+    if request.method == 'DELETE':
+        user = User.query.filter_by(email=username).first()
+        db.session.delete(user)
+        db.commit()
+        return json.dumps({'success': True})
+    if request.method == 'GET':
+        if username is not None:
+            user = User.query.filter_by(email=username).first()
+            students = Student.query.filter_by(user_id = user.id).all()
+            all_students = []
+            for student in students:
+                all_students.append(student.as_dict())
+            return json.dumps({'success': True, 'user': user.as_dict(), 'students': all_students})
+        users = User.query.all()
+        all_users = []
+        for user in users:
+            all_users.append(user.as_dict())
+        logging.debug(all_users)
+        return json.dumps({'success':True, "users": all_users})
+    
     #Gotta add authentication that only an admin can do this
     if request.method == 'POST':
         content = request.json
@@ -60,6 +82,10 @@ def create_user():
         db.session.commit()
         return json.dumps({'success': True})
     return json.dumps({'success': False})
+
+
+
+
 
 
 
