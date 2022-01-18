@@ -16,9 +16,7 @@ from models import User, Student, School, Route
 
 db.create_all()
 
-
 logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
-
 
 @app.route('/')
 def hello_geek():

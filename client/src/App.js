@@ -1,6 +1,6 @@
 import './App.css';
 import React, {useState} from 'react';
-import axios from "axios";
+import axios from 'axios';
 
 
 export default function Login(props) {
@@ -13,7 +13,7 @@ export default function Login(props) {
   function handleSubmit(event) {
     const data = {email: loginForm.email, password: loginForm.password};
     axios.post('http://localhost:5000/login', data).then((response) => {
-      alert('success post')
+      alert(response.data.success)
     }).catch((error) => {
       if (error.response) {
         console.log(error.response)

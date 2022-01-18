@@ -3,7 +3,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine
 from sqlalchemy.orm import sessionmaker
 
-
 class User(db.Model):
     __tablename__ = 'users'
 

@@ -39,6 +39,7 @@ services:
 
   client: 
     build: ./client
+    image: marivoli/school-bus-node
     container_name: client
     ports: 
       - 3000:3000
