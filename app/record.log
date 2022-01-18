@@ -1,0 +1,412 @@
+2022-01-16 22:46:25,235 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 22:46:25,237 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 22:54:27,603 INFO app Thread-1 : <Request 'http://localhost:5000/login' [POST]>
+2022-01-16 22:54:27,617 INFO werkzeug Thread-1 : 172.20.0.1 - - [16/Jan/2022 22:54:27] "POST /login HTTP/1.1" 200 -
+2022-01-16 22:54:29,403 INFO app Thread-2 : <Request 'http://localhost:5000/login' [POST]>
+2022-01-16 22:54:29,407 INFO werkzeug Thread-2 : 172.20.0.1 - - [16/Jan/2022 22:54:29] "POST /login HTTP/1.1" 200 -
+2022-01-16 22:54:31,063 INFO app Thread-3 : <Request 'http://localhost:5000/login' [POST]>
+2022-01-16 22:54:31,069 INFO werkzeug Thread-3 : 172.20.0.1 - - [16/Jan/2022 22:54:31] "POST /login HTTP/1.1" 200 -
+2022-01-16 22:54:32,599 INFO app Thread-4 : <Request 'http://localhost:5000/login' [POST]>
+2022-01-16 22:54:32,601 INFO werkzeug Thread-4 : 172.20.0.1 - - [16/Jan/2022 22:54:32] "POST /login HTTP/1.1" 200 -
+2022-01-16 22:55:15,119 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 22:55:15,122 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 22:58:16,749 INFO app Thread-1 : {'email': 'cac.100199@gmail.com', 'password': 'S@cred18'}
+2022-01-16 22:58:16,758 INFO werkzeug Thread-1 : 172.20.0.1 - - [16/Jan/2022 22:58:16] "POST /login HTTP/1.1" 200 -
+2022-01-16 22:58:17,796 INFO app Thread-2 : {'email': 'cac.100199@gmail.com', 'password': 'S@cred18'}
+2022-01-16 22:58:17,800 INFO werkzeug Thread-2 : 172.20.0.1 - - [16/Jan/2022 22:58:17] "POST /login HTTP/1.1" 200 -
+2022-01-16 23:24:02,386 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 23:24:02,388 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 23:25:00,317 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 23:25:00,320 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 23:26:19,890 ERROR app Thread-1 : Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 34, in login
+    if not user or not bcrypt.checkpw(password, user.pswd):
+  File "/usr/local/lib/python3.8/dist-packages/bcrypt/__init__.py", line 120, in checkpw
+    raise TypeError("Unicode-objects must be encoded before checking")
+TypeError: Unicode-objects must be encoded before checking
+2022-01-16 23:26:19,918 INFO werkzeug Thread-1 : 172.20.0.1 - - [16/Jan/2022 23:26:19] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2022-01-16 23:28:43,011 ERROR app Thread-2 : Exception on /createuser [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 48, in create_user
+    address = content['address']
+KeyError: 'admin'
+2022-01-16 23:28:43,037 INFO werkzeug Thread-2 : 172.20.0.1 - - [16/Jan/2022 23:28:43] "[35m[1mPOST /createuser HTTP/1.1[0m" 500 -
+2022-01-16 23:39:26,003 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 23:39:26,005 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 23:39:30,982 DEBUG root Thread-1 : mary.bertoni@duke.edu
+2022-01-16 23:39:30,984 ERROR app Thread-1 : Exception on /createuser [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 50, in create_user
+    admin_flag = content['admin']
+KeyError: 'admin'
+2022-01-16 23:39:30,997 INFO werkzeug Thread-1 : 172.20.0.1 - - [16/Jan/2022 23:39:30] "[35m[1mPOST /createuser HTTP/1.1[0m" 500 -
+2022-01-16 23:39:32,038 DEBUG root Thread-2 : mary.bertoni@duke.edu
+2022-01-16 23:39:32,040 ERROR app Thread-2 : Exception on /createuser [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 50, in create_user
+    admin_flag = content['admin']
+KeyError: 'admin'
+2022-01-16 23:39:32,045 INFO werkzeug Thread-2 : 172.20.0.1 - - [16/Jan/2022 23:39:32] "[35m[1mPOST /createuser HTTP/1.1[0m" 500 -
+2022-01-16 23:39:45,228 DEBUG root Thread-3 : mary.bertoni@duke.edu
+2022-01-16 23:39:45,231 ERROR app Thread-3 : Exception on /createuser [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 52, in create_user
+    user = User.query.filter_By(email=email).first()
+AttributeError: 'BaseQuery' object has no attribute 'filter_By'
+2022-01-16 23:39:45,235 INFO werkzeug Thread-3 : 172.20.0.1 - - [16/Jan/2022 23:39:45] "[35m[1mPOST /createuser HTTP/1.1[0m" 500 -
+2022-01-16 23:40:42,264 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 23:40:42,270 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 23:40:43,078 DEBUG root Thread-1 : mary.bertoni@duke.edu
+2022-01-16 23:40:43,101 DEBUG root Thread-1 : None
+2022-01-16 23:40:43,103 ERROR app Thread-1 : Exception on /createuser [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 57, in create_user
+    encrypted_pswd = bcrypt.hashpw(password, bcrypt.gensalt())
+  File "/usr/local/lib/python3.8/dist-packages/bcrypt/__init__.py", line 80, in hashpw
+    raise TypeError("Unicode-objects must be encoded before hashing")
+TypeError: Unicode-objects must be encoded before hashing
+2022-01-16 23:40:43,113 INFO werkzeug Thread-1 : 172.20.0.1 - - [16/Jan/2022 23:40:43] "[35m[1mPOST /createuser HTTP/1.1[0m" 500 -
+2022-01-16 23:43:41,264 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 23:43:41,268 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 23:43:44,277 DEBUG root Thread-1 : mary.bertoni@duke.edu
+2022-01-16 23:43:44,293 DEBUG root Thread-1 : None
+2022-01-16 23:43:44,617 ERROR app Thread-1 : Exception on /createuser [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 59, in create_user
+    new_user = User(email=email, full_name=name, uadress=address, admin_flag=admin_flag, pswd=encrypted_pswd)
+  File "<string>", line 4, in __init__
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/state.py", line 480, in _initialize_instance
+    manager.dispatch.init_failure(self, args, kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/langhelpers.py", line 70, in __exit__
+    compat.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/state.py", line 477, in _initialize_instance
+    return manager.original_init(*mixed[1:], **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/decl_base.py", line 1154, in _declarative_constructor
+    raise TypeError(
+TypeError: 'uadress' is an invalid keyword argument for User
+2022-01-16 23:43:44,652 INFO werkzeug Thread-1 : 172.20.0.1 - - [16/Jan/2022 23:43:44] "[35m[1mPOST /createuser HTTP/1.1[0m" 500 -
+2022-01-16 23:44:16,968 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 23:44:16,970 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 23:44:19,238 DEBUG root Thread-1 : mary.bertoni@duke.edu
+2022-01-16 23:44:19,252 DEBUG root Thread-1 : None
+2022-01-16 23:44:19,621 INFO werkzeug Thread-1 : 172.20.0.1 - - [16/Jan/2022 23:44:19] "POST /createuser HTTP/1.1" 200 -
+2022-01-16 23:48:52,978 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 23:48:52,981 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 23:49:24,381 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 23:49:24,383 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 23:56:41,170 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 23:56:41,173 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 23:57:31,668 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 23:57:31,670 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 23:58:13,669 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 23:58:13,671 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-16 23:58:57,441 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-16 23:58:57,442 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-17 00:00:53,971 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-17 00:00:53,974 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-17 00:08:29,938 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-17 00:08:29,941 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-17 18:06:51,495 DEBUG root Thread-1 : mary.bertoni@duke.edu
+2022-01-17 18:06:51,583 ERROR app Thread-1 : Exception on /createuser [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 52, in create_user
+    user = User.query.filter_by(email=email).first()
+NameError: name 'User' is not defined
+2022-01-17 18:06:52,247 INFO werkzeug Thread-1 : 172.20.0.1 - - [17/Jan/2022 18:06:52] "[35m[1mPOST /createuser HTTP/1.1[0m" 500 -
+2022-01-17 18:11:53,480 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-17 18:11:53,484 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-17 18:12:21,609 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-17 18:12:21,612 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-17 18:13:02,819 DEBUG root Thread-1 : mary.bertoni@duke.edu
+2022-01-17 18:13:02,921 DEBUG root Thread-1 : <User(email='mary.bertoni@duke.edu', full_name='Mary Bertoni', uaddress=749 9th St, Unit 231, Durham, NC 27705, pswd=\x24326224313224394555663359794a5973415977594f33366f7349636563523731674c664f4237646e78446d6a52644a657071526373696f78385061, admin_flag=True)>
+2022-01-17 18:13:02,927 INFO werkzeug Thread-1 : 172.20.0.1 - - [17/Jan/2022 18:13:02] "POST /createuser HTTP/1.1" 200 -
+2022-01-17 18:15:33,667 ERROR app Thread-2 : Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 35, in login
+    if not user or not bcrypt.checkpw(password, user.pswd):
+  File "/usr/local/lib/python3.8/dist-packages/bcrypt/__init__.py", line 120, in checkpw
+    raise TypeError("Unicode-objects must be encoded before checking")
+TypeError: Unicode-objects must be encoded before checking
+2022-01-17 18:15:33,681 INFO werkzeug Thread-2 : 172.20.0.1 - - [17/Jan/2022 18:15:33] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2022-01-17 18:16:14,513 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-17 18:16:14,515 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-17 18:16:33,594 ERROR app Thread-1 : Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 35, in login
+    if not user or not bcrypt.checkpw(password.encode('utf-8'), user.pswd):
+  File "/usr/local/lib/python3.8/dist-packages/bcrypt/__init__.py", line 120, in checkpw
+    raise TypeError("Unicode-objects must be encoded before checking")
+TypeError: Unicode-objects must be encoded before checking
+2022-01-17 18:16:33,608 INFO werkzeug Thread-1 : 172.20.0.1 - - [17/Jan/2022 18:16:33] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2022-01-17 18:17:15,757 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-17 18:17:15,759 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-17 18:17:21,701 ERROR app Thread-1 : Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 35, in login
+    if not user or not bcrypt.checkpw(password.encode('utf-8'), user.pswd.encode('utf-8')):
+  File "/usr/local/lib/python3.8/dist-packages/bcrypt/__init__.py", line 127, in checkpw
+    ret = hashpw(password, hashed_password)
+  File "/usr/local/lib/python3.8/dist-packages/bcrypt/__init__.py", line 105, in hashpw
+    raise ValueError("Invalid salt")
+ValueError: Invalid salt
+2022-01-17 18:17:21,715 INFO werkzeug Thread-1 : 172.20.0.1 - - [17/Jan/2022 18:17:21] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2022-01-17 18:18:52,876 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-17 18:18:52,878 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-17 18:18:56,081 ERROR app Thread-1 : Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 35, in login
+    if not user or not bcrypt.checkpw(password.encode('utf-8'), user.pswd.decode('utf-8')):
+AttributeError: 'str' object has no attribute 'decode'
+2022-01-17 18:18:56,089 INFO werkzeug Thread-1 : 172.20.0.1 - - [17/Jan/2022 18:18:56] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2022-01-17 18:19:57,514 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-17 18:19:57,516 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-17 18:20:07,221 DEBUG root Thread-1 : mary.bertoni@duke.edu
+2022-01-17 18:20:07,237 DEBUG root Thread-1 : None
+2022-01-17 18:20:07,577 INFO werkzeug Thread-1 : 172.20.0.1 - - [17/Jan/2022 18:20:07] "POST /createuser HTTP/1.1" 200 -
+2022-01-17 18:20:10,121 ERROR app Thread-2 : Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 35, in login
+    if not user or not bcrypt.checkpw(password.encode('utf-8'), user.pswd):
+  File "/usr/local/lib/python3.8/dist-packages/bcrypt/__init__.py", line 120, in checkpw
+    raise TypeError("Unicode-objects must be encoded before checking")
+TypeError: Unicode-objects must be encoded before checking
+2022-01-17 18:20:10,127 INFO werkzeug Thread-2 : 172.20.0.1 - - [17/Jan/2022 18:20:10] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2022-01-17 18:20:42,471 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-17 18:20:42,472 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-01-17 18:20:56,752 DEBUG root Thread-1 : mary.bertoni@duke.edu
+2022-01-17 18:20:56,768 DEBUG root Thread-1 : <User(email='mary.bertoni@duke.edu', full_name='Mary Bertoni', uaddress=749 9th St, Unit 231, Durham, NC 27705, pswd=$2b$12$mLE.wrsGU7soYXtA8OPV1.e0zxihDXWrUFcQvFyPFsaWydx5MfKeK, admin_flag=True)>
+2022-01-17 18:20:56,773 INFO werkzeug Thread-1 : 172.20.0.1 - - [17/Jan/2022 18:20:56] "POST /createuser HTTP/1.1" 200 -
+2022-01-17 18:21:04,078 INFO werkzeug Thread-2 : 172.20.0.1 - - [17/Jan/2022 18:21:04] "POST /login HTTP/1.1" 200 -
+2022-01-17 21:51:42,741 INFO werkzeug Thread-3 : 172.20.0.1 - - [17/Jan/2022 21:51:42] "OPTIONS /login HTTP/1.1" 200 -
+2022-01-17 21:51:42,892 INFO werkzeug Thread-4 : 172.20.0.1 - - [17/Jan/2022 21:51:42] "POST /login HTTP/1.1" 200 -
+2022-01-18 00:51:06,533 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 00:51:06,544 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 00:52:54,908 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 00:52:54] "POST /login HTTP/1.1" 200 -
+2022-01-18 00:52:55,194 INFO werkzeug Thread-2 : 172.18.0.1 - - [18/Jan/2022 00:52:55] "POST /login HTTP/1.1" 200 -
+2022-01-18 00:53:02,052 INFO werkzeug Thread-3 : 172.18.0.1 - - [18/Jan/2022 00:53:02] "POST /login HTTP/1.1" 200 -
+2022-01-18 01:09:03,475 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 01:09:03,480 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 01:10:34,591 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 01:10:34,593 INFO werkzeug MainThread :  * Running on http://172.18.0.4:5000/ (Press CTRL+C to quit)
+2022-01-18 01:10:42,024 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 01:10:42] "POST /login HTTP/1.1" 200 -
+2022-01-18 01:10:43,953 INFO werkzeug Thread-2 : 172.18.0.1 - - [18/Jan/2022 01:10:43] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:45:22,413 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 02:45:22,416 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 02:46:19,015 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 02:46:19] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:46:20,679 INFO werkzeug Thread-2 : 172.18.0.1 - - [18/Jan/2022 02:46:20] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:46:32,446 INFO werkzeug Thread-3 : 172.18.0.1 - - [18/Jan/2022 02:46:32] "OPTIONS /login HTTP/1.1" 200 -
+2022-01-18 02:46:32,466 INFO werkzeug Thread-4 : 172.18.0.1 - - [18/Jan/2022 02:46:32] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:46:38,935 INFO werkzeug Thread-5 : 172.18.0.1 - - [18/Jan/2022 02:46:38] "OPTIONS /login HTTP/1.1" 200 -
+2022-01-18 02:46:38,957 INFO werkzeug Thread-6 : 172.18.0.1 - - [18/Jan/2022 02:46:38] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:47:20,054 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 02:47:20,056 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 02:47:38,656 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 02:47:38] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:48:33,563 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 02:48:33,565 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 02:49:35,532 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 02:49:35] "OPTIONS /login HTTP/1.1" 200 -
+2022-01-18 02:49:35,615 INFO werkzeug Thread-2 : 172.18.0.1 - - [18/Jan/2022 02:49:35] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:50:06,648 INFO werkzeug Thread-3 : 172.18.0.1 - - [18/Jan/2022 02:50:06] "OPTIONS /login HTTP/1.1" 200 -
+2022-01-18 02:50:06,679 INFO werkzeug Thread-4 : 172.18.0.1 - - [18/Jan/2022 02:50:06] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:51:31,910 INFO werkzeug Thread-5 : 172.18.0.1 - - [18/Jan/2022 02:51:31] "OPTIONS /login HTTP/1.1" 200 -
+2022-01-18 02:51:31,930 INFO werkzeug Thread-6 : 172.18.0.1 - - [18/Jan/2022 02:51:31] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:51:45,968 INFO werkzeug Thread-7 : 172.18.0.1 - - [18/Jan/2022 02:51:45] "OPTIONS /login HTTP/1.1" 200 -
+2022-01-18 02:51:45,987 INFO werkzeug Thread-8 : 172.18.0.1 - - [18/Jan/2022 02:51:45] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:52:19,325 INFO werkzeug Thread-9 : 172.18.0.1 - - [18/Jan/2022 02:52:19] "OPTIONS /login HTTP/1.1" 200 -
+2022-01-18 02:52:19,348 INFO werkzeug Thread-10 : 172.18.0.1 - - [18/Jan/2022 02:52:19] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:52:32,104 INFO werkzeug Thread-11 : 172.18.0.1 - - [18/Jan/2022 02:52:32] "OPTIONS /login HTTP/1.1" 200 -
+2022-01-18 02:52:32,127 INFO werkzeug Thread-12 : 172.18.0.1 - - [18/Jan/2022 02:52:32] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:52:51,194 INFO werkzeug Thread-13 : 172.18.0.1 - - [18/Jan/2022 02:52:51] "OPTIONS /login HTTP/1.1" 200 -
+2022-01-18 02:52:51,211 INFO werkzeug Thread-14 : 172.18.0.1 - - [18/Jan/2022 02:52:51] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:52:58,338 INFO werkzeug Thread-15 : 172.18.0.1 - - [18/Jan/2022 02:52:58] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:53:22,404 INFO werkzeug Thread-16 : 172.18.0.1 - - [18/Jan/2022 02:53:22] "OPTIONS /login HTTP/1.1" 200 -
+2022-01-18 02:53:22,709 INFO werkzeug Thread-17 : 172.18.0.1 - - [18/Jan/2022 02:53:22] "POST /login HTTP/1.1" 200 -
+2022-01-18 02:53:32,990 INFO werkzeug Thread-18 : 172.18.0.1 - - [18/Jan/2022 02:53:32] "OPTIONS /login HTTP/1.1" 200 -
+2022-01-18 02:53:33,330 INFO werkzeug Thread-19 : 172.18.0.1 - - [18/Jan/2022 02:53:33] "POST /login HTTP/1.1" 200 -

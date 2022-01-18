@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+  db:
+    image: postgres
+    container_name: postgres-db
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=bus
+      - POSTGRES_DB=db
+      - "POSTGRES_HOST_AUTH_METHOD=trust"
+    volumes:
+      - type: bind
+        source: ./db
+        target: /var/lib/postgresql/data
+  
+  app:
+    build: ./app
+    image: marivoli/school-bus
+    container_name: app
+    ports:
+      - 5000:5000
+    volumes:
+      - type: bind
+        source: ./app
+        target: /app
+    environment:
+      - SQL_HOST=db
+      - SQL_PORT=5432
+      
+
+  client: 
+    build: ./client
+    image: marivoli/school-bus-node
+    container_name: client
+    ports: 
+      - 3000:3000
+    volumes:
+      - './client:/app'
+      - '/app/node_modules'
+    depends_on:
+      - app
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
