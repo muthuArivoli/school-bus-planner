@@ -10,7 +10,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String())
     full_name = db.Column(db.String())
-    uaddress = db.Column(db.String())
+    address = db.Column(db.String())
     pswd = db.Column(db.String())
     admin_flag = db.Column(db.Boolean())
 
@@ -18,8 +18,8 @@ class User(db.Model):
        return {"email": getattr(self, 'email'), "name": getattr(self, 'full_name'), "address": getattr(self, 'uaddress'), "admin_flag": getattr(self,'admin_flag')}
 
     def __repr__(self):
-        return "<User(email='{}', full_name='{}', uaddress={}, pswd={}, admin_flag={})>"\
-            .format(self.email, self.full_name, self.uaddress, self.pswd, self.admin_flag) 
+        return "<User(email='{}', full_name='{}', address={}, pswd={}, admin_flag={})>"\
+            .format(self.email, self.full_name, self.address, self.pswd, self.admin_flag) 
 
 class School(db.Model):
     __tablename__ = 'schools'
@@ -27,7 +27,7 @@ class School(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
     address = db.Column(db.String())
-    
+
     def as_dict(self):
         return {"name": getattr(self, 'name'), "address": getattr(self, 'address')}
 
@@ -63,7 +63,7 @@ class Student(db.Model):
     def as_dict(self):
         return{"name": getattr(self, 'full_name'), "student_id": getattr(self, "student_id")}
 
-        
+
     def __repr__(self):
         return "<Student(full_name='{}', student_id='{}', school_id={}, route_id={}, user_id={})>"\
             .format(self.full_name, self.student_id, self.school_id, self.route_id, self.user_id)
