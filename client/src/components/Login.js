@@ -80,18 +80,14 @@ export default function SignIn() {
               </Button>
               <Grid container>
                 <Grid item xs>
-                  <Router>
-                    <Link component={RouterLink} to="passwordreset" variant="body2">
+                    <Link component={RouterLink} to="/passwordreset" variant="body2">
                       Forgot password?
                     </Link>
-                  </Router>
                 </Grid>
                 <Grid item>
-                  <Router>
-                    <Link component={RouterLink} to="signup" variant="body2">
+                    <Link component={RouterLink} to="/signup" variant="body2">
                       {"Don't have an account? Sign Up"}
                     </Link>
-                  </Router>
                 </Grid>
               </Grid>
             </Box>
