@@ -182,9 +182,9 @@ export default function SignUp() {
                     className="font-icon-wrapper"
                     onClick={() => deleteStudent(index)}
                   >
-                    <IconButton aria-label="delete">
-                      <DeleteIcon />
-                    </IconButton>
+                    <Button variant="outlined" startIcon={<DeleteIcon/>}>
+                      Delete
+                    </Button>
                   </div>
                 </Grid>
                 </Grid>
