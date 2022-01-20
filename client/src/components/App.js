@@ -4,7 +4,9 @@ import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import Login from './Login'
 import CreateAccount from './CreateAccount'
 import AdminDashboard from './AdminDashboard';
-
+import SchoolList from './SchoolList'
+import Box from '@mui/material/Box'
+import Toolbar from '@mui/material/Toolbar';
 
 function useAuth(){
   return true;
@@ -14,6 +16,7 @@ function PrivateRoute({ children }) {
   const auth = useAuth();
   return auth ? children : <Navigate to="/login" />;
 }
+
 
 export default class App extends React.Component {
 
@@ -30,7 +33,9 @@ export default class App extends React.Component {
           />
           <Route exact path="/schools" element={
             <PrivateRoute>
-              <AdminDashboard/>
+              <AdminDashboard>
+                <SchoolList/>
+              </AdminDashboard>
             </PrivateRoute>
           }
           />
