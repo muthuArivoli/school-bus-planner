@@ -18,6 +18,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import Container from '@mui/material/Container'
 import {Link as RouterLink} from 'react-router-dom';
 
 const theme = createTheme();
@@ -67,7 +68,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
   }),
 );
 
-export default function AdminDashboard(){
+export default function AdminDashboard(props){
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -149,6 +150,23 @@ export default function AdminDashboard(){
         </div>
           </List>
         </Drawer>
+        <Box
+          component="main"
+          sx={{
+            backgroundColor: (theme) =>
+              theme.palette.mode === 'light'
+                ? theme.palette.grey[100]
+                : theme.palette.grey[900],
+            flexGrow: 1,
+            height: '100vh',
+            overflow: 'auto',
+          }}
+        >
+          <Toolbar />
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          {props.children}
+          </Container>
+          </Box>
         </Box>
         </ThemeProvider>
     )

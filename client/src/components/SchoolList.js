@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
+import Box from '@mui/material/Box';
 
 const columns = [
   { field: 'name', headerName: 'School Name', width: 250,
