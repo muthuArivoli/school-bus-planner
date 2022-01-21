@@ -5,8 +5,7 @@ import Login from './Login'
 import CreateAccount from './CreateAccount'
 import AdminDashboard from './AdminDashboard';
 import SchoolList from './SchoolList'
-import Box from '@mui/material/Box'
-import Toolbar from '@mui/material/Toolbar';
+import UserList from './UserList'
 
 function useAuth(){
   return true;
@@ -41,7 +40,9 @@ export default class App extends React.Component {
           />
           <Route exact path="/users" element={
             <PrivateRoute>
-              <AdminDashboard/>
+              <AdminDashboard>
+                <UserList/>
+              </AdminDashboard>
             </PrivateRoute>
           }
           />
@@ -58,7 +59,13 @@ export default class App extends React.Component {
           }
           />
           <Route exact path="/login" element={<Login/>} />
-          <Route exact path="/signup" element={<CreateAccount/>} />
+          <Route exact path="/signup" element={
+            <PrivateRoute>
+              <AdminDashboard>
+                <CreateAccount/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
         </Routes>
       </BrowserRouter>
     );

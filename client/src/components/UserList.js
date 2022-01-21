@@ -4,11 +4,12 @@ import { DataGrid } from '@mui/x-data-grid';
 import {Link as RouterLink} from 'react-router-dom';
 
 const columns = [
-  { field: 'name', headerName: 'School Name', width: 250,
-  },
-  {
-    field: 'address',
-    headerName: 'Address',
+  { field: 'name', headerName: 'Full Name', width: 250},
+  { field: 'email', headerName: 'Email', width: 250},
+  { field: 'address', headerName: 'Address', width: 250},
+  { 
+    field: 'admin',
+    headerName: 'Admin',
     width: 250,
   },
   {
@@ -19,12 +20,12 @@ const columns = [
       <>
         <Button
           component={RouterLink}
-          to={"/schools/" + params.value}
+          to={"/users/" + params.value}
           color="primary"
           size="small"
           style={{ marginLeft: 16 }}
         >
-          View School
+          View User
         </Button>
       </>
     ),
@@ -33,20 +34,16 @@ const columns = [
 
 // static at the moment
 const rows = [
-  { name: 'School 1', address: "1 Main St." , id: "1"},
-  { name: 'School 2', address: "2 Main St.", id:"2"},
-  { name: 'School 3', address: "3 Main St." ,id:"3"},
-  { name: 'School 4', address: "4 Main St." ,id:"4"},
-  { name: 'School 5', address: "5 Main St." ,id:"5"},
-  { name: 'School 6', address: "6 Main St.",id:"6" },
-  { name: 'School 7', address: "7 Main St.",id:"7" },
-  { name: 'School 8', address: "8 Main St.",id:"8" },
-  { name: 'School 9', address: "9 Main St.",id:"9" },
-  { name: 'School 10', address: "10 Main St.",id:"10" },
+  { name: 'A B', email: "ab@gmail.com", address: "1 Main St." , admin: true, id: "1"},
+  { name: 'D e', email: "bc@gmail.com", address: "2 Main St.", admin: false, id:"2"},
+  { name: 'School 3',email: "ab@gmail.com", address: "3 Main St." , admin: false,id:"3"},
+  { name: 'School 4', email: "ab@gmail.com",address: "4 Main St." , admin: false,id:"4"},
+  { name: 'School 5', email: "ab@gmail.com",address: "5 Main St." , admin: false,id:"5"},
 ];
 
 export default function DataTable() {
   return (
+    <>
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         rows={rows}
@@ -57,5 +54,15 @@ export default function DataTable() {
         disableSelectionOnClick
       />
     </div>
+    <Button
+      component={RouterLink}
+      to={"/signup"}
+      color="primary"
+      size="small"
+      style={{ marginLeft: 16 }}
+      >
+        Add User
+      </Button>
+      </>
   );
 }
