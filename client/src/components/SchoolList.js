@@ -28,7 +28,7 @@ const columns = [
         </Button>
       </>
     ),
-  },
+  }
 ];
 
 // static at the moment
