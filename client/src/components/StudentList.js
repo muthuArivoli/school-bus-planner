@@ -2,6 +2,7 @@ import * as React from 'react';
 import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
 import {Link as RouterLink} from 'react-router-dom';
+import DeleteDialog from './DeleteDialog'
 
 const columns = [
   { field: 'name', headerName: 'Full Name', width: 250},
