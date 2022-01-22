@@ -7,6 +7,7 @@ import AdminDashboard from './AdminDashboard';
 import SchoolList from './SchoolList'
 import UserList from './UserList'
 import StudentList from './StudentList'
+import RouteList from './RouteList'
 
 function useAuth(){ 
   return true;
@@ -57,7 +58,9 @@ export default class App extends React.Component {
           />
           <Route exact path="/routes" element={
             <PrivateRoute>
-              <AdminDashboard/>
+              <AdminDashboard>
+                <RouteList/>
+              </AdminDashboard>
             </PrivateRoute>
           }
           />

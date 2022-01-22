@@ -4,16 +4,16 @@ import { DataGrid } from '@mui/x-data-grid';
 import {Link as RouterLink} from 'react-router-dom';
 
 const columns = [
-  { field: 'name', headerName: 'Full Name', width: 250},
-  { field: 'student_id', headerName: 'Student ID', width: 250},
-  { 
+  { field: 'name', headerName: 'Route Name', width: 250,
+  },
+  {
     field: 'school',
     headerName: 'School',
     width: 250,
   },
   {
-    field: 'route',
-    headerName: 'Route',
+    field: 'students',
+    headerName: 'Number of Students',
     width: 250,
   },
   {
@@ -24,30 +24,34 @@ const columns = [
       <>
         <Button
           component={RouterLink}
-          to={"/students/" + params.value}
+          to={"/routes/" + params.value}
           color="primary"
           size="small"
           style={{ marginLeft: 16 }}
         >
-          View Student
+          View Route
         </Button>
       </>
     ),
-  },
+  }
 ];
 
 // static at the moment
 const rows = [
-  { name: 'A B', student_id: "ab@gmail.com", school: "1 Main St." , route: "abc", id: "1"},
-  { name: 'D e', student_id: "bc@gmail.com", school: "2 Main St.", route: "efg", id:"2"},
-  { name: 'School 3',student_id: "ab@gmail.com", school: "3 Main St." , route: "hi",id:"3"},
-  { name: 'School 4', student_id: "ab@gmail.com",school: "4 Main St." , route: "jk",id:"4"},
-  { name: 'School 5', student_id: "ab@gmail.com",school: "5 Main St." , route: "ef",id:"5"},
+  { name: 'School 1', school: "1 Main St." , students: "3", id: "1"},
+  { name: 'School 2', school: "2 Main St.", students: "3", id:"2"},
+  { name: 'School 3', school: "3 Main St.", students: "3" ,id:"3"},
+  { name: 'School 4', school: "4 Main St.", students: "3" ,id:"4"},
+  { name: 'School 5', school: "5 Main St.", students: "3" ,id:"5"},
+  { name: 'School 6', school: "6 Main St.", students: "3",id:"6" },
+  { name: 'School 7', school: "7 Main St.", students: "3",id:"7" },
+  { name: 'School 8', school: "8 Main St.", students: "3",id:"8" },
+  { name: 'School 9', school: "9 Main St.", students: "3",id:"9" },
+  { name: 'School 10', school: "10 Main St.", students: "3",id:"10" },
 ];
 
 export default function DataTable() {
   return (
-    <>
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         rows={rows}
@@ -58,15 +62,5 @@ export default function DataTable() {
         disableSelectionOnClick
       />
     </div>
-    <Button
-      component={RouterLink}
-      to={"/signup"}
-      color="primary"
-      size="small"
-      style={{ marginLeft: 16 }}
-      >
-        Add User
-      </Button>
-      </>
   );
 }
