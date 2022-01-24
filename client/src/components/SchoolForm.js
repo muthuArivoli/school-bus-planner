@@ -6,8 +6,8 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
-import Input from '@mui/material/Input'
-import InputLabel from '@mui/material/InputLabel'
+import Input from '@mui/material/Input';
+import InputLabel from '@mui/material/InputLabel';
 
 const theme = createTheme();
 

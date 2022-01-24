@@ -117,6 +117,18 @@ export default function SignUp() {
                 />
               </Grid>
               <Grid item xs={12}>
+                <TextField
+                  required
+                  error={false}
+                  helperText={"Passwords do not match"}
+                  fullWidth
+                  name="confirm-password"
+                  label="Confirm Password"
+                  type="password"
+                  id="confirm-password"
+                />
+              </Grid>
+              <Grid item xs={12}>
                 <FormControlLabel
                   control={<Checkbox value="admin" color="primary" />}
                   label="Admin"

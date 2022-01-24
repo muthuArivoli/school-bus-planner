@@ -19,7 +19,7 @@ export default function DeleteDialog(props) {
 
   const handleAccept = () => {
     setOpen(false);
-    props.deleteComponent();
+    props.onAccept();
   }
 
   return (

@@ -11,6 +11,8 @@ import RouteList from './RouteList'
 import SchoolCreate from './SchoolCreate'
 import SchoolUpdate from './SchoolUpdate'
 import SchoolDetail from './SchoolDetail'
+import UserUpdate from './UserUpdate';
+import UserDetail from './UserDetail';
 
 function useAuth(){ 
   return true;
@@ -75,6 +77,20 @@ export default class App extends React.Component {
             <PrivateRoute>
               <AdminDashboard>
                 <CreateAccount/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
+          <Route exact path="/users/:id" element={
+            <PrivateRoute>
+              <AdminDashboard>
+                <UserDetail/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
+          <Route exact path="/users/:id/update" element={
+            <PrivateRoute>
+              <AdminDashboard>
+                <UserUpdate/>
               </AdminDashboard>
             </PrivateRoute>
           } />

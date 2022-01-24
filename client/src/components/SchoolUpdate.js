@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography';
 import SchoolForm from './SchoolForm'
 
 
-export default function CreateSchool() {
+export default function UpdateSchool() {
 
     const handleSubmit = () => {
         console.log("a");
