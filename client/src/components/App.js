@@ -8,8 +8,8 @@ import SchoolList from './SchoolList'
 import UserList from './UserList'
 import StudentList from './StudentList'
 import RouteList from './RouteList'
-import CreateSchool from './CreateSchool'
-import UpdateSchool from './UpdateSchool'
+import SchoolCreate from './SchoolCreate'
+import SchoolUpdate from './SchoolUpdate'
 
 function useAuth(){ 
   return true;
@@ -45,14 +45,14 @@ export default class App extends React.Component {
           <Route exact path="/schools/create" element={
             <PrivateRoute>
               <AdminDashboard>
-                <CreateSchool/>
+                <SchoolCreate/>
               </AdminDashboard>
             </PrivateRoute>
           } />
           <Route exact path="/schools/:id/update" element={
             <PrivateRoute>
               <AdminDashboard>
-                <UpdateSchool/>
+                <SchoolUpdate/>
               </AdminDashboard>
             </PrivateRoute>
           } />

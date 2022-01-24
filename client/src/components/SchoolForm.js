@@ -36,7 +36,7 @@ export default function SchoolForm(props) {
               <Grid item md={12}>
                 <FormControl>
                   <InputLabel htmlFor="address">School Address</InputLabel>
-                  <Input id="address" defaultvalue={props.address || null} />
+                  <Input id="address" defaultValue={props.address || null} />
                 </FormControl>
               </Grid>
 
