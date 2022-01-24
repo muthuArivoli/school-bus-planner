@@ -8,6 +8,8 @@ import SchoolList from './SchoolList'
 import UserList from './UserList'
 import StudentList from './StudentList'
 import RouteList from './RouteList'
+import CreateSchool from './CreateSchool'
+import UpdateSchool from './UpdateSchool'
 
 function useAuth(){ 
   return true;
@@ -40,6 +42,20 @@ export default class App extends React.Component {
             </PrivateRoute>
           }
           />
+          <Route exact path="/schools/create" element={
+            <PrivateRoute>
+              <AdminDashboard>
+                <CreateSchool/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
+          <Route exact path="/schools/:id/update" element={
+            <PrivateRoute>
+              <AdminDashboard>
+                <UpdateSchool/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
           <Route exact path="/users" element={
             <PrivateRoute>
               <AdminDashboard>
@@ -48,6 +64,13 @@ export default class App extends React.Component {
             </PrivateRoute>
           }
           />
+          <Route exact path="/users/create" element={
+            <PrivateRoute>
+              <AdminDashboard>
+                <CreateAccount/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
           <Route exact path="/students" element={
             <PrivateRoute>
               <AdminDashboard>
@@ -65,13 +88,6 @@ export default class App extends React.Component {
           }
           />
           <Route exact path="/login" element={<Login/>} />
-          <Route exact path="/signup" element={
-            <PrivateRoute>
-              <AdminDashboard>
-                <CreateAccount/>
-              </AdminDashboard>
-            </PrivateRoute>
-          } />
         </Routes>
       </BrowserRouter>
     );

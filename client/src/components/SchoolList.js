@@ -57,6 +57,15 @@ export default function DataTable() {
         rowsPerPageOptions={[5]}
         disableSelectionOnClick
       />
+      <Button
+      component={RouterLink}
+      to={"/schools/create"}
+      color="primary"
+      size="small"
+      style={{ marginLeft: 16 }}
+      >
+        Add School
+      </Button>
     </div>
   );
 }
