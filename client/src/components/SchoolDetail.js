@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import { styled } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import CustomBreadcrumb from './CustomBreadcrumb'
+import Breadcrumbs from '@mui/material/Breadcrumbs';
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -14,7 +14,7 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-export default function DirectionStack() {
+export default function SchoolDetail(props) {
   return (
     <Grid container alignItems="center" justifyContent="center" pt={5}>
       <Stack spacing={4}>
@@ -27,7 +27,26 @@ export default function DirectionStack() {
           <Item>Students</Item>
           <Item>Students without Busroutes</Item>
         </Stack>
-        <CustomBreadcrumb />
+        <Breadcrumbs separator=" " aria-label="breadcrumb">
+    <Button href={"#"}
+          color="primary"
+          size="small"
+          style={{ marginLeft: 16 }}>
+            Route Planner
+    </Button>
+    <Button href={"#"}
+        color="primary"
+        size="small"
+        style={{ marginLeft: 16 }}>
+        Modify
+    </Button>
+    <Button href={"#"}
+        color="primary"
+        size="small"
+        style={{ marginLeft: 16 }}>
+        Delete
+    </Button>
+        </Breadcrumbs>
       </Stack>
     </Grid>
   );
