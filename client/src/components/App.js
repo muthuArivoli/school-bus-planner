@@ -10,6 +10,7 @@ import StudentList from './StudentList'
 import RouteList from './RouteList'
 import SchoolCreate from './SchoolCreate'
 import SchoolUpdate from './SchoolUpdate'
+import SchoolDetail from './SchoolDetail'
 
 function useAuth(){ 
   return true;
@@ -19,7 +20,6 @@ function PrivateRoute({ children }) {
   const auth = useAuth();
   return auth ? children : <Navigate to="/login" />;
 }
-
 
 export default class App extends React.Component {
 
@@ -56,6 +56,13 @@ export default class App extends React.Component {
               </AdminDashboard>
             </PrivateRoute>
           } />
+          <Route exact path="/schools/:id" element={
+            <PrivateRoute>
+              <AdminDashboard>
+                <SchoolDetail/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } /> 
           <Route exact path="/users" element={
             <PrivateRoute>
               <AdminDashboard>
