@@ -60,6 +60,7 @@ export default function DataTable() {
       <Button
       component={RouterLink}
       to={"/schools/create"}
+      variant="outlined"
       color="primary"
       size="small"
       style={{ marginLeft: 16 }}

@@ -24,8 +24,11 @@ export default function DeleteDialog(props) {
 
   return (
     <div>
-      <Button variant="outlined" onClick={handleClickOpen}>
-        {props.button_desc}
+      <Button variant="outlined" 
+              size="small"
+              style={{ marginLeft: 16 }}
+              onClick={handleClickOpen}>
+        {props.buttonDesc || "Delete"}
       </Button>
       <Dialog
         open={open}
@@ -34,11 +37,11 @@ export default function DeleteDialog(props) {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {props.dialog_title}
+          {props.dialogTitle}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {props.dialog_description}
+            {props.dialogDesc}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

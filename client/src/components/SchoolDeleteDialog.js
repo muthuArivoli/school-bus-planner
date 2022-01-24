@@ -24,9 +24,16 @@ export default function SchoolDeleteDialog(props) {
       setOpen(false);
   }
 
+  const checkDialog = (e) => {
+    setButtonDisabled(e.target.value !== props.schoolName);
+  }
+
   return (
     <div>
-      <Button variant="outlined" onClick={handleClickOpen}>
+      <Button variant="outlined" 
+              size="small"
+              style={{ marginLeft: 16 }}
+              onClick={handleClickOpen}>
         Delete School
       </Button>
       <Dialog open={open} onClose={handleClose}>
@@ -42,7 +49,7 @@ export default function SchoolDeleteDialog(props) {
             label="School"
             fullWidth
             variant="standard"
-            onChange={(text) => setButtonDisabled(text !== props.schoolName)}
+            onChange={checkDialog}
           />
         </DialogContent>
         <DialogActions>

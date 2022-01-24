@@ -63,6 +63,7 @@ export default function DataTable() {
       component={RouterLink}
       to={"/signup"}
       color="primary"
+      variant="outlined"
       size="small"
       style={{ marginLeft: 16 }}
       >
