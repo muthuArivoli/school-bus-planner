@@ -1,18 +1,21 @@
 import './App.css';
 import React, {useState} from 'react';
 import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
-import Login from './Login'
-import CreateAccount from './CreateAccount'
+import Login from './Login';
+import CreateAccount from './CreateAccount';
 import AdminDashboard from './AdminDashboard';
-import SchoolList from './SchoolList'
-import UserList from './UserList'
-import StudentList from './StudentList'
-import RouteList from './RouteList'
-import SchoolCreate from './SchoolCreate'
-import SchoolUpdate from './SchoolUpdate'
-import SchoolDetail from './SchoolDetail'
+import SchoolList from './SchoolList';
+import UserList from './UserList';
+import StudentList from './StudentList';
+import RouteList from './RouteList';
+import SchoolCreate from './SchoolCreate';
+import SchoolUpdate from './SchoolUpdate';
+import SchoolDetail from './SchoolDetail';
 import UserUpdate from './UserUpdate';
 import UserDetail from './UserDetail';
+import StudentDetail from './StudentDetail';
+import StudentCreate from './StudentCreate';
+import StudentUpdate from './StudentUpdate';
 
 function useAuth(){ 
   return true;
@@ -102,6 +105,27 @@ export default class App extends React.Component {
             </PrivateRoute>
           }
           />
+          <Route exact path="/students/create" element={
+            <PrivateRoute>
+              <AdminDashboard>
+                <StudentCreate/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } /> 
+          <Route exact path="/students/:id" element={
+            <PrivateRoute>
+              <AdminDashboard>
+                <StudentDetail/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
+          <Route exact path="/students/:id/update" element={
+            <PrivateRoute>
+              <AdminDashboard>
+                <StudentUpdate/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
           <Route exact path="/routes" element={
             <PrivateRoute>
               <AdminDashboard>

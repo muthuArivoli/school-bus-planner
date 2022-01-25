@@ -61,13 +61,13 @@ export default function DataTable() {
     </div>
     <Button
       component={RouterLink}
-      to={"/signup"}
+      to={"/students/create"}
       color="primary"
       variant="outlined"
       size="small"
       style={{ marginLeft: 16 }}
       >
-        Add User
+        Create Student
       </Button>
       </>
   );

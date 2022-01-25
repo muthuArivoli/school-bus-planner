@@ -65,7 +65,7 @@ export default function DataTable() {
       size="small"
       style={{ marginLeft: 16 }}
       >
-        Add School
+        Craete School
       </Button>
     </div>
   );

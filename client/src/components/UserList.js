@@ -58,6 +58,7 @@ export default function DataTable() {
       component={RouterLink}
       to={"/users/create"}
       color="primary"
+      variant="outlined"
       size="small"
       style={{ marginLeft: 16 }}
       >
