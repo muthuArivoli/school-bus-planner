@@ -1,7 +1,5 @@
 import * as React from 'react';
-import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import { styled } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import {Link as RouterLink, useParams} from 'react-router-dom';
@@ -23,7 +21,7 @@ export default function SchoolDetail() {
         <Typography variant="h5" align="center">
           Address
         </Typography>
-        </Stack>
+      </Stack>
 
         <SchoolDetailMid/>
 
