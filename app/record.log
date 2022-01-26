@@ -410,3 +410,1397 @@ TypeError: Unicode-objects must be encoded before checking
 2022-01-18 02:53:22,709 INFO werkzeug Thread-17 : 172.18.0.1 - - [18/Jan/2022 02:53:22] "POST /login HTTP/1.1" 200 -
 2022-01-18 02:53:32,990 INFO werkzeug Thread-18 : 172.18.0.1 - - [18/Jan/2022 02:53:32] "OPTIONS /login HTTP/1.1" 200 -
 2022-01-18 02:53:33,330 INFO werkzeug Thread-19 : 172.18.0.1 - - [18/Jan/2022 02:53:33] "POST /login HTTP/1.1" 200 -
+2022-01-18 16:42:06,269 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 16:42:06,274 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 16:42:32,742 ERROR app Thread-1 : Exception on /getusers [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 69, in get_users
+    return json.dumps(users)
+  File "/usr/lib/python3.8/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+  File "/usr/lib/python3.8/json/encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/usr/lib/python3.8/json/encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "/usr/lib/python3.8/json/encoder.py", line 179, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type User is not JSON serializable
+2022-01-18 16:42:32,774 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 16:42:32] "[35m[1mGET /getusers HTTP/1.1[0m" 500 -
+2022-01-18 16:43:27,213 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 16:43:27,215 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 16:43:37,002 DEBUG root Thread-1 : [<User(email='mary.bertoni@duke.edu', full_name='Mary Bertoni', uaddress=749 9th St, Unit 231, Durham, NC 27705, pswd=$2b$12$mLE.wrsGU7soYXtA8OPV1.e0zxihDXWrUFcQvFyPFsaWydx5MfKeK, admin_flag=True)>]
+2022-01-18 16:43:37,007 ERROR app Thread-1 : Exception on /getusers [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 70, in get_users
+    return json.dumps(users)
+  File "/usr/lib/python3.8/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+  File "/usr/lib/python3.8/json/encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/usr/lib/python3.8/json/encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "/usr/lib/python3.8/json/encoder.py", line 179, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type User is not JSON serializable
+2022-01-18 16:43:37,022 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 16:43:37] "[35m[1mGET /getusers HTTP/1.1[0m" 500 -
+2022-01-18 16:50:56,400 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 16:50:56,402 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 16:51:47,634 ERROR app Thread-1 : Exception on /getusers [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 72, in get_users
+    return json.dump({"users": all_users})
+TypeError: dump() missing 1 required positional argument: 'fp'
+2022-01-18 16:51:47,643 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 16:51:47] "[35m[1mGET /getusers HTTP/1.1[0m" 500 -
+2022-01-18 16:52:28,392 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 16:52:28,394 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 16:52:33,984 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 16:52:33] "GET /getusers HTTP/1.1" 200 -
+2022-01-18 16:55:00,470 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 16:55:00,472 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 16:56:51,377 ERROR app Thread-1 : Exception on /getusers [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 71, in get_users
+    all_users.append(json.dumps(users, cls = AlchemyEncoder))
+  File "/usr/lib/python3.8/json/__init__.py", line 234, in dumps
+    return cls(
+  File "/usr/lib/python3.8/json/encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/usr/lib/python3.8/json/encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "/app/models.py", line 17, in default
+    fields[field.strip('\\')] = data.strip('\\')
+AttributeError: 'bool' object has no attribute 'strip'
+2022-01-18 16:56:51,392 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 16:56:51] "[35m[1mGET /getusers HTTP/1.1[0m" 500 -
+2022-01-18 16:59:10,487 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 16:59:10,490 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 16:59:16,737 ERROR app Thread-1 : Exception on /getusers [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 72, in get_users
+    all_users.append(json.dumps(user))
+  File "/usr/lib/python3.8/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+  File "/usr/lib/python3.8/json/encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/usr/lib/python3.8/json/encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "/usr/lib/python3.8/json/encoder.py", line 179, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type User is not JSON serializable
+2022-01-18 16:59:16,749 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 16:59:16] "[35m[1mGET /getusers HTTP/1.1[0m" 500 -
+2022-01-18 17:00:04,637 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 17:00:04,639 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 17:00:13,040 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 17:00:13] "GET /getusers HTTP/1.1" 200 -
+2022-01-18 17:01:49,849 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 17:01:49,851 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 17:01:58,941 DEBUG root Thread-1 : <User(email='mary.bertoni@duke.edu', full_name='Mary Bertoni', uaddress=749 9th St, Unit 231, Durham, NC 27705, pswd=$2b$12$mLE.wrsGU7soYXtA8OPV1.e0zxihDXWrUFcQvFyPFsaWydx5MfKeK, admin_flag=True)>
+2022-01-18 17:01:58,943 DEBUG root Thread-1 : {'email': 'mary.bertoni@duke.edu', 'name': 'Mary Bertoni'}
+2022-01-18 17:01:58,947 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 17:01:58] "GET /getusers HTTP/1.1" 200 -
+2022-01-18 17:03:59,041 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 17:03:59,045 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 17:04:12,022 DEBUG root Thread-1 : <User(email='mary.bertoni@duke.edu', full_name='Mary Bertoni', uaddress=749 9th St, Unit 231, Durham, NC 27705, pswd=$2b$12$mLE.wrsGU7soYXtA8OPV1.e0zxihDXWrUFcQvFyPFsaWydx5MfKeK, admin_flag=True)>
+2022-01-18 17:04:12,023 DEBUG root Thread-1 : {'email': 'mary.bertoni@duke.edu', 'name': 'Mary Bertoni'}
+2022-01-18 17:04:12,027 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 17:04:12] "GET /getusers HTTP/1.1" 200 -
+2022-01-18 17:04:47,584 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 17:04:47,585 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 17:04:55,789 DEBUG root Thread-1 : <User(email='mary.bertoni@duke.edu', full_name='Mary Bertoni', uaddress=749 9th St, Unit 231, Durham, NC 27705, pswd=$2b$12$mLE.wrsGU7soYXtA8OPV1.e0zxihDXWrUFcQvFyPFsaWydx5MfKeK, admin_flag=True)>
+2022-01-18 17:04:55,791 DEBUG root Thread-1 : {'email': 'mary.bertoni@duke.edu', 'name': 'Mary Bertoni'}
+2022-01-18 17:04:55,792 ERROR app Thread-1 : Exception on /getusers [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/usr/local/lib/python3.8/dist-packages/flask/helpers.py", line 191, in make_response
+    return current_app.make_response(args)
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1730, in make_response
+    raise TypeError(
+TypeError: The view function did not return a valid response. The return type must be a string, dict, tuple, Response instance, or WSGI callable, but it was a list.
+2022-01-18 17:04:55,801 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 17:04:55] "[35m[1mGET /getusers HTTP/1.1[0m" 500 -
+2022-01-18 17:06:22,416 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 17:06:22,418 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 17:06:50,028 DEBUG root Thread-1 : <User(email='mary.bertoni@duke.edu', full_name='Mary Bertoni', uaddress=749 9th St, Unit 231, Durham, NC 27705, pswd=$2b$12$mLE.wrsGU7soYXtA8OPV1.e0zxihDXWrUFcQvFyPFsaWydx5MfKeK, admin_flag=True)>
+2022-01-18 17:06:50,029 DEBUG root Thread-1 : {'email': 'mary.bertoni@duke.edu', 'name': 'Mary Bertoni'}
+2022-01-18 17:06:50,034 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 17:06:50] "GET /getusers HTTP/1.1" 200 -
+2022-01-18 17:08:01,041 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 17:08:01,042 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 17:09:06,900 DEBUG root Thread-1 : ['{"email": "mary.bertoni@duke.edu", "name": "Mary Bertoni"}']
+2022-01-18 17:09:06,904 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 17:09:06] "GET /getusers HTTP/1.1" 200 -
+2022-01-18 17:09:47,193 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 17:09:47,194 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 17:09:48,713 DEBUG root Thread-1 : [{'email': 'mary.bertoni@duke.edu', 'name': 'Mary Bertoni'}]
+2022-01-18 17:09:48,716 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 17:09:48] "GET /getusers HTTP/1.1" 200 -
+2022-01-18 17:17:47,445 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 17:17:47,448 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 17:29:41,545 DEBUG root Thread-1 : [{'email': 'mary.bertoni@duke.edu', 'name': 'Mary Bertoni', 'address': '749 9th St, Unit 231, Durham, NC 27705', 'admin_flag': True}]
+2022-01-18 17:29:41,551 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 17:29:41] "GET /getusers HTTP/1.1" 200 -
+2022-01-18 17:31:48,106 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 17:31:48,108 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 17:31:57,262 DEBUG root Thread-1 : [{'email': 'mary.bertoni@duke.edu', 'name': 'Mary Bertoni', 'address': '749 9th St, Unit 231, Durham, NC 27705', 'admin_flag': True}]
+2022-01-18 17:31:57,270 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 17:31:57] "GET /getusers HTTP/1.1" 200 -
+2022-01-18 17:44:18,316 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 17:44:18,321 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 17:45:05,408 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 17:45:05] "[33mGET /user HTTP/1.1[0m" 404 -
+2022-01-18 17:45:28,139 INFO werkzeug Thread-2 : 172.18.0.1 - - [18/Jan/2022 17:45:28] "GET /user/mary.bertoni@duke.edu HTTP/1.1" 200 -
+2022-01-18 17:45:52,980 INFO werkzeug Thread-3 : 172.18.0.1 - - [18/Jan/2022 17:45:52] "[33mGET /user/ HTTP/1.1[0m" 404 -
+2022-01-18 17:47:19,557 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 17:47:19,558 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 17:47:36,915 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 17:47:36] "[33mGET /user/ HTTP/1.1[0m" 404 -
+2022-01-18 17:47:38,683 INFO werkzeug Thread-2 : 172.18.0.1 - - [18/Jan/2022 17:47:38] "[33mGET /user/ HTTP/1.1[0m" 404 -
+2022-01-18 17:47:41,927 DEBUG root Thread-3 : [{'email': 'mary.bertoni@duke.edu', 'name': 'Mary Bertoni', 'address': '749 9th St, Unit 231, Durham, NC 27705', 'admin_flag': True}]
+2022-01-18 17:47:41,930 INFO werkzeug Thread-3 : 172.18.0.1 - - [18/Jan/2022 17:47:41] "GET /user HTTP/1.1" 200 -
+2022-01-18 17:47:52,918 INFO werkzeug Thread-4 : 172.18.0.1 - - [18/Jan/2022 17:47:52] "GET /user/mary.bertoni@duke.edu HTTP/1.1" 200 -
+2022-01-18 17:52:17,396 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 17:52:17,400 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 18:22:06,730 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 18:22:06,733 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 18:23:01,508 ERROR app Thread-1 : Exception on /school [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 147, in schools
+    db.session.refresh()
+TypeError: refresh() missing 1 required positional argument: 'instance'
+2022-01-18 18:23:01,530 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 18:23:01] "[35m[1mPOST /school HTTP/1.1[0m" 500 -
+2022-01-18 18:24:48,644 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 18:24:48,646 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 18:24:53,824 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 18:24:53] "POST /school HTTP/1.1" 200 -
+2022-01-18 18:28:32,710 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 18:28:32,714 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 18:29:34,545 ERROR app Thread-1 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 113, in students
+    route_id = content['route_id']
+KeyError: 'route_id'
+2022-01-18 18:29:34,554 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 18:29:34] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-18 18:29:54,832 INFO werkzeug Thread-2 : 172.18.0.1 - - [18/Jan/2022 18:29:54] "[31m[1mPOST /student HTTP/1.1[0m" 400 -
+2022-01-18 18:30:02,773 ERROR app Thread-3 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.NumericValueOutOfRange: integer out of range
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 117, in students
+    db.session.flush()
+  File "<string>", line 2, in flush
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3363, in flush
+    self._flush(objects)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3503, in _flush
+    transaction.rollback(_capture_exception=True)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/langhelpers.py", line 70, in __exit__
+    compat.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3463, in _flush
+    flush_context.execute()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/unitofwork.py", line 456, in execute
+    rec.execute(self)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/unitofwork.py", line 630, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/persistence.py", line 244, in save_obj
+    _emit_insert_statements(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/persistence.py", line 1221, in _emit_insert_statements
+    result = connection._execute_20(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1614, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/sql/elements.py", line 325, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1481, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1845, in _execute_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 2026, in _handle_dbapi_exception
+    util.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.DataError: (psycopg2.errors.NumericValueOutOfRange) integer out of range
+
+[SQL: INSERT INTO students (full_name, student_id, school_id, route_id, user_id) VALUES (%(full_name)s, %(student_id)s, %(school_id)s, %(route_id)s, %(user_id)s) RETURNING students.id]
+[parameters: {'full_name': 'Claudia Chapman', 'student_id': 34, 'school_id': 2, 'route_id': nan, 'user_id': 40}]
+(Background on this error at: https://sqlalche.me/e/14/9h9h)
+2022-01-18 18:30:02,854 INFO werkzeug Thread-3 : 172.18.0.1 - - [18/Jan/2022 18:30:02] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-18 18:33:27,934 INFO werkzeug Thread-4 : 172.18.0.1 - - [18/Jan/2022 18:33:27] "[31m[1mPOST /student HTTP/1.1[0m" 400 -
+2022-01-18 18:33:34,094 ERROR app Thread-5 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.NumericValueOutOfRange: integer out of range
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 117, in students
+    db.session.flush()
+  File "<string>", line 2, in flush
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3363, in flush
+    self._flush(objects)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3503, in _flush
+    transaction.rollback(_capture_exception=True)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/langhelpers.py", line 70, in __exit__
+    compat.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3463, in _flush
+    flush_context.execute()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/unitofwork.py", line 456, in execute
+    rec.execute(self)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/unitofwork.py", line 630, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/persistence.py", line 244, in save_obj
+    _emit_insert_statements(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/persistence.py", line 1221, in _emit_insert_statements
+    result = connection._execute_20(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1614, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/sql/elements.py", line 325, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1481, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1845, in _execute_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 2026, in _handle_dbapi_exception
+    util.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.DataError: (psycopg2.errors.NumericValueOutOfRange) integer out of range
+
+[SQL: INSERT INTO students (full_name, student_id, school_id, route_id, user_id) VALUES (%(full_name)s, %(student_id)s, %(school_id)s, %(route_id)s, %(user_id)s) RETURNING students.id]
+[parameters: {'full_name': 'Claudia Chapman', 'student_id': 34, 'school_id': 2, 'route_id': nan, 'user_id': 40}]
+(Background on this error at: https://sqlalche.me/e/14/9h9h)
+2022-01-18 18:33:34,101 INFO werkzeug Thread-5 : 172.18.0.1 - - [18/Jan/2022 18:33:34] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-18 18:34:32,010 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 18:34:32,012 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 18:34:41,022 ERROR app Thread-1 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 109, in students
+    content = request.json(ignore_nan=True)
+TypeError: 'dict' object is not callable
+2022-01-18 18:34:41,030 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 18:34:41] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-18 18:35:21,607 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 18:35:21,609 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 18:35:29,446 ERROR app Thread-1 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 109, in students
+    content = json.loads(request.json,ignore_nan=True)
+  File "/usr/lib/python3.8/json/__init__.py", line 341, in loads
+    raise TypeError(f'the JSON object must be str, bytes or bytearray, '
+TypeError: the JSON object must be str, bytes or bytearray, not dict
+2022-01-18 18:35:29,460 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 18:35:29] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-18 18:38:48,740 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 18:38:48,743 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 18:38:54,903 DEBUG root Thread-1 : {'full_name': 'Claudia Chapman', 'student_id': 34, 'school_id': 2, 'user_id': 40, 'route_id': nan}
+2022-01-18 18:38:54,905 ERROR app Thread-1 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 114, in students
+    if content['route_id'].isnumeric():
+AttributeError: 'float' object has no attribute 'isnumeric'
+2022-01-18 18:38:54,914 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 18:38:54] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-18 18:40:39,002 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 18:40:39,005 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 18:44:43,318 DEBUG root Thread-1 : {'full_name': 'Claudia Chapman', 'student_id': 34, 'school_id': 2, 'user_id': 40, 'route_id': nan}
+2022-01-18 18:44:43,330 ERROR app Thread-1 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.NumericValueOutOfRange: integer out of range
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 120, in students
+    db.session.flush()
+  File "<string>", line 2, in flush
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3363, in flush
+    self._flush(objects)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3503, in _flush
+    transaction.rollback(_capture_exception=True)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/langhelpers.py", line 70, in __exit__
+    compat.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3463, in _flush
+    flush_context.execute()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/unitofwork.py", line 456, in execute
+    rec.execute(self)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/unitofwork.py", line 630, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/persistence.py", line 244, in save_obj
+    _emit_insert_statements(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/persistence.py", line 1221, in _emit_insert_statements
+    result = connection._execute_20(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1614, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/sql/elements.py", line 325, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1481, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1845, in _execute_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 2026, in _handle_dbapi_exception
+    util.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.DataError: (psycopg2.errors.NumericValueOutOfRange) integer out of range
+
+[SQL: INSERT INTO students (full_name, student_id, school_id, route_id, user_id) VALUES (%(full_name)s, %(student_id)s, %(school_id)s, %(route_id)s, %(user_id)s) RETURNING students.id]
+[parameters: {'full_name': 'Claudia Chapman', 'student_id': 34, 'school_id': 2, 'route_id': nan, 'user_id': 40}]
+(Background on this error at: https://sqlalche.me/e/14/9h9h)
+2022-01-18 18:44:43,348 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 18:44:43] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-18 18:45:54,375 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 18:45:54,377 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 18:46:02,318 ERROR app Thread-1 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.NumericValueOutOfRange: integer out of range
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 120, in students
+    db.session.flush()
+  File "<string>", line 2, in flush
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3363, in flush
+    self._flush(objects)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3503, in _flush
+    transaction.rollback(_capture_exception=True)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/langhelpers.py", line 70, in __exit__
+    compat.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3463, in _flush
+    flush_context.execute()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/unitofwork.py", line 456, in execute
+    rec.execute(self)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/unitofwork.py", line 630, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/persistence.py", line 244, in save_obj
+    _emit_insert_statements(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/persistence.py", line 1221, in _emit_insert_statements
+    result = connection._execute_20(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1614, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/sql/elements.py", line 325, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1481, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1845, in _execute_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 2026, in _handle_dbapi_exception
+    util.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.DataError: (psycopg2.errors.NumericValueOutOfRange) integer out of range
+
+[SQL: INSERT INTO students (full_name, student_id, school_id, route_id, user_id) VALUES (%(full_name)s, %(student_id)s, %(school_id)s, %(route_id)s, %(user_id)s) RETURNING students.id]
+[parameters: {'full_name': 'Claudia Chapman', 'student_id': 34, 'school_id': 2, 'route_id': nan, 'user_id': 40}]
+(Background on this error at: https://sqlalche.me/e/14/9h9h)
+2022-01-18 18:46:02,337 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 18:46:02] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-18 18:50:32,112 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 18:50:32,113 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 18:50:43,925 ERROR app Thread-1 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.NumericValueOutOfRange: integer out of range
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 120, in students
+    db.session.flush()
+  File "<string>", line 2, in flush
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3363, in flush
+    self._flush(objects)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3503, in _flush
+    transaction.rollback(_capture_exception=True)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/langhelpers.py", line 70, in __exit__
+    compat.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3463, in _flush
+    flush_context.execute()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/unitofwork.py", line 456, in execute
+    rec.execute(self)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/unitofwork.py", line 630, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/persistence.py", line 244, in save_obj
+    _emit_insert_statements(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/persistence.py", line 1221, in _emit_insert_statements
+    result = connection._execute_20(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1614, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/sql/elements.py", line 325, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1481, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1845, in _execute_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 2026, in _handle_dbapi_exception
+    util.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.DataError: (psycopg2.errors.NumericValueOutOfRange) integer out of range
+
+[SQL: INSERT INTO students (full_name, student_id, school_id, route_id, user_id) VALUES (%(full_name)s, %(student_id)s, %(school_id)s, %(route_id)s, %(user_id)s) RETURNING students.id]
+[parameters: {'full_name': 'Claudia Chapman', 'student_id': 34, 'school_id': 2, 'route_id': nan, 'user_id': 40}]
+(Background on this error at: https://sqlalche.me/e/14/9h9h)
+2022-01-18 18:50:43,938 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 18:50:43] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-18 18:54:45,208 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 18:54:45,210 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 18:55:02,012 DEBUG root Thread-1 : <class 'float'>
+2022-01-18 18:55:02,110 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 18:55:02] "POST /student HTTP/1.1" 200 -
+2022-01-18 18:59:24,573 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 18:59:24,576 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 18:59:45,631 DEBUG root Thread-1 : True
+2022-01-18 18:59:45,684 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 18:59:45] "POST /student HTTP/1.1" 200 -
+2022-01-18 19:00:31,034 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 19:00:31,041 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 19:00:53,902 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 19:00:53] "POST /student HTTP/1.1" 200 -
+2022-01-18 19:09:34,821 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 19:09:34,823 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 19:12:34,055 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 19:12:34] "[31m[1mPOST /route HTTP/1.1[0m" 400 -
+2022-01-18 19:13:06,875 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 19:13:06,876 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 19:13:13,247 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 19:13:13] "[31m[1mPOST /route HTTP/1.1[0m" 400 -
+2022-01-18 19:13:54,608 INFO werkzeug Thread-2 : 172.18.0.1 - - [18/Jan/2022 19:13:54] "[31m[1mPOST /route HTTP/1.1[0m" 400 -
+2022-01-18 19:15:24,935 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 19:15:24,937 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 19:15:37,448 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 19:15:37] "[31m[1mPOST /route HTTP/1.1[0m" 400 -
+2022-01-18 19:15:59,493 INFO werkzeug Thread-2 : 172.18.0.1 - - [18/Jan/2022 19:15:59] "[31m[1mPOST /route HTTP/1.1[0m" 400 -
+2022-01-18 19:16:25,767 DEBUG root Thread-3 : {'name': 'Tiger Route', 'description': 'The bus driver is John.', 'school_id': 2}
+2022-01-18 19:16:25,823 INFO werkzeug Thread-3 : 172.18.0.1 - - [18/Jan/2022 19:16:25] "POST /route HTTP/1.1" 200 -
+2022-01-18 19:18:25,492 INFO werkzeug Thread-4 : 172.18.0.1 - - [18/Jan/2022 19:18:25] "GET /route HTTP/1.1" 200 -
+2022-01-18 19:18:31,414 ERROR app Thread-5 : Exception on /route/2 [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 171, in routes
+    return json.dumps({'success': True, 'route': route.as_dict()})
+AttributeError: 'NoneType' object has no attribute 'as_dict'
+2022-01-18 19:18:31,431 INFO werkzeug Thread-5 : 172.18.0.1 - - [18/Jan/2022 19:18:31] "[35m[1mGET /route/2 HTTP/1.1[0m" 500 -
+2022-01-18 19:21:37,025 ERROR app Thread-6 : Exception on /route/2 [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 171, in routes
+    return json.dumps({'success': True, 'route': route.as_dict()})
+AttributeError: 'NoneType' object has no attribute 'as_dict'
+2022-01-18 19:21:37,039 INFO werkzeug Thread-6 : 172.18.0.1 - - [18/Jan/2022 19:21:37] "[35m[1mGET /route/2 HTTP/1.1[0m" 500 -
+2022-01-18 19:22:15,672 INFO werkzeug Thread-7 : 172.18.0.1 - - [18/Jan/2022 19:22:15] "GET /route/1 HTTP/1.1" 200 -
+2022-01-18 19:40:14,293 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 19:40:14,296 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 19:41:36,517 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 19:41:36] "PATCH /route/1 HTTP/1.1" 200 -
+2022-01-18 19:42:17,904 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 19:42:17,906 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 19:45:04,712 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 19:45:04,715 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 19:45:18,475 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 19:45:18,477 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 19:45:40,325 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 19:45:40] "PATCH /route/1 HTTP/1.1" 200 -
+2022-01-18 19:47:36,260 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 19:47:36,263 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 19:48:16,607 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 19:48:16,620 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 19:48:30,039 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 19:48:30] "PATCH /route/1 HTTP/1.1" 200 -
+2022-01-18 19:51:56,202 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-18 19:51:56,204 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-18 19:52:05,669 INFO werkzeug Thread-1 : 172.18.0.1 - - [18/Jan/2022 19:52:05] "PATCH /route/1 HTTP/1.1" 200 -
+2022-01-19 03:18:50,125 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-19 03:18:50,130 INFO werkzeug MainThread :  * Running on http://172.23.0.3:5000/ (Press CTRL+C to quit)
+2022-01-19 03:19:58,998 ERROR app Thread-1 : Exception on /school [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 233, in schools
+    current_user_id = content['current_user_id']
+KeyError: 'current_user_id'
+2022-01-19 03:19:59,104 ERROR app Thread-2 : Exception on /school [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 233, in schools
+    current_user_id = content['current_user_id']
+KeyError: 'current_user_id'
+2022-01-19 03:19:59,216 INFO werkzeug Thread-1 : 172.23.0.1 - - [19/Jan/2022 03:19:59] "[35m[1mPOST /school HTTP/1.1[0m" 500 -
+2022-01-19 03:19:59,228 INFO werkzeug Thread-2 : 172.23.0.1 - - [19/Jan/2022 03:19:59] "[35m[1mPOST /school HTTP/1.1[0m" 500 -
+2022-01-19 03:25:54,690 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-19 03:25:54,711 INFO werkzeug MainThread :  * Running on http://172.23.0.3:5000/ (Press CTRL+C to quit)
+2022-01-19 03:26:57,705 INFO werkzeug Thread-1 : 172.23.0.1 - - [19/Jan/2022 03:26:57] "POST /school HTTP/1.1" 200 -
+2022-01-19 03:26:57,721 INFO werkzeug Thread-2 : 172.23.0.1 - - [19/Jan/2022 03:26:57] "POST /school HTTP/1.1" 200 -
+2022-01-19 03:40:17,587 ERROR app Thread-3 : Exception on /school [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedColumn: column users.address does not exist
+LINE 1: ... users_email, users.full_name AS users_full_name, users.addr...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "users.uaddress".
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 238, in schools
+    current_user = User.query.filter_by(id=current_user_id).first()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/query.py", line 2810, in first
+    return self.limit(1)._iter().first()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/query.py", line 2894, in _iter
+    result = self.session.execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 1692, in execute
+    result = conn._execute_20(statement, params or {}, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1614, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/sql/elements.py", line 325, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1481, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1845, in _execute_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 2026, in _handle_dbapi_exception
+    util.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column users.address does not exist
+LINE 1: ... users_email, users.full_name AS users_full_name, users.addr...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "users.uaddress".
+
+[SQL: SELECT users.id AS users_id, users.email AS users_email, users.full_name AS users_full_name, users.address AS users_address, users.pswd AS users_pswd, users.admin_flag AS users_admin_flag 
+FROM users 
+WHERE users.id = %(id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'id_1': 40, 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+2022-01-19 03:40:18,013 INFO werkzeug Thread-3 : 172.23.0.1 - - [19/Jan/2022 03:40:18] "[35m[1mPOST /school HTTP/1.1[0m" 500 -
+2022-01-19 03:42:36,419 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-19 03:42:36,433 INFO werkzeug MainThread :  * Running on http://172.23.0.4:5000/ (Press CTRL+C to quit)
+2022-01-19 03:43:08,639 INFO werkzeug Thread-1 : 172.23.0.1 - - [19/Jan/2022 03:43:08] "POST /school HTTP/1.1" 200 -
+2022-01-19 03:59:16,338 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-19 03:59:16,341 INFO werkzeug MainThread :  * Running on http://172.23.0.3:5000/ (Press CTRL+C to quit)
+2022-01-19 04:10:42,725 INFO werkzeug Thread-1 : 172.23.0.1 - - [19/Jan/2022 04:10:42] "[33mPOST /createuser HTTP/1.1[0m" 404 -
+2022-01-19 04:10:50,900 INFO werkzeug Thread-2 : 172.23.0.1 - - [19/Jan/2022 04:10:50] "POST /user HTTP/1.1" 200 -
+2022-01-19 04:12:19,709 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-19 04:12:19,715 INFO werkzeug MainThread :  * Running on http://172.23.0.3:5000/ (Press CTRL+C to quit)
+2022-01-19 04:12:20,303 ERROR app Thread-1 : Exception on /user [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 96, in users
+    new_user = User(email=email, full_name=name, address=address, admin_flag=admin_flag, pswd=encrypted_pswd.decode('utf-8'))
+  File "<string>", line 4, in __init__
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/state.py", line 480, in _initialize_instance
+    manager.dispatch.init_failure(self, args, kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/langhelpers.py", line 70, in __exit__
+    compat.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/state.py", line 477, in _initialize_instance
+    return manager.original_init(*mixed[1:], **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/decl_base.py", line 1154, in _declarative_constructor
+    raise TypeError(
+TypeError: 'address' is an invalid keyword argument for User
+2022-01-19 04:12:20,334 INFO werkzeug Thread-1 : 172.23.0.1 - - [19/Jan/2022 04:12:20] "[35m[1mPOST /user HTTP/1.1[0m" 500 -
+2022-01-19 04:13:53,497 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-19 04:13:53,500 INFO werkzeug MainThread :  * Running on http://172.23.0.4:5000/ (Press CTRL+C to quit)
+2022-01-19 04:14:56,111 INFO werkzeug Thread-1 : 172.23.0.1 - - [19/Jan/2022 04:14:56] "POST /user HTTP/1.1" 200 -
+2022-01-19 04:14:56,238 INFO werkzeug Thread-2 : 172.23.0.1 - - [19/Jan/2022 04:14:56] "POST /user HTTP/1.1" 200 -
+2022-01-19 04:16:21,526 INFO werkzeug Thread-3 : 172.23.0.1 - - [19/Jan/2022 04:16:21] "POST /school HTTP/1.1" 200 -
+2022-01-19 04:17:36,217 INFO werkzeug Thread-4 : 172.23.0.1 - - [19/Jan/2022 04:17:36] "POST /school HTTP/1.1" 200 -
+2022-01-19 04:18:23,190 INFO werkzeug Thread-5 : 172.23.0.1 - - [19/Jan/2022 04:18:23] "POST /school HTTP/1.1" 200 -
+2022-01-19 04:18:38,752 ERROR app Thread-6 : Exception on /school [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type integer: "hello"
+LINE 3: WHERE users.id = 'hello' 
+                         ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 237, in schools
+    current_user = User.query.filter_by(id=current_user_id).first()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/query.py", line 2810, in first
+    return self.limit(1)._iter().first()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/query.py", line 2894, in _iter
+    result = self.session.execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 1692, in execute
+    result = conn._execute_20(statement, params or {}, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1614, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/sql/elements.py", line 325, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1481, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1845, in _execute_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 2026, in _handle_dbapi_exception
+    util.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.DataError: (psycopg2.errors.InvalidTextRepresentation) invalid input syntax for type integer: "hello"
+LINE 3: WHERE users.id = 'hello' 
+                         ^
+
+[SQL: SELECT users.id AS users_id, users.email AS users_email, users.full_name AS users_full_name, users.uaddress AS users_uaddress, users.pswd AS users_pswd, users.admin_flag AS users_admin_flag 
+FROM users 
+WHERE users.id = %(id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'id_1': 'hello', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/14/9h9h)
+2022-01-19 04:18:38,784 INFO werkzeug Thread-6 : 172.23.0.1 - - [19/Jan/2022 04:18:38] "[35m[1mPOST /school HTTP/1.1[0m" 500 -
+2022-01-19 04:50:50,119 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-19 04:50:50,123 INFO werkzeug MainThread :  * Running on http://172.26.0.3:5000/ (Press CTRL+C to quit)
+2022-01-19 04:51:56,449 INFO werkzeug Thread-1 : 172.26.0.1 - - [19/Jan/2022 04:51:56] "[33mGET /route/ HTTP/1.1[0m" 404 -
+2022-01-19 04:52:03,075 INFO werkzeug Thread-2 : 172.26.0.1 - - [19/Jan/2022 04:52:03] "GET /route HTTP/1.1" 200 -
+2022-01-19 04:54:01,485 ERROR app Thread-3 : Exception on /school [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 223, in schools
+    if search_keyword is not None:
+NameError: name 'search_keyword' is not defined
+2022-01-19 04:54:01,602 INFO werkzeug Thread-3 : 172.26.0.1 - - [19/Jan/2022 04:54:01] "[35m[1mGET /school HTTP/1.1[0m" 500 -
+2022-01-19 04:54:54,740 ERROR app Thread-4 : Exception on /school [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 223, in schools
+    if search_keyword is not None:
+NameError: name 'search_keyword' is not defined
+2022-01-19 04:54:54,777 INFO werkzeug Thread-4 : 172.26.0.1 - - [19/Jan/2022 04:54:54] "[35m[1mGET /school HTTP/1.1[0m" 500 -
+2022-01-19 04:57:37,404 ERROR app Thread-5 : Exception on /school [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 223, in schools
+    if search_keyword is not None:
+NameError: name 'search_keyword' is not defined
+2022-01-19 04:57:37,418 INFO werkzeug Thread-5 : 172.26.0.1 - - [19/Jan/2022 04:57:37] "[35m[1mGET /school HTTP/1.1[0m" 500 -
+2022-01-19 04:59:11,898 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-19 04:59:11,912 INFO werkzeug MainThread :  * Running on http://172.27.0.4:5000/ (Press CTRL+C to quit)
+2022-01-19 05:01:39,092 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-19 05:01:39,095 INFO werkzeug MainThread :  * Running on http://172.28.0.3:5000/ (Press CTRL+C to quit)
+2022-01-19 05:03:50,544 INFO werkzeug Thread-1 : 172.28.0.1 - - [19/Jan/2022 05:03:50] "GET /school HTTP/1.1" 200 -
+2022-01-19 05:06:58,646 INFO werkzeug Thread-2 : 172.28.0.1 - - [19/Jan/2022 05:06:58] "GET /school/Trinity HTTP/1.1" 200 -
+2022-01-20 17:42:04,848 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-20 17:42:04,860 INFO werkzeug MainThread :  * Running on http://172.28.0.3:5000/ (Press CTRL+C to quit)
+2022-01-20 17:42:40,216 INFO werkzeug Thread-1 : 172.28.0.1 - - [20/Jan/2022 17:42:40] "GET /school/Trinity HTTP/1.1" 200 -
+2022-01-20 17:52:26,677 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-20 17:52:26,681 INFO werkzeug MainThread :  * Running on http://172.30.0.2:5000/ (Press CTRL+C to quit)
+2022-01-20 17:55:03,726 INFO werkzeug Thread-1 : 172.30.0.1 - - [20/Jan/2022 17:55:03] "GET /school/Trinity HTTP/1.1" 200 -
+2022-01-20 18:11:09,027 INFO werkzeug Thread-2 : 172.30.0.1 - - [20/Jan/2022 18:11:09] "PATCH /school/5 HTTP/1.1" 200 -
+2022-01-20 18:12:44,499 INFO werkzeug Thread-3 : 172.30.0.1 - - [20/Jan/2022 18:12:44] "PATCH /school/9 HTTP/1.1" 200 -
+2022-01-20 18:14:13,082 ERROR app Thread-4 : Exception on /school/5 [DELETE]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 213, in schools
+    db.commit()
+AttributeError: 'SQLAlchemy' object has no attribute 'commit'
+2022-01-20 18:14:13,346 INFO werkzeug Thread-4 : 172.30.0.1 - - [20/Jan/2022 18:14:13] "[35m[1mDELETE /school/5 HTTP/1.1[0m" 500 -
+2022-01-20 18:15:37,749 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-20 18:15:37,751 INFO werkzeug MainThread :  * Running on http://172.30.0.2:5000/ (Press CTRL+C to quit)
+2022-01-20 18:15:47,432 ERROR app Thread-1 : Exception on /school/5 [DELETE]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 213, in schools
+    db.commit()
+AttributeError: 'SQLAlchemy' object has no attribute 'commit'
+2022-01-20 18:15:47,441 INFO werkzeug Thread-1 : 172.30.0.1 - - [20/Jan/2022 18:15:47] "[35m[1mDELETE /school/5 HTTP/1.1[0m" 500 -
+2022-01-20 18:19:42,044 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-20 18:19:42,052 INFO werkzeug MainThread :  * Running on http://192.168.0.3:5000/ (Press CTRL+C to quit)
+2022-01-20 18:21:34,185 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-20 18:21:34,190 INFO werkzeug MainThread :  * Running on http://192.168.16.3:5000/ (Press CTRL+C to quit)
+2022-01-20 18:46:34,434 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-20 18:46:34,437 INFO werkzeug MainThread :  * Running on http://192.168.32.3:5000/ (Press CTRL+C to quit)
+2022-01-20 19:01:26,893 INFO werkzeug Thread-1 : 192.168.32.1 - - [20/Jan/2022 19:01:26] "DELETE /school/5 HTTP/1.1" 200 -
+2022-01-20 19:02:49,457 INFO werkzeug Thread-2 : 192.168.32.1 - - [20/Jan/2022 19:02:49] "DELETE /school/5 HTTP/1.1" 200 -
+2022-01-20 19:22:38,841 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-20 19:22:38,844 INFO werkzeug MainThread :  * Running on http://192.168.32.3:5000/ (Press CTRL+C to quit)
+2022-01-20 19:24:07,241 INFO werkzeug Thread-1 : 192.168.32.1 - - [20/Jan/2022 19:24:07] "POST /user HTTP/1.1" 200 -
+2022-01-20 19:25:02,087 INFO werkzeug Thread-2 : 192.168.32.1 - - [20/Jan/2022 19:25:02] "POST /student HTTP/1.1" 200 -
+2022-01-20 19:25:59,353 INFO werkzeug Thread-3 : 192.168.32.1 - - [20/Jan/2022 19:25:59] "POST /student HTTP/1.1" 200 -
+2022-01-20 19:31:27,701 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-20 19:31:27,703 INFO werkzeug MainThread :  * Running on http://192.168.80.3:5000/ (Press CTRL+C to quit)
+2022-01-20 19:44:17,535 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-20 19:44:17,539 INFO werkzeug MainThread :  * Running on http://192.168.96.4:5000/ (Press CTRL+C to quit)
+2022-01-20 19:47:38,119 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-20 19:47:38,128 INFO werkzeug MainThread :  * Running on http://192.168.112.3:5000/ (Press CTRL+C to quit)
+2022-01-20 19:52:18,620 ERROR app Thread-1 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 173, in students
+    if user.address is None:
+AttributeError: 'NoneType' object has no attribute 'address'
+2022-01-20 19:52:19,613 INFO werkzeug Thread-1 : 192.168.112.1 - - [20/Jan/2022 19:52:19] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-20 19:59:03,015 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-20 19:59:03,033 INFO werkzeug MainThread :  * Running on http://192.168.144.3:5000/ (Press CTRL+C to quit)
+2022-01-20 20:00:19,335 ERROR app Thread-1 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 175, in students
+    if user.address is None:
+AttributeError: 'User' object has no attribute 'address'
+2022-01-20 20:00:19,393 INFO werkzeug Thread-1 : 192.168.144.1 - - [20/Jan/2022 20:00:19] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-20 20:01:16,222 ERROR app Thread-2 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 175, in students
+    if user.address is None:
+AttributeError: 'User' object has no attribute 'address'
+2022-01-20 20:01:16,240 INFO werkzeug Thread-2 : 192.168.144.1 - - [20/Jan/2022 20:01:16] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-20 20:04:12,781 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-20 20:04:12,785 INFO werkzeug MainThread :  * Running on http://192.168.160.3:5000/ (Press CTRL+C to quit)
+2022-01-20 20:04:18,175 INFO werkzeug Thread-1 : 192.168.160.1 - - [20/Jan/2022 20:04:18] "POST /student HTTP/1.1" 200 -
+2022-01-20 20:04:42,489 ERROR app Thread-2 : Exception on /student [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.NumericValueOutOfRange: integer out of range
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 186, in students
+    db.session.commit()
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 1431, in commit
+    self._transaction.commit(_to_root=self.future)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 829, in commit
+    self._prepare_impl()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 808, in _prepare_impl
+    self.session.flush()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3363, in flush
+    self._flush(objects)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3503, in _flush
+    transaction.rollback(_capture_exception=True)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/langhelpers.py", line 70, in __exit__
+    compat.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 3463, in _flush
+    flush_context.execute()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/unitofwork.py", line 456, in execute
+    rec.execute(self)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/unitofwork.py", line 630, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/persistence.py", line 236, in save_obj
+    _emit_update_statements(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/persistence.py", line 1000, in _emit_update_statements
+    c = connection._execute_20(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1614, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/sql/elements.py", line 325, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1481, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1845, in _execute_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 2026, in _handle_dbapi_exception
+    util.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.DataError: (psycopg2.errors.NumericValueOutOfRange) integer out of range
+
+[SQL: UPDATE students SET student_id=%(student_id)s, route_id=%(route_id)s WHERE students.id = %(students_id)s]
+[parameters: {'student_id': 31, 'route_id': nan, 'students_id': 4}]
+(Background on this error at: https://sqlalche.me/e/14/9h9h)
+2022-01-20 20:04:42,890 INFO werkzeug Thread-2 : 192.168.160.1 - - [20/Jan/2022 20:04:42] "[35m[1mPOST /student HTTP/1.1[0m" 500 -
+2022-01-20 20:07:08,663 INFO werkzeug Thread-3 : 192.168.160.1 - - [20/Jan/2022 20:07:08] "POST /student HTTP/1.1" 200 -
+2022-01-20 20:08:27,095 ERROR app Thread-4 : Exception on /user/43 [PATCH]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 106, in users
+    current_user_id = content['current_user_id']
+KeyError: 'current_user_id'
+2022-01-20 20:08:27,137 INFO werkzeug Thread-4 : 192.168.160.1 - - [20/Jan/2022 20:08:27] "[35m[1mPATCH /user/43 HTTP/1.1[0m" 500 -
+2022-01-20 20:09:53,711 ERROR app Thread-5 : Exception on /user/43 [PATCH]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 111, in users
+    current_user = User.query.filter_by(id=current_user_id).first()
+UnboundLocalError: local variable 'email' referenced before assignment
+2022-01-20 20:09:53,747 INFO werkzeug Thread-5 : 192.168.160.1 - - [20/Jan/2022 20:09:53] "[35m[1mPATCH /user/43 HTTP/1.1[0m" 500 -
+2022-01-20 20:11:00,871 ERROR app Thread-6 : Exception on /user/ryry@gmail.com [PATCH]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 111, in users
+    current_user = User.query.filter_by(id=current_user_id).first()
+UnboundLocalError: local variable 'email' referenced before assignment
+2022-01-20 20:11:00,894 INFO werkzeug Thread-6 : 192.168.160.1 - - [20/Jan/2022 20:11:00] "[35m[1mPATCH /user/ryry@gmail.com HTTP/1.1[0m" 500 -
+2022-01-25 01:36:03,096 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-25 01:36:03,099 INFO werkzeug MainThread :  * Running on http://192.168.160.3:5000/ (Press CTRL+C to quit)
+2022-01-25 01:36:19,027 INFO werkzeug Thread-1 : 192.168.160.1 - - [25/Jan/2022 01:36:19] "PATCH /user/ryry@gmail.com HTTP/1.1" 200 -
+2022-01-25 01:38:50,830 INFO werkzeug Thread-2 : 192.168.160.1 - - [25/Jan/2022 01:38:50] "GET /user HTTP/1.1" 200 -
+2022-01-25 01:39:34,774 INFO werkzeug Thread-3 : 192.168.160.1 - - [25/Jan/2022 01:39:34] "GET /user/ryry@gmail.com HTTP/1.1" 200 -
+2022-01-25 02:29:46,497 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-25 02:29:46,502 INFO werkzeug MainThread :  * Running on http://192.168.192.2:5000/ (Press CTRL+C to quit)
+2022-01-25 02:37:59,060 INFO werkzeug Thread-1 : 192.168.192.1 - - [25/Jan/2022 02:37:59] "POST /student HTTP/1.1" 200 -
+2022-01-25 02:38:45,282 INFO werkzeug Thread-2 : 192.168.192.1 - - [25/Jan/2022 02:38:45] "[33mDELETE /ryry@gmail.com HTTP/1.1[0m" 404 -
+2022-01-25 02:38:54,488 INFO werkzeug Thread-3 : 192.168.192.1 - - [25/Jan/2022 02:38:54] "DELETE /user/ryry@gmail.com HTTP/1.1" 200 -
+2022-01-25 02:59:39,938 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-25 02:59:39,941 INFO werkzeug MainThread :  * Running on http://192.168.208.2:5000/ (Press CTRL+C to quit)
+2022-01-25 03:02:55,117 INFO werkzeug Thread-1 : 192.168.208.1 - - [25/Jan/2022 03:02:55] "[31m[1mDELETE /user/ryry@gmail.com HTTP/1.1[0m" 405 -
+2022-01-25 03:03:37,173 INFO werkzeug Thread-2 : 192.168.208.1 - - [25/Jan/2022 03:03:37] "POST /user HTTP/1.1" 200 -
+2022-01-25 03:04:30,541 INFO werkzeug Thread-3 : 192.168.208.1 - - [25/Jan/2022 03:04:30] "POST /user HTTP/1.1" 200 -
+2022-01-25 03:04:47,661 INFO werkzeug Thread-4 : 192.168.208.1 - - [25/Jan/2022 03:04:47] "DELETE /user/ryry@gmail.com/40 HTTP/1.1" 200 -
+2022-01-25 03:05:04,745 INFO werkzeug Thread-5 : 192.168.208.1 - - [25/Jan/2022 03:05:04] "DELETE /user/ryry@gmail.com/40 HTTP/1.1" 200 -
+2022-01-25 03:05:46,342 INFO werkzeug Thread-6 : 192.168.208.1 - - [25/Jan/2022 03:05:46] "DELETE /user/ryry@gmaill.com/40 HTTP/1.1" 200 -
+2022-01-25 03:12:43,820 INFO werkzeug Thread-7 : 192.168.208.1 - - [25/Jan/2022 03:12:43] "POST /student HTTP/1.1" 200 -
+2022-01-25 03:13:00,702 INFO werkzeug Thread-8 : 192.168.208.1 - - [25/Jan/2022 03:13:00] "POST /student HTTP/1.1" 200 -
+2022-01-25 03:13:31,986 INFO werkzeug Thread-9 : 192.168.208.1 - - [25/Jan/2022 03:13:31] "POST /student HTTP/1.1" 200 -
+2022-01-25 03:14:15,339 INFO werkzeug Thread-10 : 192.168.208.1 - - [25/Jan/2022 03:14:15] "POST /student HTTP/1.1" 200 -
+2022-01-25 03:57:45,044 INFO werkzeug Thread-11 : 192.168.208.1 - - [25/Jan/2022 03:57:45] "POST /student HTTP/1.1" 200 -
+2022-01-25 03:58:46,873 INFO werkzeug Thread-12 : 192.168.208.1 - - [25/Jan/2022 03:58:46] "GET /student HTTP/1.1" 200 -
+2022-01-25 04:00:01,929 INFO werkzeug Thread-13 : 192.168.208.1 - - [25/Jan/2022 04:00:01] "GET /student/34 HTTP/1.1" 200 -
+2022-01-25 04:00:05,649 INFO werkzeug Thread-14 : 192.168.208.1 - - [25/Jan/2022 04:00:05] "GET /student HTTP/1.1" 200 -
+2022-01-25 04:27:07,513 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-25 04:27:07,528 INFO werkzeug MainThread :  * Running on http://172.19.0.4:5000/ (Press CTRL+C to quit)
+2022-01-25 04:27:34,381 INFO werkzeug Thread-1 : 172.19.0.1 - - [25/Jan/2022 04:27:34] "GET /student HTTP/1.1" 200 -
+2022-01-25 04:38:19,429 INFO werkzeug Thread-2 : 172.19.0.1 - - [25/Jan/2022 04:38:19] "GET /student/5 HTTP/1.1" 200 -
+2022-01-25 04:39:05,596 INFO werkzeug Thread-3 : 172.19.0.1 - - [25/Jan/2022 04:39:05] "GET /student/2 HTTP/1.1" 200 -
+2022-01-25 04:39:30,891 INFO werkzeug Thread-4 : 172.19.0.1 - - [25/Jan/2022 04:39:30] "[33mGET /student/ HTTP/1.1[0m" 404 -
+2022-01-25 04:39:36,557 INFO werkzeug Thread-5 : 172.19.0.1 - - [25/Jan/2022 04:39:36] "GET /student/5 HTTP/1.1" 200 -
+2022-01-25 04:40:46,677 INFO werkzeug Thread-6 : 172.19.0.1 - - [25/Jan/2022 04:40:46] "PATCH /student/5 HTTP/1.1" 200 -
+2022-01-25 04:41:34,993 INFO werkzeug Thread-7 : 172.19.0.1 - - [25/Jan/2022 04:41:34] "PATCH /student/5 HTTP/1.1" 200 -
+2022-01-25 04:44:18,254 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-25 04:44:18,259 INFO werkzeug MainThread :  * Running on http://172.20.0.4:5000/ (Press CTRL+C to quit)
+2022-01-25 04:49:56,070 INFO werkzeug Thread-1 : 172.20.0.1 - - [25/Jan/2022 04:49:56] "PATCH /student/5 HTTP/1.1" 200 -
+2022-01-25 04:56:15,624 INFO werkzeug Thread-2 : 172.20.0.1 - - [25/Jan/2022 04:56:15] "POST /student HTTP/1.1" 200 -
+2022-01-25 04:56:23,061 INFO werkzeug Thread-3 : 172.20.0.1 - - [25/Jan/2022 04:56:23] "POST /student HTTP/1.1" 200 -
+2022-01-25 04:56:29,936 INFO werkzeug Thread-4 : 172.20.0.1 - - [25/Jan/2022 04:56:29] "POST /student HTTP/1.1" 200 -
+2022-01-25 04:57:00,835 INFO werkzeug Thread-5 : 172.20.0.1 - - [25/Jan/2022 04:57:00] "[31m[1mDELETE /student/8 HTTP/1.1[0m" 405 -
+2022-01-25 04:57:09,473 INFO werkzeug Thread-6 : 172.20.0.1 - - [25/Jan/2022 04:57:09] "DELETE /student/8/40 HTTP/1.1" 200 -
+2022-01-25 04:57:58,362 INFO werkzeug Thread-7 : 172.20.0.1 - - [25/Jan/2022 04:57:58] "DELETE /student/8/40 HTTP/1.1" 200 -
+2022-01-25 04:58:27,324 INFO werkzeug Thread-8 : 172.20.0.1 - - [25/Jan/2022 04:58:27] "DELETE /student/8/42 HTTP/1.1" 200 -
+2022-01-25 04:58:31,806 INFO werkzeug Thread-9 : 172.20.0.1 - - [25/Jan/2022 04:58:31] "DELETE /student/7/42 HTTP/1.1" 200 -
+2022-01-25 05:02:49,141 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-25 05:02:49,150 INFO werkzeug MainThread :  * Running on http://172.21.0.3:5000/ (Press CTRL+C to quit)
+2022-01-25 05:05:10,821 INFO werkzeug Thread-1 : 172.21.0.1 - - [25/Jan/2022 05:05:10] "POST /student HTTP/1.1" 200 -
+2022-01-25 05:05:22,013 INFO werkzeug Thread-2 : 172.21.0.1 - - [25/Jan/2022 05:05:22] "DELETE /student/9/42 HTTP/1.1" 200 -
+2022-01-25 05:08:59,227 INFO werkzeug Thread-3 : 172.21.0.1 - - [25/Jan/2022 05:08:59] "GET /route HTTP/1.1" 200 -
+2022-01-25 05:10:22,388 INFO werkzeug Thread-4 : 172.21.0.1 - - [25/Jan/2022 05:10:22] "GET /route/1 HTTP/1.1" 200 -
+2022-01-25 05:11:27,638 INFO werkzeug Thread-5 : 172.21.0.1 - - [25/Jan/2022 05:11:27] "GET /route/3 HTTP/1.1" 200 -
+2022-01-25 05:55:16,071 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-25 05:55:16,080 INFO werkzeug MainThread :  * Running on http://172.22.0.3:5000/ (Press CTRL+C to quit)
+2022-01-25 05:57:45,261 INFO werkzeug Thread-1 : 172.22.0.1 - - [25/Jan/2022 05:57:45] "PATCH /route/1 HTTP/1.1" 200 -
+2022-01-25 06:11:47,116 INFO werkzeug Thread-2 : 172.22.0.1 - - [25/Jan/2022 06:11:47] "[31m[1mDELETE /route/1 HTTP/1.1[0m" 405 -
+2022-01-25 06:32:24,373 INFO werkzeug Thread-3 : 172.22.0.1 - - [25/Jan/2022 06:32:24] "DELETE /route/1/42 HTTP/1.1" 200 -
+2022-01-25 06:33:01,052 INFO werkzeug Thread-4 : 172.22.0.1 - - [25/Jan/2022 06:33:01] "DELETE /route/1/46 HTTP/1.1" 200 -
+2022-01-25 06:33:15,006 INFO werkzeug Thread-5 : 172.22.0.1 - - [25/Jan/2022 06:33:15] "DELETE /route/1/40 HTTP/1.1" 200 -
+2022-01-25 06:33:25,532 INFO werkzeug Thread-6 : 172.22.0.1 - - [25/Jan/2022 06:33:25] "DELETE /route/1/40 HTTP/1.1" 200 -
