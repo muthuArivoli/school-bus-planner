@@ -5,12 +5,6 @@ import {Link as RouterLink} from 'react-router-dom';
 
 const columns = [
   { field: 'name', headerName: 'Full Name', width: 250},
-  { field: 'student_id', headerName: 'Student ID', width: 250},
-  { 
-    field: 'school',
-    headerName: 'School',
-    width: 250,
-  },
   {
     field: 'id',
     headerName: 'Detailed View',
@@ -33,11 +27,11 @@ const columns = [
 
 // static at the moment
 const rows = [
-  { name: 'A B', student_id: "ab@gmail.com", school: "1 Main St." , id: "1"},
-  { name: 'D e', student_id: "bc@gmail.com", school: "2 Main St.", id:"2"},
-  { name: 'School 3',student_id: "ab@gmail.com", school: "3 Main St." , id:"3"},
-  { name: 'School 4', student_id: "ab@gmail.com",school: "4 Main St." , id:"4"},
-  { name: 'School 5', student_id: "ab@gmail.com",school: "5 Main St." , id:"5"},
+  { name: 'A B', id: "1"},
+  { name: 'D e', id:"2"},
+  { name: 'School 3', id:"3"},
+  { name: 'School 4', id:"4"},
+  { name: 'School 5', id:"5"},
 ];
 
 export default function DataTable() {

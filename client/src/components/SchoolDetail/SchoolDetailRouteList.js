@@ -6,11 +6,6 @@ import {Link as RouterLink} from 'react-router-dom';
 const columns = [
   { field: 'name', headerName: 'Route Name', width: 200},
   {
-    field: 'students',
-    headerName: 'Number of Students',
-    width: 200,
-  },
-  {
     field: 'id',
     headerName: 'Detailed View',
     width: 200,
@@ -32,16 +27,16 @@ const columns = [
 
 // static at the moment
 const rows = [
-  { name: 'School 1', students: "3", id: "1"},
-  { name: 'School 2', students: "3", id:"2"},
-  { name: 'School 3', students: "3" ,id:"3"},
-  { name: 'School 4', students: "3" ,id:"4"},
-  { name: 'School 5', students: "3" ,id:"5"},
-  { name: 'School 6', students: "3", id:"6" },
-  { name: 'School 7', students: "3", id:"7" },
-  { name: 'School 8', students: "3", id:"8" },
-  { name: 'School 9', students: "3", id:"9" },
-  { name: 'School 10', students: "3", id:"10" },
+  { name: 'School 1', id: "1"},
+  { name: 'School 2', id:"2"},
+  { name: 'School 3', id:"3"},
+  { name: 'School 4', id:"4"},
+  { name: 'School 5', id:"5"},
+  { name: 'School 6', id:"6" },
+  { name: 'School 7', id:"7" },
+  { name: 'School 8', id:"8" },
+  { name: 'School 9', id:"9" },
+  { name: 'School 10', id:"10" },
 ];
 
 export default function DataTable() {
