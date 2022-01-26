@@ -736,3 +736,18 @@ TypeError: Unicode-objects must be encoded before checking
 2022-01-26 23:22:00,304 WARNING werkzeug MainThread :  * Running on all addresses.
    WARNING: This is a development server. Do not use it in a production deployment.
 2022-01-26 23:22:00,305 INFO werkzeug MainThread :  * Running on http://172.19.0.2:5000/ (Press CTRL+C to quit)
+2022-01-26 23:22:38,500 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-26 23:22:38,500 INFO werkzeug MainThread :  * Running on http://172.19.0.2:5000/ (Press CTRL+C to quit)
+2022-01-26 23:29:43,928 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-26 23:29:43,928 INFO werkzeug MainThread :  * Running on http://172.19.0.2:5000/ (Press CTRL+C to quit)
+2022-01-26 23:30:57,618 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-26 23:30:57,619 INFO werkzeug MainThread :  * Running on http://172.19.0.2:5000/ (Press CTRL+C to quit)
+2022-01-26 23:37:58,962 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-26 23:37:58,962 INFO werkzeug MainThread :  * Running on http://172.19.0.2:5000/ (Press CTRL+C to quit)
+2022-01-26 23:38:43,657 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-26 23:38:43,657 INFO werkzeug MainThread :  * Running on http://172.19.0.2:5000/ (Press CTRL+C to quit)

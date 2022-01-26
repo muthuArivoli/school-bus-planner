@@ -12,7 +12,7 @@ import SchoolCreate from './SchoolCreate';
 import SchoolUpdate from './SchoolDetail/SchoolUpdate';
 import SchoolDetail from './SchoolDetail/SchoolDetail';
 import UserUpdate from './UserUpdate';
-import UserDetail from './UserDetail';
+import UserDetail from './UserDetail/UserDetail';
 import StudentDetail from './StudentDetail';
 import StudentCreate from './StudentCreate';
 import StudentUpdate from './StudentUpdate';
