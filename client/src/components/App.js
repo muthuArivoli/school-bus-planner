@@ -18,27 +18,66 @@ import StudentCreate from './StudentCreate';
 import StudentUpdate from './StudentUpdate';
 import RouteDetail from './RouteDetail';
 import RouteUpdate from './RouteUpdate';
+import ParentDashboard from './ParentDashboard';
+import ParentView from './ParentView';
+import StudentView from './StudentView';
 
-function useAuth(){ 
+function useAuth () { 
   return true;
 }
 
-function PrivateRoute({ children }) {
+function useAdmin (){ 
+return false;
+}
+
+function AuthRoute({ children }) {
   const auth = useAuth();
   return auth ? children : <Navigate to="/login" />;
 }
 
-export default class App extends React.Component {
+function PrivateRoute({ children }) {
+  const auth = useAuth();
+  const admin = useAdmin();
+  return auth ? (admin ? children : <Navigate to='/'/>) : <Navigate to="/login" />;
+}
 
+export default function App () {
 
-  render() {
     return (
       <BrowserRouter>
         <Routes>
           <Route exact path="/" element={
-            <PrivateRoute>
-              <AdminDashboard/>
-            </PrivateRoute>
+            <AuthRoute>
+              {
+              useAdmin() &&
+              <AdminDashboard>
+                <ParentView/>
+              </AdminDashboard>
+              }
+              {
+              !useAdmin() &&
+              <ParentDashboard>
+                <ParentView/>
+              </ParentDashboard>
+              }
+            </AuthRoute>
+          }
+          />
+          <Route exact path="/students/:id/view" element={
+            <AuthRoute>
+              {
+              useAdmin() &&
+              <AdminDashboard>
+                <StudentView/>
+              </AdminDashboard>
+              }
+              {
+              !useAdmin() &&
+              <ParentDashboard>
+                <StudentView/>
+              </ParentDashboard>
+              }
+            </AuthRoute>
           }
           />
           <Route exact path="/schools" element={
@@ -156,4 +195,3 @@ export default class App extends React.Component {
     );
   }
 
-}

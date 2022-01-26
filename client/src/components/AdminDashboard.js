@@ -18,8 +18,9 @@ import PersonIcon from '@mui/icons-material/Person';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Container from '@mui/material/Container'
-import {Link as RouterLink} from 'react-router-dom';
+import Container from '@mui/material/Container';
+import ButtonBase from '@mui/material/ButtonBase';
+import {Link as RouterLink, Navigate} from 'react-router-dom';
 
 const theme = createTheme();
 const drawerWidth = 240;
@@ -96,6 +97,7 @@ export default function AdminDashboard(props){
             >
               <MenuIcon />
             </IconButton>
+            <ButtonBase component={RouterLink} to="/">
             <Typography
               component="h1"
               variant="h6"
@@ -105,6 +107,7 @@ export default function AdminDashboard(props){
             >
               Dashboard
             </Typography>
+            </ButtonBase>
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
