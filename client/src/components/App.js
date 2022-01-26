@@ -9,8 +9,8 @@ import UserList from './UserList';
 import StudentList from './StudentList';
 import RouteList from './RouteList';
 import SchoolCreate from './SchoolCreate';
-import SchoolUpdate from './SchoolUpdate';
-import SchoolDetail from './SchoolDetail';
+import SchoolUpdate from './SchoolDetail/SchoolUpdate';
+import SchoolDetail from './SchoolDetail/SchoolDetail';
 import UserUpdate from './UserUpdate';
 import UserDetail from './UserDetail';
 import StudentDetail from './StudentDetail';
@@ -27,7 +27,7 @@ function useAuth () {
 }
 
 function useAdmin (){ 
-return false;
+return true;
 }
 
 function AuthRoute({ children }) {

@@ -32,7 +32,7 @@ export default function SchoolDeleteDialog(props) {
     <div>
       <Button variant="outlined" 
               size="small"
-              style={{ marginLeft: 16 }}
+              style={{  }}
               onClick={handleClickOpen}>
         Delete School
       </Button>
