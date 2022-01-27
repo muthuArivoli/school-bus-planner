@@ -766,3 +766,6 @@ TypeError: Unicode-objects must be encoded before checking
 2022-01-26 23:56:56,325 WARNING werkzeug MainThread :  * Running on all addresses.
    WARNING: This is a development server. Do not use it in a production deployment.
 2022-01-26 23:56:56,326 INFO werkzeug MainThread :  * Running on http://172.19.0.2:5000/ (Press CTRL+C to quit)
+2022-01-26 23:58:11,310 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-26 23:58:11,311 INFO werkzeug MainThread :  * Running on http://172.19.0.2:5000/ (Press CTRL+C to quit)
