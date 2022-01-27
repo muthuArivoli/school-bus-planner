@@ -4,8 +4,9 @@ import Stack from '@mui/material/Stack';
 import { styled } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import CustomBreadcrumb from './CustomBreadcrumb'
-
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import {Link as RouterLink, useParams} from 'react-router-dom';
+import DeleteDialog from './DeleteDialog';
 
 const Item = styled(Paper)(({ theme }) => ({
   ...theme.typography.body2,
@@ -14,21 +15,15 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-export default function DirectionStack() {
+export default function ParentView() {
+
   return (
     <Grid container alignItems="center" justifyContent="center" pt={5}>
       <Stack spacing={4}>
         <Stack direction="row" spacing={3}>
-          <Item>School Name</Item>
-          <Item>Address</Item>
-        </Stack>
-        <Stack direction="row" spacing={3}>
-          <Item>Bus Routes</Item>
           <Item>Students</Item>
-          <Item>Students without Busroutes</Item>
         </Stack>
-        <CustomBreadcrumb />
-      </Stack>
+        </Stack>
     </Grid>
   );
 }
