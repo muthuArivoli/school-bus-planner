@@ -1,6 +1,9 @@
 from flask import *
+from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS, cross_origin
+from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager, verify_jwt_in_request
+from datetime import datetime, timedelta, timezone
 import json
 import sys
 import logging
@@ -9,7 +12,10 @@ import math
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:bus@db:5432/db'
-app.config['SQLALCHEM_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = "29F884FD9AB88942F0A959BA7B8E4D2C4C60A190E71571BB80FFF3DDC0F4D0E9"
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=2)
+
 db = SQLAlchemy(app)
 cors = CORS(app)
 
@@ -17,40 +23,74 @@ from models import User, Student, School, Route
 
 db.create_all()
 
+jwt = JWTManager(app)
 logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+
+
+# custom decorator 
+def admin_required():
+    def cust_wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            verify_jwt_in_request()
+            user = User.query.filter_by(email = get_jwt_identity()).first()
+            if user.admin_flag:
+                return fn(*args, **kwargs)
+            else:
+                return jsonify(msg="User not authorized to do this action"), 403
+        return decorator
+    return cust_wrapper
+
 
 @app.route('/')
 def hello_geek():
     return '<h1>Hello from Flask & Docker</h2>'
 
-@app.route('/login', methods = ['POST', 'OPTIONS'])
+#USING JWT EXTENDED LIBRARY
+@app.after_request
+def refresh_expiring_jwts(response):
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        if target_timestamp > exp_timestamp:
+            access_token = create_access_token(identity=get_jwt_identity())
+        return response
+    except (RuntimeError, KeyError):
+        return response
+
+@app.route('/login', methods = ['POST'])
 @cross_origin()
 def login():
-    if request.method == 'POST':
-        content = request.json
-        email = content['email']
-        password = content['password']
-        user = User.query.filter_by(email=email).first()
-        if not user or not bcrypt.checkpw(password.encode('utf-8'), user.pswd.encode('utf-8')):
-            return json.dumps({'success': False})
-        return json.dumps({'success': True})
-    return json.dumps({'login': True})
+    email = request.json.get('email', None)
+    password = request.json.get('password', None)
+    if not email or not password:
+        return {"msg": "Invalid Query Syntax"}, 400
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return {"error": "There is no account associated with that email"}
+    if not bcrypt.checkpw(password.encode('utf-8'), user.pswd.encode('utf-8')):
+        return {"error": "Invalid password"}
+    access_token = create_access_token(identity=email)
+    response = {"access_token": access_token}
+    return response
 
-@app.route('/user/<username>/<current_id>', methods = ['DELETE'])
-@app.route('/user/<username>', methods = ['GET','PATCH'])
-@app.route('/user', methods = ['GET','POST'])
+@app.route('/logout', methods = ['POST'])
+@jwt_required()
 @cross_origin()
-def users(username=None, current_id=None):
-    if request.method == 'DELETE':
-        if current_id is None:
-            return json.dumps({'error': 'Invalid Permissions'})
-        current_user = User.query.filter_by(id=current_id).first()
-        if current_user:
-            if current_user.admin_flag == False:
-                return json.dumps({'error': 'User not authorized to execute this action'})
-        else:
-            return json.dumps({'error': 'invalid current user'})
+def logout():
+    response = jsonify({"msg":"logout successful"})
+    unset_jwt_cookies(response)
+    return response
 
+
+@app.route('/user/<username>', methods = ['GET','PATCH','DELETE'])
+@app.route('/user', methods = ['GET','POST'])
+# @jwt_required()
+@admin_required()
+@cross_origin()
+def users(username=None):
+    if request.method == 'DELETE':
         user = User.query.filter_by(email=username).first()
         if user is None:
             return json.dumps({'error': 'Invalid Email'})
@@ -79,22 +119,14 @@ def users(username=None, current_id=None):
     if request.method == 'POST':
         content = request.json
 
-        if 'email' not in content or 'password' not in content or 'current_user_id' not in content or 'name' not in content or 'admin_flag' not in content:
+        if 'email' not in content or 'password' not in content or 'name' not in content or 'admin_flag' not in content:
             return json.dumps({'error': 'Invalid query'})
 
         email = content['email']
         password = content['password']
         name = content['name']
         admin_flag = content['admin_flag']
-        current_user_id = content['current_user_id']
         
-        current_user = User.query.filter_by(id=current_user_id).first()
-        if current_user:
-            if current_user.admin_flag == False:
-                return json.dumps({'error': 'User not authorized to execute this action'})
-        else:
-            return json.dumps({'error': 'invalid current user'})
-
         user = User.query.filter_by(email=email).first()
         if user:
             return json.dumps({'error': 'user exists'})
@@ -112,32 +144,10 @@ def users(username=None, current_id=None):
 
     if request.method == 'PATCH':
         content = request.json
-        change_pswd_patch = False
-        if 'current_user_id' not in content:
-            return json.dumps({'error':'Invalid query'})
-        
-        current_user_id = content['current_user_id']
-        current_user = User.query.filter_by(id=current_user_id).first()
 
         user = User.query.filter_by(email=username).first()
         if user is None:
             return json.dumps({'error': 'Invalid User'})
-        
-        if user == current_user:
-            change_pswd_patch = True
-
-        if current_user:
-            if current_user.admin_flag == False and change_pswd_patch == False:
-                return json.dumps({'error': 'User not authorized to execute this action'})
-        else:
-            return json.dumps({'error': 'invalid current user'})
-
-
-        if change_pswd_patch:
-            if 'pswd' in content:
-                pswd = content['pswd']
-                encrypted_pswd = bcrypt.hashpw(pswd.encode('utf-8'), bcrypt.gensalt())
-                user.pswd = encrypted_pswd.decode('utf-8')
         
         else:
             if 'email' in content:
@@ -157,20 +167,13 @@ def users(username=None, current_id=None):
     return json.dumps({'success': False})
 
 
-@app.route('/student/<student_uid>/<current_id>', methods = ['DELETE'])
-@app.route('/student/<student_uid>', methods = ['GET','PATCH'])
+@app.route('/student/<student_uid>', methods = ['GET','PATCH', 'DELETE'])
 @app.route('/student', methods = ['GET','POST'])
 @cross_origin()
-def students(student_uid = None, current_id = None):
+@admin_required()
+# @jwt_required
+def students(student_uid = None):
     if request.method == 'DELETE':
-        if current_id is None:
-            return json.dumps({'error': 'Invalid Permissions'})
-        current_user = User.query.filter_by(id=current_id).first()
-        if current_user:
-            if current_user.admin_flag == False:
-                return json.dumps({'error': 'User not authorized to execute this action'})
-        else:
-            return json.dumps({'error': 'Invalid current user'})
 
         student = Student.query.filter_by(id=student_uid).first()
         if student is None:
@@ -194,20 +197,12 @@ def students(student_uid = None, current_id = None):
     if request.method == 'POST':
         content = request.json
 
-        if 'full_name' not in content or 'school_id' not in content or 'current_user_id' not in content or 'user_id' not in content:
+        if 'full_name' not in content or 'school_id' not in content or 'user_id' not in content:
             return json.dumps({'error': 'Invalid query'})
 
         name = content['full_name']
         school_id = content['school_id']
-        current_user_id = content['current_user_id']
         user_id = content['user_id']
-
-        current_user = User.query.filter_by(id=current_user_id).first()
-        if current_user:
-            if current_user.admin_flag == False:
-                return json.dumps({'error': 'User not authorized to execute this action'})
-        else:
-            return json.dumps({'error': 'invalid current user'})
 
         user = User.query.filter_by(id=user_id).first()
         if user is None:
@@ -228,20 +223,6 @@ def students(student_uid = None, current_id = None):
 
     if request.method == 'PATCH':
         content = request.json
-
-        if 'current_user_id' not in content:
-            return json.dumps({'error':'Invalid query'})
-        
-        current_user_id = content['current_user_id']
-        current_user = User.query.filter_by(id=current_user_id).first()
-
-        if current_user:
-            if current_user.admin_flag == False:
-                return json.dumps({'error': 'User not authorized to execute this action'})
-        else:
-            return json.dumps({'error': 'invalid current user'})
-
-
         student = Student.query.filter_by(id=student_uid).first()
 
         #MIGHT WANT TO ADD CHECKS FOR PATCHING INVALID DATA
@@ -259,22 +240,14 @@ def students(student_uid = None, current_id = None):
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
-@app.route('/school/<school_uid>/<current_id>', methods = ['DELETE'])
-@app.route('/school/<school_uid>', methods = ['GET','PATCH'])
+@app.route('/school/<school_uid>', methods = ['GET','PATCH', 'DELETE'])
 @app.route('/school/<search_keyword>', methods = ['GET'])
 @app.route('/school', methods = ['GET','POST'])
+# @jwt_required
+@admin_required()
 @cross_origin()
-def schools(school_uid = None, search_keyword = None, current_id=None):  
+def schools(school_uid = None, search_keyword = None):  
     if request.method == 'DELETE':
-        if current_id is None:
-            return json.dumps({'error': 'Invalid Permissions'})
-        current_user = User.query.filter_by(id=current_id).first()
-        if current_user:
-            if current_user.admin_flag == False:
-                return json.dumps({'error': 'User not authorized to execute this action'})
-        else:
-            return json.dumps({'error': 'invalid current user'})
-
         school = School.query.filter_by(id=school_uid).first()
         if school is None:
             return json.dumps({'error': 'Invalid School Id'})
@@ -308,19 +281,11 @@ def schools(school_uid = None, search_keyword = None, current_id=None):
     if request.method == 'POST':
         content = request.json
 
-        if 'name' not in content or 'address' not in content or 'current_user_id' not in content:
+        if 'name' not in content or 'address' not in content:
             return json.dumps({'error': 'Invalid query'})
         
         name = content['name']
         address = content['address']
-        current_user_id = content['current_user_id']
-
-        current_user = User.query.filter_by(id=current_user_id).first()
-        if current_user:
-            if current_user.admin_flag == False:
-                return json.dumps({'error': 'User not authorized to execute this action'})
-        else:
-            return json.dumps({'error': 'invalid current user'})
 
         new_school = School(name=name, address=address)
         db.session.add(new_school)
@@ -331,19 +296,6 @@ def schools(school_uid = None, search_keyword = None, current_id=None):
     
     if request.method == 'PATCH':
         content = request.json
-
-        if 'current_user_id' not in content:
-            return json.dumps({'error':'Invalid query'})
-        
-        current_user_id = content['current_user_id']
-        current_user = User.query.filter_by(id=current_user_id).first()
-
-        if current_user:
-            if current_user.admin_flag == False:
-                return json.dumps({'error': 'User not authorized to execute this action'})
-        else:
-            return json.dumps({'error': 'invalid current user'})
-
 
         school = School.query.filter_by(id=school_uid).first()
         if school is None:
@@ -356,21 +308,13 @@ def schools(school_uid = None, search_keyword = None, current_id=None):
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
-@app.route('/route/<route_uid>/<current_id>', methods = ['DELETE'])
-@app.route('/route/<route_uid>', methods = ['GET','PATCH'])
+@app.route('/route/<route_uid>', methods = ['GET','PATCH','DELETE'])
 @app.route('/route', methods = ['GET','POST'])
+# @jwt_required
+@admin_required()
 @cross_origin()
-def routes(route_uid = None, current_id = None):
+def routes(route_uid = None):
     if request.method == 'DELETE':
-        if current_id is None:
-            return json.dumps({'error': 'Invalid Permissions'})
-        current_user = User.query.filter_by(id=current_id).first()
-        if current_user:
-            if current_user.admin_flag == False:
-                return json.dumps({'error': 'User not authorized to execute this action'})
-        else:
-            return json.dumps({'error': 'invalid current user'})
-
         route = Route.query.filter_by(id=route_uid).first()
         if route is None:
                 return json.dumps({'error': 'Invalid Route Id'})
@@ -396,19 +340,11 @@ def routes(route_uid = None, current_id = None):
     if request.method == 'POST':
         content = request.json
 
-        if 'name' not in content or 'school_id' not in content or 'current_user_id' not in content:
+        if 'name' not in content or 'school_id' not in content:
             return json.dumps({'error': 'Invalid query'})
 
         name = content['name']
         school_id = content['school_id']
-        current_user_id = content['current_user_id']
-        
-        current_user = User.query.filter_by(id=current_user_id).first()
-        if current_user:
-            if current_user.admin_flag == False:
-                return json.dumps({'error': 'User not authorized to execute this action'})
-        else:
-            return json.dumps({'error': 'invalid current user'})
 
         new_route = Route(name = name, school_id = school_id)
         db.session.add(new_route)
@@ -421,19 +357,6 @@ def routes(route_uid = None, current_id = None):
     
     if request.method == 'PATCH':
         content = request.json
-        
-        if 'current_user_id' not in content:
-            return json.dumps({'error':'Invalid query'})
-        
-        current_user_id = content['current_user_id']
-        current_user = User.query.filter_by(id=current_user_id).first()
-
-        if current_user:
-            if current_user.admin_flag == False:
-                return json.dumps({'error': 'User not authorized to execute this action'})
-        else:
-            return json.dumps({'error': 'invalid current user'})
-
 
         route = Route.query.filter_by(id=route_uid).first()
         if route is None:
@@ -447,8 +370,6 @@ def routes(route_uid = None, current_id = None):
         db.session.commit()
         return json.dumps({'success': True})
     return json.dumps({'success': False})
-
-
 
 if __name__ == "__main__":
     app.run(debug=True)

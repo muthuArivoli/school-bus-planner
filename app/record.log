@@ -1804,3 +1804,325 @@ UnboundLocalError: local variable 'email' referenced before assignment
 2022-01-25 06:33:01,052 INFO werkzeug Thread-4 : 172.22.0.1 - - [25/Jan/2022 06:33:01] "DELETE /route/1/46 HTTP/1.1" 200 -
 2022-01-25 06:33:15,006 INFO werkzeug Thread-5 : 172.22.0.1 - - [25/Jan/2022 06:33:15] "DELETE /route/1/40 HTTP/1.1" 200 -
 2022-01-25 06:33:25,532 INFO werkzeug Thread-6 : 172.22.0.1 - - [25/Jan/2022 06:33:25] "DELETE /route/1/40 HTTP/1.1" 200 -
+2022-01-27 01:32:31,586 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 01:32:31,590 INFO werkzeug MainThread :  * Running on http://172.20.0.2:5000/ (Press CTRL+C to quit)
+2022-01-27 01:42:55,062 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 01:42:55,067 INFO werkzeug MainThread :  * Running on http://172.23.0.4:5000/ (Press CTRL+C to quit)
+2022-01-27 01:44:49,235 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 01:44:49,239 INFO werkzeug MainThread :  * Running on http://172.24.0.4:5000/ (Press CTRL+C to quit)
+2022-01-27 01:55:51,588 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 01:55:51,593 INFO werkzeug MainThread :  * Running on http://172.25.0.4:5000/ (Press CTRL+C to quit)
+2022-01-27 01:57:12,006 INFO werkzeug Thread-1 : 172.25.0.1 - - [27/Jan/2022 01:57:12] "POST /user HTTP/1.1" 200 -
+2022-01-27 01:58:02,620 ERROR app Thread-2 : Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/app/app.py", line 36, in login
+    if not bcrypt.checkps(password.encode('utf-8'), user.pswd.encode('utf-8')):
+AttributeError: module 'bcrypt' has no attribute 'checkps'
+2022-01-27 01:58:02,650 INFO werkzeug Thread-2 : 172.25.0.1 - - [27/Jan/2022 01:58:02] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2022-01-27 02:04:45,366 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 02:04:45,371 INFO werkzeug MainThread :  * Running on http://172.28.0.3:5000/ (Press CTRL+C to quit)
+2022-01-27 02:05:44,950 ERROR app Thread-1 : Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 37, in login
+    if not bcrypt.checkps(password.encode('utf-8'), user.pswd.encode('utf-8')):
+AttributeError: module 'bcrypt' has no attribute 'checkps'
+2022-01-27 02:05:44,986 INFO werkzeug Thread-1 : 172.28.0.1 - - [27/Jan/2022 02:05:44] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2022-01-27 02:27:44,785 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 02:27:44,789 INFO werkzeug MainThread :  * Running on http://172.30.0.4:5000/ (Press CTRL+C to quit)
+2022-01-27 02:28:33,708 ERROR app Thread-1 : Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 39, in login
+    access_token = create_access_token(identity=email)
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/utils.py", line 168, in create_access_token
+    jwt_manager = get_jwt_manager()
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/internal_utils.py", line 12, in get_jwt_manager
+    raise RuntimeError(
+RuntimeError: You must initialize a JWTManager with this flask application before using this method
+2022-01-27 02:28:33,799 INFO werkzeug Thread-1 : 172.30.0.1 - - [27/Jan/2022 02:28:33] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2022-01-27 02:51:50,003 ERROR app Thread-2 : Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 39, in login
+    access_token = create_access_token(identity=email)
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/utils.py", line 168, in create_access_token
+    jwt_manager = get_jwt_manager()
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/internal_utils.py", line 12, in get_jwt_manager
+    raise RuntimeError(
+RuntimeError: You must initialize a JWTManager with this flask application before using this method
+2022-01-27 02:51:50,043 INFO werkzeug Thread-2 : 172.30.0.1 - - [27/Jan/2022 02:51:50] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2022-01-27 03:30:13,691 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 03:30:13,697 INFO werkzeug MainThread :  * Running on http://192.168.112.4:5000/ (Press CTRL+C to quit)
+2022-01-27 04:14:23,841 ERROR app Thread-1 : Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 41, in login
+    return {"error": "Invalid password"}
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/utils.py", line 168, in create_access_token
+    jwt_manager = get_jwt_manager()
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/internal_utils.py", line 12, in get_jwt_manager
+    raise RuntimeError(
+RuntimeError: You must initialize a JWTManager with this flask application before using this method
+2022-01-27 04:14:24,106 INFO werkzeug Thread-1 : 192.168.112.1 - - [27/Jan/2022 04:14:24] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2022-01-27 04:15:11,621 ERROR app Thread-2 : Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 41, in login
+    return {"error": "Invalid password"}
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/utils.py", line 168, in create_access_token
+    jwt_manager = get_jwt_manager()
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/internal_utils.py", line 12, in get_jwt_manager
+    raise RuntimeError(
+RuntimeError: You must initialize a JWTManager with this flask application before using this method
+2022-01-27 04:15:11,633 INFO werkzeug Thread-2 : 192.168.112.1 - - [27/Jan/2022 04:15:11] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2022-01-27 04:17:08,644 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 04:17:08,647 INFO werkzeug MainThread :  * Running on http://192.168.128.3:5000/ (Press CTRL+C to quit)
+2022-01-27 04:18:30,116 INFO werkzeug Thread-1 : 192.168.128.1 - - [27/Jan/2022 04:18:30] "POST /login HTTP/1.1" 200 -
+2022-01-27 04:41:45,567 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 04:41:45,570 INFO werkzeug MainThread :  * Running on http://192.168.144.4:5000/ (Press CTRL+C to quit)
+2022-01-27 04:42:53,957 INFO werkzeug Thread-1 : 192.168.144.1 - - [27/Jan/2022 04:42:53] "[31m[1mPOST /logout HTTP/1.1[0m" 401 -
+2022-01-27 04:43:40,161 INFO werkzeug Thread-2 : 192.168.144.1 - - [27/Jan/2022 04:43:40] "[31m[1mPOST /logout HTTP/1.1[0m" 401 -
+2022-01-27 04:44:20,181 INFO werkzeug Thread-3 : 192.168.144.1 - - [27/Jan/2022 04:44:20] "[31m[1mPOST /logout HTTP/1.1[0m" 422 -
+2022-01-27 04:44:37,460 INFO werkzeug Thread-4 : 192.168.144.1 - - [27/Jan/2022 04:44:37] "[31m[1mPOST /logout HTTP/1.1[0m" 422 -
+2022-01-27 04:46:10,143 INFO werkzeug Thread-5 : 192.168.144.1 - - [27/Jan/2022 04:46:10] "[31m[1mPOST /logout HTTP/1.1[0m" 422 -
+2022-01-27 04:46:23,002 INFO werkzeug Thread-6 : 192.168.144.1 - - [27/Jan/2022 04:46:23] "[31m[1mPOST /logout HTTP/1.1[0m" 422 -
+2022-01-27 04:46:52,799 INFO werkzeug Thread-7 : 192.168.144.1 - - [27/Jan/2022 04:46:52] "[31m[1mPOST /logout HTTP/1.1[0m" 401 -
+2022-01-27 04:47:06,613 INFO werkzeug Thread-8 : 192.168.144.1 - - [27/Jan/2022 04:47:06] "POST /login HTTP/1.1" 200 -
+2022-01-27 04:47:18,720 ERROR app Thread-9 : Exception on /logout [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/view_decorators.py", line 127, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 65, in logout
+    unset_jwt_cookies(response)
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/utils.py", line 366, in unset_jwt_cookies
+    unset_access_cookies(response, domain)
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/utils.py", line 384, in unset_access_cookies
+    response.set_cookie(
+AttributeError: 'str' object has no attribute 'set_cookie'
+2022-01-27 04:47:18,791 INFO werkzeug Thread-9 : 192.168.144.1 - - [27/Jan/2022 04:47:18] "[35m[1mPOST /logout HTTP/1.1[0m" 500 -
+2022-01-27 04:50:56,038 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 04:50:56,042 INFO werkzeug MainThread :  * Running on http://192.168.160.3:5000/ (Press CTRL+C to quit)
+2022-01-27 04:51:41,920 INFO werkzeug Thread-1 : 192.168.160.1 - - [27/Jan/2022 04:51:41] "POST /login HTTP/1.1" 200 -
+2022-01-27 04:51:50,909 INFO werkzeug Thread-2 : 192.168.160.1 - - [27/Jan/2022 04:51:50] "POST /logout HTTP/1.1" 200 -
+2022-01-27 04:52:07,533 INFO werkzeug Thread-3 : 192.168.160.1 - - [27/Jan/2022 04:52:07] "[31m[1mPOST /logout HTTP/1.1[0m" 401 -
+2022-01-27 04:52:19,966 INFO werkzeug Thread-4 : 192.168.160.1 - - [27/Jan/2022 04:52:19] "POST /logout HTTP/1.1" 200 -
+2022-01-27 04:52:42,928 INFO werkzeug Thread-5 : 192.168.160.1 - - [27/Jan/2022 04:52:42] "[31m[1mGET /user HTTP/1.1[0m" 401 -
+2022-01-27 04:52:53,311 INFO werkzeug Thread-6 : 192.168.160.1 - - [27/Jan/2022 04:52:53] "GET /user HTTP/1.1" 200 -
+2022-01-27 04:53:08,280 INFO werkzeug Thread-7 : 192.168.160.1 - - [27/Jan/2022 04:53:08] "POST /logout HTTP/1.1" 200 -
+2022-01-27 04:53:10,359 INFO werkzeug Thread-8 : 192.168.160.1 - - [27/Jan/2022 04:53:10] "POST /logout HTTP/1.1" 200 -
+2022-01-27 04:53:12,393 INFO werkzeug Thread-9 : 192.168.160.1 - - [27/Jan/2022 04:53:12] "POST /logout HTTP/1.1" 200 -
+2022-01-27 04:53:32,887 INFO werkzeug Thread-10 : 192.168.160.1 - - [27/Jan/2022 04:53:32] "GET /user HTTP/1.1" 200 -
+2022-01-27 05:42:29,233 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 05:42:29,239 INFO werkzeug MainThread :  * Running on http://172.18.0.2:5000/ (Press CTRL+C to quit)
+2022-01-27 05:53:21,399 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 05:53:21,403 INFO werkzeug MainThread :  * Running on http://172.20.0.4:5000/ (Press CTRL+C to quit)
+2022-01-27 05:53:55,056 INFO werkzeug Thread-1 : 172.20.0.1 - - [27/Jan/2022 05:53:55] "POST /login HTTP/1.1" 200 -
+2022-01-27 05:54:05,889 INFO werkzeug Thread-2 : 172.20.0.1 - - [27/Jan/2022 05:54:05] "GET /student HTTP/1.1" 200 -
+2022-01-27 05:54:23,791 ERROR app Thread-3 : Exception on /user [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_login/utils.py", line 259, in decorated_view
+    elif not current_user.is_authenticated:
+  File "/usr/local/lib/python3.8/dist-packages/werkzeug/local.py", line 432, in __get__
+    obj = instance._get_current_object()
+  File "/usr/local/lib/python3.8/dist-packages/werkzeug/local.py", line 554, in _get_current_object
+    return self.__local()  # type: ignore
+  File "/usr/local/lib/python3.8/dist-packages/flask_login/utils.py", line 26, in <lambda>
+    current_user = LocalProxy(lambda: _get_user())
+  File "/usr/local/lib/python3.8/dist-packages/flask_login/utils.py", line 335, in _get_user
+    current_app.login_manager._load_user()
+  File "/usr/local/lib/python3.8/dist-packages/flask_login/login_manager.py", line 359, in _load_user
+    return self.reload_user()
+  File "/usr/local/lib/python3.8/dist-packages/flask_login/login_manager.py", line 316, in reload_user
+    raise Exception(
+Exception: No user_loader has been installed for this LoginManager. Refer tohttps://flask-login.readthedocs.io/en/latest/#how-it-works for more info.
+2022-01-27 05:54:23,874 INFO werkzeug Thread-3 : 172.20.0.1 - - [27/Jan/2022 05:54:23] "[35m[1mGET /user HTTP/1.1[0m" 500 -
+2022-01-27 06:05:19,770 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 06:05:19,776 INFO werkzeug MainThread :  * Running on http://172.22.0.5:5000/ (Press CTRL+C to quit)
+2022-01-27 06:05:41,746 INFO werkzeug Thread-1 : 172.22.0.1 - - [27/Jan/2022 06:05:41] "POST /login HTTP/1.1" 200 -
+2022-01-27 06:05:46,540 INFO werkzeug Thread-2 : 172.22.0.1 - - [27/Jan/2022 06:05:46] "GET /user HTTP/1.1" 200 -
+2022-01-27 06:07:20,001 INFO werkzeug Thread-3 : 172.22.0.1 - - [27/Jan/2022 06:07:20] "POST /login HTTP/1.1" 200 -
+2022-01-27 06:07:30,934 INFO werkzeug Thread-4 : 172.22.0.1 - - [27/Jan/2022 06:07:30] "POST /login HTTP/1.1" 200 -
+2022-01-27 06:07:35,157 INFO werkzeug Thread-5 : 172.22.0.1 - - [27/Jan/2022 06:07:35] "POST /login HTTP/1.1" 200 -
+2022-01-27 19:20:08,854 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 19:20:08,858 INFO werkzeug MainThread :  * Running on http://172.18.0.4:5000/ (Press CTRL+C to quit)
+2022-01-27 19:22:23,385 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 19:22:23,388 INFO werkzeug MainThread :  * Running on http://172.18.0.3:5000/ (Press CTRL+C to quit)
+2022-01-27 19:56:27,147 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 19:56:27,165 INFO werkzeug MainThread :  * Running on http://172.21.0.3:5000/ (Press CTRL+C to quit)
+2022-01-27 19:58:33,076 INFO werkzeug Thread-1 : 172.21.0.1 - - [27/Jan/2022 19:58:33] "GET /user HTTP/1.1" 200 -
+2022-01-27 20:28:59,630 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 20:28:59,635 INFO werkzeug MainThread :  * Running on http://172.21.0.3:5000/ (Press CTRL+C to quit)
+2022-01-27 21:02:55,874 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 21:02:55,879 INFO werkzeug MainThread :  * Running on http://172.23.0.3:5000/ (Press CTRL+C to quit)
+2022-01-27 21:04:13,292 INFO werkzeug Thread-1 : 172.23.0.1 - - [27/Jan/2022 21:04:13] "[31m[1mGET /user HTTP/1.1[0m" 422 -
+2022-01-27 21:11:00,920 INFO werkzeug Thread-2 : 172.23.0.1 - - [27/Jan/2022 21:11:00] "[31m[1mGET /user HTTP/1.1[0m" 422 -
+2022-01-27 21:11:05,558 INFO werkzeug Thread-3 : 172.23.0.1 - - [27/Jan/2022 21:11:05] "POST /login HTTP/1.1" 200 -
+2022-01-27 21:11:19,106 INFO werkzeug Thread-4 : 172.23.0.1 - - [27/Jan/2022 21:11:19] "[31m[1mGET /user HTTP/1.1[0m" 422 -
+2022-01-27 21:11:24,724 INFO werkzeug Thread-5 : 172.23.0.1 - - [27/Jan/2022 21:11:24] "[31m[1mGET /user HTTP/1.1[0m" 422 -
+2022-01-27 21:11:50,451 ERROR app Thread-6 : Exception on /user [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/view_decorators.py", line 127, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+  File "/app/app.py", line 39, in decorator
+    if user.admin_flag:
+AttributeError: 'str' object has no attribute 'admin_flag'
+2022-01-27 21:11:50,471 INFO werkzeug Thread-6 : 172.23.0.1 - - [27/Jan/2022 21:11:50] "[35m[1mGET /user HTTP/1.1[0m" 500 -
+2022-01-27 21:20:36,378 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 21:20:36,385 INFO werkzeug MainThread :  * Running on http://172.25.0.2:5000/ (Press CTRL+C to quit)
+2022-01-27 21:28:56,126 DEBUG root Thread-1 : claudia.chapman@duke.edu
+2022-01-27 21:28:56,145 ERROR app Thread-1 : Exception on /user [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/view_decorators.py", line 127, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+  File "/app/app.py", line 40, in decorator
+    if user.admin_flag:
+AttributeError: 'str' object has no attribute 'admin_flag'
+2022-01-27 21:28:56,221 INFO werkzeug Thread-1 : 172.25.0.1 - - [27/Jan/2022 21:28:56] "[35m[1mGET /user HTTP/1.1[0m" 500 -
+2022-01-27 21:37:36,380 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 21:37:36,384 INFO werkzeug MainThread :  * Running on http://172.25.0.2:5000/ (Press CTRL+C to quit)
+2022-01-27 21:38:09,420 INFO werkzeug Thread-1 : 172.25.0.1 - - [27/Jan/2022 21:38:09] "[31m[1mGET /user HTTP/1.1[0m" 403 -
+2022-01-27 21:39:30,000 INFO werkzeug Thread-2 : 172.25.0.1 - - [27/Jan/2022 21:39:30] "[31m[1mPOST /logout HTTP/1.1[0m" 403 -
+2022-01-27 21:43:02,910 INFO werkzeug Thread-3 : 172.25.0.1 - - [27/Jan/2022 21:43:02] "[31m[1mPOST /logout HTTP/1.1[0m" 403 -
+2022-01-27 21:45:28,922 INFO werkzeug Thread-4 : 172.25.0.1 - - [27/Jan/2022 21:45:28] "[31m[1mPOST /logout HTTP/1.1[0m" 403 -
+2022-01-27 21:48:01,687 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-27 21:48:01,695 INFO werkzeug MainThread :  * Running on http://172.26.0.3:5000/ (Press CTRL+C to quit)
+2022-01-27 21:48:09,522 INFO werkzeug Thread-1 : 172.26.0.1 - - [27/Jan/2022 21:48:09] "POST /logout HTTP/1.1" 200 -
+2022-01-27 21:48:16,599 INFO werkzeug Thread-2 : 172.26.0.1 - - [27/Jan/2022 21:48:16] "[31m[1mGET /user HTTP/1.1[0m" 403 -
+2022-01-27 23:30:40,717 INFO werkzeug Thread-3 : 172.26.0.1 - - [27/Jan/2022 23:30:40] "POST /login HTTP/1.1" 200 -
+2022-01-27 23:31:00,446 INFO werkzeug Thread-4 : 172.26.0.1 - - [27/Jan/2022 23:31:00] "GET /user HTTP/1.1" 200 -
+2022-01-28 04:04:15,192 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-28 04:04:15,195 INFO werkzeug MainThread :  * Running on http://192.168.80.2:5000/ (Press CTRL+C to quit)
+2022-01-28 04:05:41,444 INFO werkzeug Thread-1 : 192.168.80.1 - - [28/Jan/2022 04:05:41] "POST /login HTTP/1.1" 200 -
+2022-01-28 04:05:50,007 INFO werkzeug Thread-2 : 192.168.80.1 - - [28/Jan/2022 04:05:50] "[31m[1mGET /user HTTP/1.1[0m" 422 -
+2022-01-28 04:05:56,852 INFO werkzeug Thread-3 : 192.168.80.1 - - [28/Jan/2022 04:05:56] "[31m[1mGET /user HTTP/1.1[0m" 401 -
+2022-01-28 04:06:12,604 INFO werkzeug Thread-4 : 192.168.80.1 - - [28/Jan/2022 04:06:12] "GET /user HTTP/1.1" 200 -
