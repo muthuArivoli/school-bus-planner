@@ -1,6 +1,7 @@
 from flask import *
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import SQLAlchemyError
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager, verify_jwt_in_request
 from datetime import datetime, timedelta, timezone
@@ -64,6 +65,7 @@ def refresh_expiring_jwts(response):
 def login():
     email = request.json.get('email', None)
     password = request.json.get('password', None)
+
     if not email or not password:
         return {"msg": "Invalid Query Syntax"}, 400
     user = User.query.filter_by(email=email).first()
@@ -84,26 +86,16 @@ def logout():
     return response
 
 
-@app.route('/user/<username>', methods = ['GET','PATCH','DELETE'])
-@app.route('/user', methods = ['GET','POST'])
-# @jwt_required()
-@admin_required()
+@app.route('/user/<username>', methods = ['GET'])
+@app.route('/user', methods = ['GET'])
 @cross_origin()
-def users(username=None):
-    if request.method == 'DELETE':
-        user = User.query.filter_by(email=username).first()
-        if user is None:
-            return json.dumps({'error': 'Invalid Email'})
-        students = Student.query.filter_by(user_id = user.id)
-        for student in students:
-            db.session.delete(student)
-        db.session.delete(user)
-        db.session.commit()
-        return json.dumps({'success': True})
-
+@jwt_required()
+def users_get(username=None):
     if request.method == 'GET':
         if username is not None:
             user = User.query.filter_by(email=username).first()
+            if user is None:
+                return {"msg": "Invalid Username"}, 400
             students = Student.query.filter_by(user_id = user.id).all()
             all_students = []
             for student in students:
@@ -113,33 +105,63 @@ def users(username=None):
         all_users = []
         for user in users:
             all_users.append(user.as_dict())
-        return json.dumps({'success':True, "users": all_users})
+        return json.dumps({'success': True, "users": all_users})
+
+
+@app.route('/user/<username>', methods = ['PATCH','DELETE'])
+@app.route('/user', methods = ['POST'])
+@cross_origin()
+@admin_required()
+def users(username=None):
+    if request.method == 'DELETE':
+        user = User.query.filter_by(email=username).first()
+        if user is None:
+            return json.dumps({'error': 'Invalid Email'})
+        students = Student.query.filter_by(user_id = user.id)
+        for student in students:
+            db.session.delete(student)
+        try:
+            db.session.delete(user)
+            db.session.commit()
+        except SQLAlchemyError:
+            return json.dumps({'error': 'Database Error'})
+        return json.dumps({'success': True})
     
-    #Gotta add authentication that only an admin can do this
     if request.method == 'POST':
         content = request.json
+        email = content.get('email', None)
+        password = content.get('password', None)
+        name = content.get('name', None)
+        admin_flag = content.get('admin_flag', None)
 
-        if 'email' not in content or 'password' not in content or 'name' not in content or 'admin_flag' not in content:
-            return json.dumps({'error': 'Invalid query'})
-
-        email = content['email']
-        password = content['password']
-        name = content['name']
-        admin_flag = content['admin_flag']
+        if not email or not password or not name or not admin_flag:
+            return {"msg": "Invalid Query Syntax"}, 400
+        
+        if type(email) is not str or type(password) is not str or type(name) is not str or type(admin_flag) is not bool:
+            return {"msg": "Invalid Query Syntax"}, 400
         
         user = User.query.filter_by(email=email).first()
         if user:
-            return json.dumps({'error': 'user exists'})
+            return json.dumps({'error': 'User with this email exists'})
 
         encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
         new_user = User(email=email, full_name=name, admin_flag=admin_flag, pswd=encrypted_pswd.decode('utf-8'))
-        db.session.add(new_user)
-        db.session.flush()
-        db.session.refresh(new_user)
+        try:
+            db.session.add(new_user)
+            db.session.flush()
+            db.session.refresh(new_user)
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
         if 'address' in content:
-            new_user.uaddress = content['address']
-        db.session.commit()
+            address = content.get('address', None)
+            if type(address) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            new_user.uaddress = address
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
         return json.dumps({'success': True, 'id': new_user.id})
 
     if request.method == 'PATCH':
@@ -151,37 +173,43 @@ def users(username=None):
         
         else:
             if 'email' in content:
-                user.email = content['email']
+                email = content.get('email', None)
+                if type(email) is not str:
+                    return {"msg": "Invalid Query Syntax"}, 400
+                user.email = email
             if 'full_name' in content:
-                user.full_name = content['full_name']
+                full_name = content.get('full_name', None)
+                if type(full_name) is not str:
+                    return {"msg": "Invalid Query Syntax"}, 400
+                user.full_name = full_name
             if 'address' in content:
-                user.uaddress = content['address']
+                address = content.get('address', None)
+                if type(address) is not str:
+                    return {"msg": "Invalid Query Syntax"}, 400
+                user.uaddress = address
             if 'pswd' in content:
-                pswd = content['pswd']
+                pswd = content.get('pswd', None)
+                if type(pswd) is not str:
+                    return {"msg": "Invalid Query Syntax"}, 400
                 encrypted_pswd = bcrypt.hashpw(pswd.encode('utf-8'), bcrypt.gensalt())
                 user.pswd = encrypted_pswd.decode('utf-8')
             if 'admin_flag' in content:
-                user.admin_flag = content['admin_flag']
-        db.session.commit()
+                admin_flag = content.get('admin_flag', None)
+                if type(admin_flag) is not bool:
+                    return {"msg": "Invalid Query Syntax"}, 400
+                user.admin_flag = admin_flag
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
-
-@app.route('/student/<student_uid>', methods = ['GET','PATCH', 'DELETE'])
-@app.route('/student', methods = ['GET','POST'])
+@app.route('/student/<student_uid>', methods = ['GET'])
+@app.route('/student', methods = ['GET'])
 @cross_origin()
-@admin_required()
-# @jwt_required
-def students(student_uid = None):
-    if request.method == 'DELETE':
-
-        student = Student.query.filter_by(id=student_uid).first()
-        if student is None:
-            return json.dumps({'error': 'Invalid Student Id'})
-        db.session.delete(student)
-        db.session.commit()
-        return json.dumps({'success': True})
-
+@jwt_required()
+def students_get(student_uid=None):
     if request.method == 'GET':
         if student_uid is not None:
             student = Student.query.filter_by(id=student_uid).first()
@@ -193,16 +221,32 @@ def students(student_uid = None):
         for student in students:
             all_students.append(student.as_dict())
         return json.dumps({'success':True, "students": all_students})
+
+@app.route('/student/<student_uid>', methods = ['PATCH', 'DELETE'])
+@app.route('/student', methods = ['POST'])
+@cross_origin()
+@admin_required()
+def students(student_uid = None):
+    if request.method == 'DELETE':
+
+        student = Student.query.filter_by(id=student_uid).first()
+        if student is None:
+            return json.dumps({'error': 'Invalid Student Id'})
+        db.session.delete(student)
+        db.session.commit()
+        return json.dumps({'success': True})
     
     if request.method == 'POST':
         content = request.json
+        name = content.get('full_name', None)
+        school_id = content.get('school_id', None)
+        user_id = content.get('user_id', None)
 
-        if 'full_name' not in content or 'school_id' not in content or 'user_id' not in content:
-            return json.dumps({'error': 'Invalid query'})
-
-        name = content['full_name']
-        school_id = content['school_id']
-        user_id = content['user_id']
+        if not name or not school_id or not user_id:
+            return {"msg": "Invalid Query Syntax"}, 400
+        
+        if type(name) is not str or type(school_id) is not int or type(user_id) is not int:
+            return {"msg": "Invalid Query Syntax"}, 400
 
         user = User.query.filter_by(id=user_id).first()
         if user is None:
@@ -211,56 +255,68 @@ def students(student_uid = None):
             return json.dumps({'error': 'User must have an address to create a student'})
 
         new_student = Student(full_name=name, school_id=school_id, user_id=user_id)
-        db.session.add(new_student)
-        db.session.flush()
-        db.session.refresh(new_student)
+        try:
+            db.session.add(new_student)
+            db.session.flush()
+            db.session.refresh(new_student)
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
+
         if 'route_id' in content:
-            new_student.route_id = content['route_id']
+            route_id = content.get("route_id", None)
+            if type(route_id) is not int:
+                return {"msg": "Invalid Query Syntax"}, 400
+            new_student.route_id = route_id
         if 'student_id' in content:
+            student_id = content.get("student_id", None)
+            if type(student_id) is not int:
+                return {"msg": "Invalid Query Syntax"}, 400
             new_student.student_id = content['student_id']
-        db.session.commit()
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
         return json.dumps({'success': True, 'id': new_student.id})
 
     if request.method == 'PATCH':
         content = request.json
         student = Student.query.filter_by(id=student_uid).first()
 
-        #MIGHT WANT TO ADD CHECKS FOR PATCHING INVALID DATA
         if student is None:
             return json.dumps({'error': 'Invalid Student Id'})
         if 'full_name' in content:
-            student.full_name = content['full_name']
+            full_name = content.get('full_name', None)
+            if type(full_name) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            student.full_name = full_name
         if 'student_id' in content:
-            student.student_id = content['student_id']
+            student_id = content.get('student_id', None)
+            if type(student_id) is not int:
+                return {"msg": "Invalid Query Syntax"}, 400
+            student.student_id = student_id
         if 'school_id' in content:
-            student.school_id = content['school_id']
+            school_id = content.get('school_id', None)
+            if type(school_id) is not int:
+                return {"msg": "Invalid Query Syntax"}, 400
+            student.school_id = school_id
         if 'route_id' in content:
-            student.route_id = content['route_id']
-        db.session.commit()
+            route_id = content.get('route_id', None)
+            if type(route_id) is not int:
+                return {"msg": "Invalid Query Syntax"}, 400
+            student.route_id = route_id
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
-@app.route('/school/<school_uid>', methods = ['GET','PATCH', 'DELETE'])
+@app.route('/school/<school_uid>', methods = ['GET'])
 @app.route('/school/<search_keyword>', methods = ['GET'])
-@app.route('/school', methods = ['GET','POST'])
-# @jwt_required
-@admin_required()
+@app.route('/school', methods = ['GET'])
 @cross_origin()
-def schools(school_uid = None, search_keyword = None):  
-    if request.method == 'DELETE':
-        school = School.query.filter_by(id=school_uid).first()
-        if school is None:
-            return json.dumps({'error': 'Invalid School Id'})
-        routes = Route.query.filter_by(school_id=school.id)
-        students = Student.query.filter_by(school_id=school.id)
-        for route in routes:
-            db.session.delete(route)
-        for student in students:
-            db.session.delete(student)
-        db.session.delete(school)
-        db.session.commit()
-        return json.dumps({'success': True})
-
+@jwt_required()
+def schools_get(school_uid=None, search_keyword=None):
     if request.method == 'GET':
         if school_uid is not None:
             school = School.query.filter_by(id=school_uid).first()
@@ -278,20 +334,54 @@ def schools(school_uid = None, search_keyword = None):
             all_schools.append(school.as_dict())
         return json.dumps({'success':True, "schools": all_schools})
      
+
+@app.route('/school/<school_uid>', methods = ['PATCH', 'DELETE'])
+@app.route('/school', methods = ['POST'])
+@cross_origin()
+@admin_required()
+def schools(school_uid = None):  
+    if request.method == 'DELETE':
+        school = School.query.filter_by(id=school_uid).first()
+        if school is None:
+            return json.dumps({'error': 'Invalid School Id'})
+        routes = Route.query.filter_by(school_id=school.id)
+        students = Student.query.filter_by(school_id=school.id)
+        for route in routes:
+            try:
+                db.session.delete(route)
+            except SQLAlchemyError:
+                return {"msg": "Database Error"}, 400
+        for student in students:
+            try:
+                db.session.delete(student)
+            except SQLAlchemyError:
+                return {"msg": "Database Error"}, 400
+        try:
+            db.session.delete(school)
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Invalid Query Syntax"}, 400
+        return json.dumps({'success': True})
+    
     if request.method == 'POST':
         content = request.json
-
-        if 'name' not in content or 'address' not in content:
-            return json.dumps({'error': 'Invalid query'})
+        name = content.get('name', None)
+        address = content.get('address', None)
         
-        name = content['name']
-        address = content['address']
+        if not name or not address:
+            return {"msg": "Invalid Query Syntax"}, 400
+        
+        if type(name) is not str or type(address) is not str:
+            return {"msg": "Invalid Query Syntax"}, 400
 
         new_school = School(name=name, address=address)
-        db.session.add(new_school)
-        db.session.flush()
-        db.session.refresh(new_school)
-        db.session.commit()
+        try:
+            db.session.add(new_school)
+            db.session.flush()
+            db.session.refresh(new_school)
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
         return json.dumps({'success': True, 'id': new_school.id})
     
     if request.method == 'PATCH':
@@ -301,30 +391,28 @@ def schools(school_uid = None, search_keyword = None):
         if school is None:
             return json.dumps({'error': 'Invalid School Id'})
         if 'name' in content:
-            school.name = content['name']
+            name = content.get('name', None)
+            if type(name) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            school.name = name
         if 'address' in content:
-            school.address = content['address']
-        db.session.commit()
+            address = content.get('address', None)
+            if type(address) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            school.address = address
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
-@app.route('/route/<route_uid>', methods = ['GET','PATCH','DELETE'])
-@app.route('/route', methods = ['GET','POST'])
-# @jwt_required
-@admin_required()
+
+@app.route('/route/<route_uid>', methods = ['GET'])
+@app.route('/route', methods = ['GET'])
 @cross_origin()
-def routes(route_uid = None):
-    if request.method == 'DELETE':
-        route = Route.query.filter_by(id=route_uid).first()
-        if route is None:
-                return json.dumps({'error': 'Invalid Route Id'})
-        students = Student.query.filter_by(route_id=route.id)
-        for student in students:
-            student.route_id = float("NaN")
-        db.session.delete(route)
-        db.session.commit()
-        return json.dumps({'success': True})
-    
+@jwt_required()
+def routes_get(route_uid=None):
     if request.method == 'GET':
         if route_uid is not None:
             route = Route.query.filter_by(id=route_uid).first()
@@ -337,22 +425,53 @@ def routes(route_uid = None):
             all_routes.append(route.as_dict())
         return json.dumps({'success':True, "routes": all_routes})
 
+
+@app.route('/route/<route_uid>', methods = ['PATCH','DELETE'])
+@app.route('/route', methods = ['POST'])
+@cross_origin()
+@admin_required()
+def routes(route_uid = None):
+    if request.method == 'DELETE':
+        route = Route.query.filter_by(id=route_uid).first()
+        if route is None:
+                return json.dumps({'error': 'Invalid Route Id'})
+        students = Student.query.filter_by(route_id=route.id)
+        for student in students:
+            student.route_id = float("NaN")
+        try:
+            db.session.delete(route)
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
+        return json.dumps({'success': True})
+
     if request.method == 'POST':
         content = request.json
+        name = content.get('name', None)
+        school_id = content.get('school_id', None)
 
-        if 'name' not in content or 'school_id' not in content:
-            return json.dumps({'error': 'Invalid query'})
-
-        name = content['name']
-        school_id = content['school_id']
+        if not name or not school_id:
+            return {"msg": "Invalid Query Syntax"}, 400
+        
+        if type(name) is not str or type(school_id) is not int:
+            return {"msg": "Invalid Query Syntax"}, 400
 
         new_route = Route(name = name, school_id = school_id)
-        db.session.add(new_route)
-        db.session.flush()
-        db.session.refresh(new_route)
+        try:
+            db.session.add(new_route)
+            db.session.flush()
+            db.session.refresh(new_route)
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
         if 'description' in content:
-            new_route.description = content['description']
-        db.session.commit()
+            description = content.get('description', None)
+            if type(description) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            new_route.description = description
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Invalid Query Syntax"}, 400
         return json.dumps({'success': True, 'id': new_route.id})
     
     if request.method == 'PATCH':
@@ -362,12 +481,19 @@ def routes(route_uid = None):
         if route is None:
             return json.dumps({'error': 'Invalid Route Id'})
         if 'name' in content:
-            route.name = content['name']
+            name = content.get('name', None)
+            if type(name) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            route.name = name
         if 'description' in content:
-            route.description = content['description']
-        if 'school_id' in content:
-            route.school_id = content['school_id']
-        db.session.commit()
+            description = content.get('description', None)
+            if type(description) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            route.description = description
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
