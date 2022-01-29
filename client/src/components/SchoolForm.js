@@ -13,6 +13,26 @@ const theme = createTheme();
 
 export default function SchoolForm(props) {
 
+  const [name, setName] = React.useState(props.name || "");
+  const [address, setAddress] = React.useState(props.address || "");
+
+  React.useEffect(() => {
+    setName(props.name);
+  }, [props.name])
+
+  React.useEffect(() => {
+    setAddress(props.address);
+  }, [props.address])
+
+  const handleNameChange = (event) => {
+    setName(event.target.value);
+  };
+
+  const handleAddressChange = (event) => {
+    setAddress(event.target.value);
+  };
+
+
     return (
       <ThemeProvider theme={theme}>
       <Container component="main">
@@ -25,18 +45,18 @@ export default function SchoolForm(props) {
             alignItems: 'left',
           }}
         >
-        <Box component="form" noValidate onSubmit={props.handleSubmit}>
+        <Box component="form" noValidate onSubmit={(event) => props.handleSubmit(event, name, address)}>
           <Grid container spacing={2}>
               <Grid item md={12}>
                 <FormControl>
                   <InputLabel htmlFor="name">School Name</InputLabel>
-                  <Input id="name" defaultValue={props.name || null} />
+                  <Input id="name" label="name" value={name} onChange={handleNameChange} />
                 </FormControl>
               </Grid>
               <Grid item md={12}>
                 <FormControl>
                   <InputLabel htmlFor="address">School Address</InputLabel>
-                  <Input id="address" defaultValue={props.address || null} />
+                  <Input id="address" label="address" value={address} onChange={handleAddressChange} />
                 </FormControl>
               </Grid>
 

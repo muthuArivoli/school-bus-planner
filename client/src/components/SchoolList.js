@@ -1,7 +1,8 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
-import {Link as RouterLink} from 'react-router-dom';
+import {Link as RouterLink, useNavigate} from 'react-router-dom';
+import axios from 'axios';
 
 const columns = [
   { field: 'name', headerName: 'School Name', width: 250,
@@ -31,21 +32,39 @@ const columns = [
   }
 ];
 
-// static at the moment
-const rows = [
-  { name: 'School 1', address: "1 Main St." , id: "1"},
-  { name: 'School 2', address: "2 Main St.", id:"2"},
-  { name: 'School 3', address: "3 Main St." ,id:"3"},
-  { name: 'School 4', address: "4 Main St." ,id:"4"},
-  { name: 'School 5', address: "5 Main St." ,id:"5"},
-  { name: 'School 6', address: "6 Main St.",id:"6" },
-  { name: 'School 7', address: "7 Main St.",id:"7" },
-  { name: 'School 8', address: "8 Main St.",id:"8" },
-  { name: 'School 9', address: "9 Main St.",id:"9" },
-  { name: 'School 10', address: "10 Main St.",id:"10" },
-];
 
-export default function DataTable() {
+export default function DataTable(props) {
+
+  const [rows, setRows] = React.useState([]);
+  let navigate = useNavigate();
+
+  React.useEffect(()=> {
+    const fetchData = async() => {
+      const result = await axios.get(
+        'http://localhost:5000/school', {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (result.data.success){
+        console.log(result.data.schools);
+        let arr = result.data.schools.map((value) => {
+          console.log({name: value.name, id: value.id, address: value.address});
+          return {name: value.name, id: value.id, address: value.address};
+        });
+        setRows(arr);
+      }
+      else{
+        props.setSnackbarMsg(`Routes could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/routes");
+      }
+    };
+    fetchData();
+  }, [])
+
   return (
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid

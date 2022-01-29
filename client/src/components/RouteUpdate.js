@@ -14,18 +14,69 @@ import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextareaAutosize from '@mui/base/TextareaAutosize';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const theme = createTheme();
 
 export default function RouteUpdate(props) {
 
-    const handleSubmit = () => {
-        console.log("a");
-    }
+  const [name, setName] = React.useState("");
+  const [description, setDescription] = React.useState("");
 
-    const getSchools = () => {
-        return ["ab"]
-    }
+  let { id } = useParams();
+  let navigate = useNavigate();
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+
+    axios.patch(`http://localhost:5000/route/${id}`, {
+      name: data.get('name'),
+      description: data.get('description')
+    }, {
+      headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }).then((res) => {
+      if (res.data.success){
+        props.setSnackbarMsg(`Route successfully updated`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("success");
+        navigate("/routes");
+      }
+      else{
+        props.setSnackbarMsg(`Route not successfully updated`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/routes");
+      }
+    });
+  };
+
+
+  React.useEffect(() => {
+    const fetchData = async() => {
+      const result = await axios.get(
+        `http://localhost:5000/route/${id}`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (result.data.success){
+        setName(result.data.name);
+        setDescription(result.data.description);
+      }
+      else{
+        props.setSnackbarMsg(`Route could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/routes");
+      }
+    };
+    fetchData();
+  }, []);
 
     return(
         <>
@@ -48,23 +99,15 @@ export default function RouteUpdate(props) {
               <Grid item md={12}>
                 <FormControl>
                   <InputLabel htmlFor="name">Name</InputLabel>
-                  <Input id="name" defaultValue={"ab"} />
+                  <Input id="name" defaultValue={name} />
                 </FormControl>
               </Grid>
               <Grid item md={12}>
-                    <Autocomplete
-                        autoFocus
-                        options={getSchools()}
-                        autoSelect
-                        defaultValue={props.school || ""}
-                        renderInput={(params) => <TextField {...params} label="School Name" />}
-                    />
-                    </Grid>
-              <Grid item md={12}>
               <TextareaAutosize
                 minRows={3}
+                id="description"
                 placeholder="Enter Route Description"
-                defaultValue={"abc"}
+                defaultValue={description}
                 />
               </Grid>
               <Grid item sm={12}>

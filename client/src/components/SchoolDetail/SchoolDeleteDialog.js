@@ -20,8 +20,8 @@ export default function SchoolDeleteDialog(props) {
   };
 
   const handleDelete = () => {
-      console.log("Delete school" + props.schoolName);
-      setOpen(false);
+    setOpen(false);
+    props.handleDelete();
   }
 
   const checkDialog = (e) => {

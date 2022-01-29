@@ -24,7 +24,7 @@ export default function RouteDetail(props) {
   let navigate = useNavigate();
 
   const handleDelete = () => {
-      axios.delete(` http://localhost:5000/route/{id}`, {
+      axios.delete(`http://localhost:5000/route/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -56,7 +56,7 @@ export default function RouteDetail(props) {
   useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
-        'http://localhost:5000/route', {
+        `http://localhost:5000/route/${id}`, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }

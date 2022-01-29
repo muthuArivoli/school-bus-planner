@@ -1,7 +1,8 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
-import {Link as RouterLink} from 'react-router-dom';
+import {Link as RouterLink, useNavigate} from 'react-router-dom';
+import axios from 'axios';
 
 const columns = [
   { field: 'name', headerName: 'Route Name', width: 250,
@@ -36,21 +37,36 @@ const columns = [
   }
 ];
 
-// static at the moment
-const rows = [
-  { name: 'School 1', school: "1 Main St." , students: "3", id: "1"},
-  { name: 'School 2', school: "2 Main St.", students: "3", id:"2"},
-  { name: 'School 3', school: "3 Main St.", students: "3" ,id:"3"},
-  { name: 'School 4', school: "4 Main St.", students: "3" ,id:"4"},
-  { name: 'School 5', school: "5 Main St.", students: "3" ,id:"5"},
-  { name: 'School 6', school: "6 Main St.", students: "3",id:"6" },
-  { name: 'School 7', school: "7 Main St.", students: "3",id:"7" },
-  { name: 'School 8', school: "8 Main St.", students: "3",id:"8" },
-  { name: 'School 9', school: "9 Main St.", students: "3",id:"9" },
-  { name: 'School 10', school: "10 Main St.", students: "3",id:"10" },
-];
+export default function DataTable(props) {
 
-export default function DataTable() {
+  const [rows, setRows] = React.useState([]);
+  let navigate = useNavigate();
+
+  React.useEffect(()=> {
+    const fetchData = async() => {
+      const result = await axios.get(
+        'http://localhost:5000/route', {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (result.data.success){
+        let arr = result.data.routes.map((value) => {
+          return {name: value.name, id: value.id, school: value.school_id, students: value.students.length};
+        });
+        setRows(arr);
+      }
+      else{
+        props.setSnackbarMsg(`Routes could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/routes");
+      }
+    };
+    fetchData();
+  }, [])
+
   return (
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid

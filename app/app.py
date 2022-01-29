@@ -241,10 +241,8 @@ def students(student_uid = None):
     return json.dumps({'success': False})
 
 @app.route('/school/<school_uid>', methods = ['GET','PATCH', 'DELETE'])
-@app.route('/school/<search_keyword>', methods = ['GET'])
 @app.route('/school', methods = ['GET','POST'])
 # @jwt_required
-@admin_required()
 @cross_origin()
 def schools(school_uid = None, search_keyword = None):  
     if request.method == 'DELETE':

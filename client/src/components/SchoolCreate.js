@@ -10,13 +10,12 @@ export default function CreateSchool(props) {
 
     let navigate = useNavigate();
 
-    const handleSubmit = (event) => {
+    const handleSubmit = (event, name, address) => {
       event.preventDefault();
-      const data = new FormData(event.currentTarget);
-  
+
       axios.post("http://localhost:5000/school", {
-        name: data.get('name'),
-        address: data.get('address')
+        name: name,
+        address: address
       }, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`

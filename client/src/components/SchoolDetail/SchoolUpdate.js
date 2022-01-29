@@ -9,13 +9,15 @@ export default function UpdateSchool(props) {
     let navigate = useNavigate();
     let { id } = useParams();
 
-    const handleSubmit = (event) => {
+    const [name, setName] = React.useState("");
+    const [address, setAddress] = React.useState("");
+
+    const handleSubmit = (event, na, ad) => {
         event.preventDefault();
-        const data = new FormData(event.currentTarget);
     
         axios.patch(`http://localhost:5000/school/${id}`, {
-          name: data.get('name'),
-          address: data.get('address')
+          name: na,
+          address: ad
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -36,12 +38,37 @@ export default function UpdateSchool(props) {
         });
       };
 
+      React.useEffect(() => {
+        const fetchData = async() => {
+          const result = await axios.get(
+            `http://localhost:5000/school/${id}`, {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          if (result.data.success){
+            setName(result.data.school.name);
+            setAddress(result.data.school.address);
+            console.log(name);
+            console.log(address);
+          }
+          else{
+            props.setSnackbarMsg(`School could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/schools");
+          }
+        };
+        fetchData();
+      }, []);
+
     return(
         <>
         <Typography component="h1" variant="h5">
             Update School
         </Typography>
-        <SchoolForm name="abc" address="abc" handleSubmit={handleSubmit}/>
+        <SchoolForm name={name} address={address} handleSubmit={handleSubmit}/>
         </>
     )
 }
