@@ -32,8 +32,8 @@ export default function RouteUpdate(props) {
     const data = new FormData(event.currentTarget);
 
     axios.patch(`http://localhost:5000/route/${id}`, {
-      name: data.get('name'),
-      description: data.get('description')
+      name: name,
+      description: description
     }, {
       headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -65,8 +65,8 @@ export default function RouteUpdate(props) {
         }
       );
       if (result.data.success){
-        setName(result.data.name);
-        setDescription(result.data.description);
+        setName(result.data.route.name);
+        setDescription(result.data.route.description);
       }
       else{
         props.setSnackbarMsg(`Route could not be loaded`);

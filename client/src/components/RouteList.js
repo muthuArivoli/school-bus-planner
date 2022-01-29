@@ -52,9 +52,27 @@ export default function DataTable(props) {
         }
       );
       if (result.data.success){
-        let arr = result.data.routes.map((value) => {
-          return {name: value.name, id: value.id, school: value.school_id, students: value.students.length};
-        });
+        let arr = [];
+        let data = result.data.routes
+        console.log(data);
+        for (let i=0;i<data.length; i++){
+          const getRes = await axios.get(
+            `http://localhost:5000/school/${data[i].school_id}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          if (getRes.data.success){
+            arr = [...arr, {name: data[i].name, id: data[i].id, school: getRes.data.school.name, students: data[i].students.length}]
+          }
+          else{
+            props.setSnackbarMsg(`Routes could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/routes");
+          }
+        }
         setRows(arr);
       }
       else{

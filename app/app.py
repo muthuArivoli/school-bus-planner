@@ -342,6 +342,7 @@ def schools_get(school_uid=None):
 
 @app.route('/school/<school_uid>', methods = ['PATCH', 'DELETE'])
 @app.route('/school', methods = ['POST'])
+@admin_required()
 @cross_origin()
 def schools(school_uid = None):  
     if request.method == 'DELETE':
@@ -428,7 +429,7 @@ def routes_get(route_uid=None):
             #     stud_ids.append(student.id)
             # route_obj = route.as_dict()
             # route_obj['students'] = stud_ids
-            return json.dumps({'success': True, 'route': route.asdict()})
+            return json.dumps({'success': True, 'route': route.as_dict()})
         routes = Route.query.all()
         all_routes = []
         for route in routes:
