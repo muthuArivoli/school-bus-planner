@@ -1,7 +1,8 @@
 from app import db
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy import inspect
 
 
 class User(db.Model):
@@ -13,9 +14,14 @@ class User(db.Model):
     uaddress = db.Column(db.String())
     pswd = db.Column(db.String())
     admin_flag = db.Column(db.Boolean())
+    children = relationship("Student")
 
     def as_dict(self):
-       return {"id": getattr(self, "id"), "email": getattr(self, 'email'), "name": getattr(self, 'full_name'), "address": getattr(self, 'uaddress'), "admin_flag": getattr(self,'admin_flag')}
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        main.pop('pswd')
+        students = [student.id for student in self.students]
+        main['children'] = students
+        return main
 
     def __repr__(self):
         return "<User(email='{}', full_name='{}', pswd={}, admin_flag={})>"\
@@ -27,9 +33,16 @@ class School(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
     address = db.Column(db.String())
+    routes = relationship("Route")
+    students = relationship("Student")
 
     def as_dict(self):
-        return {"id":getattr(self, "id"), "name": getattr(self, 'name'), "address": getattr(self, 'address')}
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        routes = [route.as_dict() for route in self.routes]
+        students = [student.id for student in self.students]
+        main['routes'] = routes
+        main['students'] = students
+        return main
 
     def __repr__(self):
         return "<School(name='{}', address='{}')>"\
@@ -42,9 +55,13 @@ class Route(db.Model):
     name = db.Column(db.String())
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     description = db.Column(db.String())
+    students = relationship("Student")
 
     def as_dict(self):
-        return {"id": getattr(self, "id"), "name": getattr(self, 'name'), "school_id": getattr(self, 'school_id'), "description": getattr(self, "description")}
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        students = [student.id for student in self.students]
+        main['students'] = students
+        return main
 
     def __repr__(self):
         return "<Route(name='{}', school_id='{}')>"\
@@ -62,7 +79,6 @@ class Student(db.Model):
 
     def as_dict(self):
         return{"name": getattr(self, 'full_name'), "student_id": getattr(self, "student_id"), "id": getattr(self, "id"), "school_id": getattr(self, "school_id"), "route_id": getattr(self, "route_id")}
-
 
     def __repr__(self):
         return "<Student(full_name='{}', school_id={}, user_id={})>"\
