@@ -311,12 +311,17 @@ def students(student_uid = None):
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
+@app.route('/school/<school_uid>', methods = ['OPTIONS'])
+@app.route('/school', methods = ['OPTIONS'])
+def schools_options(school_uid=None):
+    return json.dumps({'success':True})
+
+# @app.route('/school/<school_uid>/<search_keyword>', methods = ['GET'])
 @app.route('/school/<school_uid>', methods = ['GET'])
-@app.route('/school/<search_keyword>', methods = ['GET'])
 @app.route('/school', methods = ['GET'])
 @cross_origin()
 @jwt_required()
-def schools_get(school_uid=None, search_keyword=None):
+def schools_get(school_uid=None):
     if request.method == 'GET':
         if school_uid is not None:
             school = School.query.filter_by(id=school_uid).first()
@@ -324,11 +329,11 @@ def schools_get(school_uid=None, search_keyword=None):
                 return json.dumps({'error': 'Invalid School Id'})
             return json.dumps({'success': True, 'school': school.as_dict()})
 
-        if search_keyword is not None:
-            schools = School.query.filter(School.name.contains(search_keyword))
-            #FIX THIS
-        else:
-            schools = School.query.all()
+        # if search_keyword is not None:
+        #     schools = School.query.filter(School.name.contains(search_keyword))
+        #     #FIX THIS
+        # else:
+        schools = School.query.all()
         all_schools = []
         for school in schools:
             all_schools.append(school.as_dict())
@@ -418,7 +423,13 @@ def routes_get(route_uid=None):
             route = Route.query.filter_by(id=route_uid).first()
             if route is None:
                 return json.dumps({'error': 'Invalid Route Id'})
-            return json.dumps({'success': True, 'route': route.as_dict()})
+            # students = Student.query.filter_by(route_id=route.id)
+            # stud_ids = []
+            # for student in students:
+            #     stud_ids.append(student.id)
+            # route_obj = route.as_dict()
+            # route_obj['students'] = stud_ids
+            return json.dumps({'success': True, 'route': route.asdict()})
         routes = Route.query.all()
         all_routes = []
         for route in routes:
