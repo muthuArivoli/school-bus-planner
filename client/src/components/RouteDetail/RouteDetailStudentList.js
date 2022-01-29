@@ -25,23 +25,15 @@ const columns = [
   },
 ];
 
-// static at the moment
-const rows = [
-  { name: 'A B', id: "1"},
-  { name: 'D e', id:"2"},
-  { name: 'School 3', id:"3"},
-  { name: 'School 4', id:"4"},
-  { name: 'School 5', id:"5"},
-];
+export default function DataTable(props) {
 
-export default function DataTable() {
   return (
     <>
       <div style={{ height: 400, width: '100%' }}>
         <div style={{ display: 'flex', height: '100%' }}>
           <div style={{ flexGrow: 1 }}>
             <DataGrid
-              rows={rows}
+              rows={props.rows}
               columns={columns}
               getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
               pageSize={5}

@@ -21,6 +21,12 @@ import ListItemText from '@mui/material/ListItemText';
 import Container from '@mui/material/Container';
 import ButtonBase from '@mui/material/ButtonBase';
 import {Link as RouterLink, Navigate} from 'react-router-dom';
+import MuiAlert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const theme = createTheme();
 const drawerWidth = 240;
@@ -71,8 +77,28 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 export default function AdminDashboard(props){
   const [open, setOpen] = React.useState(true);
+  const [msg, setMsg] = React.useState("");
+  const [barOpen, setbarOpen] = React.useState(false);
+  const [severity, setSeverity] = React.useState("error");
+
   const toggleDrawer = () => {
     setOpen(!open);
+  };
+
+  const childrenWithExtraProp = React.Children.map(props.children, child => {
+    return React.cloneElement(child, {
+      setSnackbarMsg: setMsg,
+      setShowSnackbar: setbarOpen,
+      setSnackbarSeverity: setSeverity
+    });
+  });
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setbarOpen(false);
   };
 
   return (
@@ -167,7 +193,10 @@ export default function AdminDashboard(props){
         >
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          {props.children}
+          <Snackbar open={barOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+            <Alert severity={severity} onClose={handleSnackbarClose}>{msg}</Alert>
+          </Snackbar>
+          {childrenWithExtraProp}
           </Container>
           </Box>
         </Box>

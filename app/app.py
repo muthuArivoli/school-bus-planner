@@ -68,11 +68,11 @@ def login():
         return {"msg": "Invalid Query Syntax"}, 400
     user = User.query.filter_by(email=email).first()
     if not user:
-        return {"error": "There is no account associated with that email"}
+        return {"success": False, "error": "There is no account associated with that email"}
     if not bcrypt.checkpw(password.encode('utf-8'), user.pswd.encode('utf-8')):
-        return {"error": "Invalid password"}
+        return {"success": False, "error": "Invalid password"}
     access_token = create_access_token(identity=email)
-    response = {"access_token": access_token}
+    response = {"success": True, "access_token": access_token}
     return response
 
 @app.route('/logout', methods = ['POST'])
