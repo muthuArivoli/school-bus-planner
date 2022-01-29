@@ -309,7 +309,6 @@ def schools(school_uid = None, search_keyword = None):
 @app.route('/route/<route_uid>', methods = ['GET','PATCH','DELETE'])
 @app.route('/route', methods = ['GET','POST'])
 # @jwt_required
-@admin_required()
 @cross_origin()
 def routes(route_uid = None):
     if request.method == 'DELETE':

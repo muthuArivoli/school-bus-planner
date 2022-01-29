@@ -99,7 +99,7 @@ export default function RouteUpdate(props) {
               <Grid item md={12}>
                 <FormControl>
                   <InputLabel htmlFor="name">Name</InputLabel>
-                  <Input id="name" defaultValue={name} />
+                  <Input id="name" value={name} onChange={(e) => setName(e.target.value)}/>
                 </FormControl>
               </Grid>
               <Grid item md={12}>
@@ -107,7 +107,8 @@ export default function RouteUpdate(props) {
                 minRows={3}
                 id="description"
                 placeholder="Enter Route Description"
-                defaultValue={description}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 />
               </Grid>
               <Grid item sm={12}>

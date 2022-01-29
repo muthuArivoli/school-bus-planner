@@ -30,10 +30,12 @@ export default function SignUp(props) {
 
   const deleteStudent = (index) => {
     setStudents(students.filter((value, ind) => ind !== index));
+    setRoutes(routes.filter((value, ind) => ind !== index));
   };
 
   const addStudent = () => {
       setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": 0}])
+      setRoutes([...routes, []]);
   }
 
   React.useEffect(() => {
@@ -60,6 +62,8 @@ export default function SignUp(props) {
     };
     fetchData();
   }, []);
+
+
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -282,7 +286,7 @@ export default function SignUp(props) {
                         autoSelect
                         value={element["school"] || ""}
                         onChange={(e, newValue) => {handleStudentChange(index, "school", newValue.label, newValue.id);
-                                                    updateRoutes(newValue.id);
+                                                    updateRoutes(index, newValue.id);
                                                     }}
                         renderInput={(params) => <TextField {...params} label="School Name" />}
                     />
@@ -290,8 +294,8 @@ export default function SignUp(props) {
                     <Grid item xs={12}>
                     <Autocomplete
                         autoFocus
-                        disabled={routes.length == 0}
-                        options={routes}
+                        disabled={routes[index].length == 0}
+                        options={routes[index]}
                         autoSelect
                         value={element["route"] || ""}
                         onChange={(e, newValue) => handleStudentChange(index, "route", newValue.label, newValue.id)}
