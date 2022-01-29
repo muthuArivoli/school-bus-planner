@@ -311,6 +311,11 @@ def students(student_uid = None):
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
+@app.route('/school/<school_uid>', methods = ['OPTIONS'])
+@app.route('/school', methods = ['OPTIONS'])
+def schools_options(school_uid=None):
+    return json.dumps({'success':True})
+
 # @app.route('/school/<school_uid>/<search_keyword>', methods = ['GET'])
 @app.route('/school/<school_uid>', methods = ['GET'])
 @app.route('/school', methods = ['GET'])
