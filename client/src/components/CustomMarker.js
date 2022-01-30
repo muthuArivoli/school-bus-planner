@@ -5,7 +5,7 @@ const CustomMarker = (props) => {
     const {id} = props;
 
     const onMarkerClick = (evt) => {
-        alert(props.test)
+        alert(JSON.stringify(props.key))
     };
 
     return (

@@ -1,6 +1,10 @@
 import React from 'react'
 import { GoogleMap, LoadScript, MarkerClusterer } from '@react-google-maps/api';
 import CustomMarker from './CustomMarker';
+import Stack from '@mui/material/Stack';
+import { DataGrid } from '@mui/x-data-grid';
+import Geocode from "react-geocode";
+
 
 const containerStyle = {
   width: '50%',
@@ -40,23 +44,24 @@ const locations = [
 
 export default function Map() {
 
+  //const [rows, setRows] = React.useState();
   function createKey(location) {
     return location.lat + location.lng
   }
 
   return (
-    <LoadScript
-      googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
-    >
-      <GoogleMap id='marker-example' mapContainerStyle={containerStyle} zoom={5} center={center}>
-        <MarkerClusterer gridSize={0}>
-          {(clusterer) =>
-            locations.map((location) => (
-              <CustomMarker key={createKey(location)} animation={2} position={location} clusterer={clusterer} />
-            ))
-          }
-        </MarkerClusterer>
-      </GoogleMap>
-    </LoadScript>
+      <LoadScript
+        googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
+      >
+        <GoogleMap id='marker-example' mapContainerStyle={containerStyle} zoom={5} center={center}>
+          <MarkerClusterer gridSize={0}>
+            {(clusterer) =>
+              locations.map((location) => (
+                <CustomMarker key={createKey(location)} position={location} clusterer={clusterer} />
+              ))
+            }
+          </MarkerClusterer>
+        </GoogleMap>
+      </LoadScript>
   )
 }
