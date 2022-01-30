@@ -14,6 +14,7 @@ export default function UserDetail(props) {
 
   const [error, setError] = React.useState(false);
   const [data, setData] = React.useState({});
+  const [rows, setRows] = React.useState([]);
   let { id } = useParams();
   let navigate = useNavigate();
 
@@ -58,6 +59,27 @@ export default function UserDetail(props) {
       );
       if (result.data.success){
         setData(result.data.user);
+
+        let newRows = [];
+        for(let i=0;i<result.data.user.children.length; i++){
+          const studentRes = await axios.get(
+            `http://localhost:5000/student/${result.data.user.children[i]}`, {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          if(studentRes.data.success){
+            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.user.children[i], route_id: studentRes.data.student.route_id}]
+          }
+          else{
+            props.setSnackbarMsg(`User could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/users");
+          }
+        }
+        setRows(newRows);
       }
       else{
         props.setSnackbarMsg(`User could not be loaded`);
@@ -93,7 +115,7 @@ export default function UserDetail(props) {
           </Typography>
         </Stack>
         
-        <UserDetailMid/>
+        <UserDetailMid rows={rows}/>
 
         <Stack direction="row" spacing={3} justifyContent="center">
           <Button component={RouterLink}

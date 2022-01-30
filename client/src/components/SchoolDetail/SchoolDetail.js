@@ -18,6 +18,9 @@ export default function SchoolDetail(props) {
 
   const [data, setData] = React.useState({name: "", address: ""});
 
+  const [students, setStudents] = React.useState([]);
+  const [routes, setRoutes] = React.useState([]);
+
   React.useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
@@ -30,6 +33,31 @@ export default function SchoolDetail(props) {
       if (result.data.success){
         console.log(result.data);
         setData(result.data.school);
+
+        let newRows = [];
+        for(let i=0; i<result.data.school.students.length; i++){
+          const studentRes = await axios.get(
+            `http://localhost:5000/student/${result.data.school.students[i]}`, {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          if(studentRes.data.success){
+            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], route_id: studentRes.data.student.route_id}]
+          }
+          else{
+            props.setSnackbarMsg(`School could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/schools");
+          }
+        }
+        setStudents(newRows);
+
+        let newRoutes = result.data.school.routes.map((value)=>{return {name: value.name, id: value.id}});
+        setRoutes(newRoutes);
+
       }
       else{
         props.setSnackbarMsg(`Route could not be loaded`);
@@ -91,7 +119,7 @@ export default function SchoolDetail(props) {
         </Typography>
       </Stack>
 
-        <SchoolDetailMid/>
+        <SchoolDetailMid students={students} routes={routes}/>
 
         <Stack direction="row" spacing={3} justifyContent="center">
           <Button component={RouterLink}

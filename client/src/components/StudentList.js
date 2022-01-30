@@ -63,7 +63,7 @@ export default function DataTable(props) {
             }
           );
           if (getRes.data.success){
-            arr = [...arr, {name: data[i].name, student_id: data[i].student_id, school: getRes.data.school.name, route: data[i].route_id, id: data[i].id}]
+            arr = [...arr, {name: data[i].name, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id}]
           }
           else{
             props.setSnackbarMsg(`Students could not be loaded`);
@@ -71,6 +71,25 @@ export default function DataTable(props) {
             props.setSnackbarSeverity("error");
             navigate("/students");
           }
+          if(data[i].route_id != null){
+            const getRouteRes = await axios.get(
+              `http://localhost:5000/route/${data[i].route_id}`, {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+              }
+            );
+            if (getRouteRes.data.success){
+              arr[arr.length - 1].route = getRouteRes.data.route.name;
+            }
+            else{
+              props.setSnackbarMsg(`Students could not be loaded`);
+              props.setShowSnackbar(true);
+              props.setSnackbarSeverity("error");
+              navigate("/students");
+            }
+          }
+
         }
         setRows(arr);
       }

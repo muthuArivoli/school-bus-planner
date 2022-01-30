@@ -21,6 +21,9 @@ export default function RouteDetail(props) {
 
   const [error, setError] = useState(false);
   const [data, setData] = useState({});
+
+  const [school, setSchool] = useState("");
+  const [rows, setRows] = useState([]);
   let navigate = useNavigate();
 
   const handleDelete = () => {
@@ -64,6 +67,45 @@ export default function RouteDetail(props) {
       );
       if (result.data.success){
         setData(result.data.route);
+
+        const schoolRes = await axios.get(
+          `http://localhost:5000/school/${result.data.route.school_id}`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        );
+        if (schoolRes.data.success){
+          setSchool(schoolRes.data.school.name);
+        }
+        else{
+          props.setSnackbarMsg(`Route could not be loaded`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("error");
+          navigate("/routes");
+        }
+
+        console.log(result.data.route);
+        let newRows = [];
+        for(let i=0; i<result.data.route.students.length; i++){
+          const studentRes = await axios.get(
+            `http://localhost:5000/student/${result.data.route.students[i]}`, {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          if(studentRes.data.success){
+            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.route.students[i]}]
+          }
+          else{
+            props.setSnackbarMsg(`Route could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/routes");
+          }
+        }
+        setRows(newRows);
       }
       else{
         props.setSnackbarMsg(`Route could not be loaded`);
@@ -92,7 +134,7 @@ export default function RouteDetail(props) {
               Route Name: {data.name}
             </Typography>
             <Typography variant="h5" align="center">
-              School: {data.school_id}
+              School: {school}
             </Typography>
           </Stack>
           <Typography variant="h5" align="center">
@@ -100,7 +142,7 @@ export default function RouteDetail(props) {
           </Typography>
         </Stack>
 
-        <RouteDetailStudentList rows={[]}/>
+        <RouteDetailStudentList rows={rows}/>
 
         //MAP GOES HERE
 

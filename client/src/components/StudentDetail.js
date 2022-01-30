@@ -15,6 +15,12 @@ export default function StudentDetail(props) {
   let navigate = useNavigate();
   const [error, setError] = React.useState(false);
 
+  const [data, setData] = React.useState({});
+
+  const [school, setSchool] = React.useState("");
+
+  const [route, setRoute] = React.useState("No Route");
+
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -45,10 +51,69 @@ export default function StudentDetail(props) {
     });
   }
 
+  React.useEffect(() => {
+    const fetchData = async() => {
+      const result = await axios.get(
+        `http://localhost:5000/student/${id}`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (result.data.success){
+        setData(result.data.student);
 
-  
-  const schoolid = null;
-  const routeid = null;
+        if(result.data.student.route_id != null){
+          const routRes = await axios.get(
+            `http://localhost:5000/route/${result.data.student.route_id}`, {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          if (routRes.data.success){
+            setRoute(routRes.data.route.name);
+          }
+          else{
+            props.setSnackbarMsg(`Student could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/students");
+          }
+        }
+        else {
+          setRoute("No Route");
+        }
+
+        const schoolRes = await axios.get(
+          `http://localhost:5000/school/${result.data.student.school_id}`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        );
+        if (schoolRes.data.success){
+          setSchool(schoolRes.data.school.name);
+        }
+        else{
+          props.setSnackbarMsg(`Student could not be loaded`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("error");
+          navigate("/students");
+        }
+
+      }
+      else{
+        props.setSnackbarMsg(`Student could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/students");
+      }
+
+    };
+
+    fetchData();
+  }, []);
   
   return (
     <>
@@ -61,20 +126,20 @@ export default function StudentDetail(props) {
       <Stack spacing={4} sx={{ width: '100%'}}>
         <Stack direction="row" spacing={15} justifyContent="center">
           <Typography variant="h5" align="center">
-            Name
+            Name: {data.name}
           </Typography>
           <Typography variant="h5" align="center">
-            Student ID
+            Student ID: {data.student_id}
           </Typography>
         </Stack>
 
         <Stack direction="row" spacing={20} justifyContent="center">
           <Stack spacing={1} justifyContent="center">
             <Typography variant="h5" align="center">
-              School
+              School: {school}
             </Typography>
             <Button component={RouterLink}
-              to={"/schools/" + schoolid}
+              to={"/schools/" + data.school_id}
               color="primary"
               variant="outlined"
               size="small"
@@ -84,10 +149,11 @@ export default function StudentDetail(props) {
           </Stack>
           <Stack spacing={1} justifyContent="center">
             <Typography variant="h5" align="center">
-              Route
+              Route: {route}
             </Typography>
             <Button component={RouterLink}
-              to={"/routes/" + routeid}
+              disabled={route == "No Route"}
+              to={"/routes/" + data.route_id}
               color="primary"
               variant="outlined"
               size="small"
