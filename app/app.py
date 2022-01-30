@@ -85,23 +85,38 @@ def logout():
     unset_jwt_cookies(response)
     return response
 
+#USER CRUD
 
-@app.route('/user/<username>', methods = ['GET'])
+@app.route('/user/<user_id>', methods = ['OPTIONS'])
+@app.route('/user', methods = ['OPTIONS'])
+@cross_origin()
+def user_options(username=None):
+    return json.dumps({'success':True})
+
+@app.route('/user/<user_id>', methods = ['GET'])
 @app.route('/user', methods = ['GET'])
 @cross_origin()
 @jwt_required()
-def users_get(username=None):
+def users_get(user_id=None):
     if request.method == 'GET':
-        if username is not None:
-            user = User.query.filter_by(email=username).first()
+        args = request.args
+        search_keyword = args.get('search', None)
+        if user_id is not None:
+            user = User.query.filter_by(id=user_id).first()
             if user is None:
-                return {"msg": "Invalid Username"}, 400
-            students = Student.query.filter_by(user_id = user.id).all()
+                return {"msg": "Invalid User ID"}, 400
+            students = Student.query.filter_by(user_id = user_id).all()
             all_students = []
             for student in students:
                 all_students.append(student.as_dict())
             return json.dumps({'success': True, 'user': user.as_dict(), 'students': all_students})
-        users = User.query.all()
+        if search_keyword:
+            users = User.query.filter(User.name.contains(search_keyword))
+            other_users = User.query.filter(User.email.contains(search_keyword))
+            for us in other_users:
+                users.append(us)
+        else:
+            users = User.query.all()
         all_users = []
         for user in users:
             all_users.append(user.as_dict())
@@ -205,18 +220,38 @@ def users(username=None):
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
+#STUDENT CRUD
+
+@app.route('/student/<student_uid>', methods = ['OPTIONS'])
+@app.route('/student', methods = ['OPTIONS'])
+@cross_origin()
+def student_options(student_uid=None):
+    return json.dumps({'success':True})
+
 @app.route('/student/<student_uid>', methods = ['GET'])
 @app.route('/student', methods = ['GET'])
 @cross_origin()
 @jwt_required()
 def students_get(student_uid=None):
     if request.method == 'GET':
+        args = request.args
+        search_keyword = args.get('search', None)
         if student_uid is not None:
             student = Student.query.filter_by(id=student_uid).first()
             if student is None:
                 return json.dumps({'error': 'Invalid Student Id'})
             return json.dumps({'success': True, 'student': student.as_dict()})
-        students = Student.query.all()
+        if search_keyword:
+            try:
+                num = int(search_keyword)
+                students = Student.query.filter_by(student_id=num)
+            except ValueError:
+                students = []
+            other_students = Student.query.filter(Student.full_name.contains(search_keyword))
+            for stud in other_students:
+                students.append(stud)
+        else: 
+            students = Student.query.all()
         all_students = []
         for student in students:
             all_students.append(student.as_dict())
@@ -228,7 +263,6 @@ def students_get(student_uid=None):
 @admin_required()
 def students(student_uid = None):
     if request.method == 'DELETE':
-
         student = Student.query.filter_by(id=student_uid).first()
         if student is None:
             return json.dumps({'error': 'Invalid Student Id'})
@@ -311,29 +345,32 @@ def students(student_uid = None):
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
+#SCHOOL CRUD
+
 @app.route('/school/<school_uid>', methods = ['OPTIONS'])
 @app.route('/school', methods = ['OPTIONS'])
+@cross_origin()
 def schools_options(school_uid=None):
     return json.dumps({'success':True})
 
-# @app.route('/school/<school_uid>/<search_keyword>', methods = ['GET'])
 @app.route('/school/<school_uid>', methods = ['GET'])
 @app.route('/school', methods = ['GET'])
 @cross_origin()
 @jwt_required()
 def schools_get(school_uid=None):
     if request.method == 'GET':
+        args = request.args
+        search_keyword = args.get("search", None)
         if school_uid is not None:
             school = School.query.filter_by(id=school_uid).first()
             if school is None:
                 return json.dumps({'error': 'Invalid School Id'})
             return json.dumps({'success': True, 'school': school.as_dict()})
 
-        # if search_keyword is not None:
-        #     schools = School.query.filter(School.name.contains(search_keyword))
-        #     #FIX THIS
-        # else:
-        schools = School.query.all()
+        if search_keyword is not None:
+            schools = School.query.filter(School.name.contains(search_keyword))
+        else:
+            schools = School.query.all()
         all_schools = []
         for school in schools:
             all_schools.append(school.as_dict())
@@ -412,6 +449,13 @@ def schools(school_uid = None):
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
+# ROUTE CRUD
+
+@app.route('/route/<route_uid>', methods = ['OPTIONS'])
+@app.route('/route', methods = ['OPTIONS'])
+@cross_origin()
+def route_options(route_uid=None):
+    return json.dumps({'success':True})
 
 @app.route('/route/<route_uid>', methods = ['GET'])
 @app.route('/route', methods = ['GET'])
@@ -419,18 +463,17 @@ def schools(school_uid = None):
 @jwt_required()
 def routes_get(route_uid=None):
     if request.method == 'GET':
+        args = request.args
+        search_keyword = args.get('search', None)
         if route_uid is not None:
             route = Route.query.filter_by(id=route_uid).first()
             if route is None:
                 return json.dumps({'error': 'Invalid Route Id'})
-            # students = Student.query.filter_by(route_id=route.id)
-            # stud_ids = []
-            # for student in students:
-            #     stud_ids.append(student.id)
-            # route_obj = route.as_dict()
-            # route_obj['students'] = stud_ids
             return json.dumps({'success': True, 'route': route.asdict()})
-        routes = Route.query.all()
+        if search_keyword:
+            routes = Route.query.filter(Route.name.contains(search_keyword))
+        else:
+            routes = Route.query.all()
         all_routes = []
         for route in routes:
             all_routes.append(route.as_dict())
