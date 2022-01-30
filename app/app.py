@@ -134,7 +134,7 @@ def users(username=None):
         name = content.get('name', None)
         admin_flag = content.get('admin_flag', None)
 
-        if not email or not password or not name or not admin_flag:
+        if not email or not password or not name or admin_flag is None:
             return {"msg": "Invalid Query Syntax"}, 400
         
         if type(email) is not str or type(password) is not str or type(name) is not str or type(admin_flag) is not bool:

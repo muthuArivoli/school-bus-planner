@@ -1,8 +1,8 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
-import {Link as RouterLink} from 'react-router-dom';
-import DeleteDialog from './DeleteDialog'
+import {Link as RouterLink, useNavigate} from 'react-router-dom';
+import axios from 'axios';
 
 const columns = [
   { field: 'name', headerName: 'Full Name', width: 250},
@@ -37,16 +37,53 @@ const columns = [
   },
 ];
 
-// static at the moment
-const rows = [
-  { name: 'A B', student_id: "ab@gmail.com", school: "1 Main St." , route: "abc", id: "1"},
-  { name: 'D e', student_id: "bc@gmail.com", school: "2 Main St.", route: "efg", id:"2"},
-  { name: 'School 3',student_id: "ab@gmail.com", school: "3 Main St." , route: "hi",id:"3"},
-  { name: 'School 4', student_id: "ab@gmail.com",school: "4 Main St." , route: "jk",id:"4"},
-  { name: 'School 5', student_id: "ab@gmail.com",school: "5 Main St." , route: "ef",id:"5"},
-];
+export default function DataTable(props) {
+  const [rows, setRows] = React.useState([]);
+  let navigate = useNavigate();
 
-export default function DataTable() {
+  React.useEffect(()=> {
+    const fetchData = async() => {
+      const result = await axios.get(
+        'http://localhost:5000/student', {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (result.data.success){
+        let arr = [];
+        let data = result.data.students
+        console.log(data);
+        for (let i=0;i<data.length; i++){
+          const getRes = await axios.get(
+            `http://localhost:5000/school/${data[i].school_id}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          if (getRes.data.success){
+            arr = [...arr, {name: data[i].name, student_id: data[i].student_id, school: getRes.data.school.name, route: data[i].route_id, id: data[i].id}]
+          }
+          else{
+            props.setSnackbarMsg(`Students could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/students");
+          }
+        }
+        setRows(arr);
+      }
+      else{
+        props.setSnackbarMsg(`Students could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/students");
+      }
+    };
+    fetchData();
+  }, [])
+
   return (
     <>
     <div style={{ height: 400, width: '100%' }}>

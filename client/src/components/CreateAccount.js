@@ -28,13 +28,15 @@ export default function SignUp(props) {
   const [schools, setSchools] = React.useState([]);
   const [routes, setRoutes] = React.useState([]);
 
+  let [adminChecked, setAdminChecked] = React.useState(false);
+
   const deleteStudent = (index) => {
     setStudents(students.filter((value, ind) => ind !== index));
     setRoutes(routes.filter((value, ind) => ind !== index));
   };
 
   const addStudent = () => {
-      setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": 0}])
+      setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": null}])
       setRoutes([...routes, []]);
   }
 
@@ -68,13 +70,19 @@ export default function SignUp(props) {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-
+    console.log({
+      email: data.get('email'),
+      password: data.get('password'),
+      name: data.get('name'),
+      address: data.get('address'),
+      admin_flag: adminChecked
+    });
     axios.post("http://localhost:5000/user", {
       email: data.get('email'),
       password: data.get('password'),
       name: data.get('name'),
       address: data.get('address'),
-      admin_flag: data.get('admin')
+      admin_flag: adminChecked
     }, {
       headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -83,13 +91,19 @@ export default function SignUp(props) {
       if(res.data.success){
 
           for(let i=0; i<students.length; i++){
-            const re = await axios.post("http://localhost:5000/student", {
+            let reqS = {
               user_id: res.data.id,
               full_name: students[i]["name"],
-              student_id: students[i]["id"],
               school_id:  students[i]["school_id"],
-              route_id: students[i]["route_id"]
-            }, {
+            }
+            if (students[i]["id"] != ""){
+              reqS.student_id = students[i]["id"]
+            }
+            if (students[i]["route_id"] != null){
+              reqS.route_id = students[i]["route_id"];
+            }
+            console.log(reqS)
+            const re = await axios.post("http://localhost:5000/student", reqS, {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
               }
@@ -139,7 +153,8 @@ export default function SignUp(props) {
     setStudents(updatedValues);
   };
 
-  const updateRoutes = (id) => {
+  const updateRoutes = (index, id) => {
+    console.log(id);
     const fetchData = async() => {
       const result = await axios.get(
         `http://localhost:5000/school/${id}`, {
@@ -148,11 +163,11 @@ export default function SignUp(props) {
           }
         }
       );
+      console.log(result.data);
       if (result.data.success){
-        /*let arr = result.data.routes.map((value) => {
-          return {id: value.id, label: value.name};
-        })*/
-        setRoutes([]);
+        let newRoutes = JSON.parse(JSON.stringify(routes));
+        newRoutes[index] = result.data.school.routes.map((value) => {return {label: value.name, id: value.id}})
+        setRoutes(newRoutes);
       }
       else{
         props.setSnackbarMsg(`Routes could not be loaded`);
@@ -188,7 +203,7 @@ export default function SignUp(props) {
               <Grid item xs={12}>
                 <TextField
                   autoComplete="name"
-                  name="Name"
+                  name="name"
                   required
                   fullWidth
                   id="name"
@@ -244,6 +259,8 @@ export default function SignUp(props) {
                   control={<Checkbox value="admin" color="primary" />}
                   label="Admin"
                   id="admin"
+                  name="admin"
+                  onChange={(e)=>{setAdminChecked(e.target.checked)}}
                 />
               </Grid>
               {students.map((element, index) => (
@@ -294,7 +311,7 @@ export default function SignUp(props) {
                     <Grid item xs={12}>
                     <Autocomplete
                         autoFocus
-                        disabled={routes[index].length == 0}
+                        disable={routes[index] == 0}
                         options={routes[index]}
                         autoSelect
                         value={element["route"] || ""}

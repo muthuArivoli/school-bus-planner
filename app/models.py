@@ -19,7 +19,7 @@ class User(db.Model):
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
         main.pop('pswd')
-        students = [student.id for student in self.students]
+        students = [student.id for student in self.children]
         main['children'] = students
         return main
 

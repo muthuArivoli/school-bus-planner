@@ -2,22 +2,61 @@ import * as React from 'react';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import {Link as RouterLink, useParams} from 'react-router-dom';
+import {Link as RouterLink, useParams, useNavigate} from 'react-router-dom';
 import DeleteDialog from './DeleteDialog';
 import Typography from '@mui/material/Typography';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import axios from 'axios';
 
-export default function StudentDetail() {
-
-  const handleDelete = () => {
-      console.log("Delete");
-  }
+export default function StudentDetail(props) {
 
   let { id } = useParams();
+  let navigate = useNavigate();
+  const [error, setError] = React.useState(false);
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setError(false);
+  };
+
+  const handleDelete = () => {
+    axios.delete(` http://localhost:5000/student/${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }).then((res) => {
+      if(res.data.success) {
+        props.setSnackbarMsg(`Student successfully deleted`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("success");
+        navigate("/students");
+      }
+      else {
+        setError(true);
+      }
+    }).catch((err) => {
+      console.log(err.response)
+      console.log(err.response.status)
+      console.log(err.response.headers)
+    });
+  }
+
+
   
   const schoolid = null;
   const routeid = null;
   
   return (
+    <>
+    <Snackbar open={error} onClose={handleClose}>
+    <Alert onClose={handleClose} severity="error">
+      Failed to delete student.
+    </Alert>
+  </Snackbar>
     <Grid container justifyContent="center" pt={5}>
       <Stack spacing={4} sx={{ width: '100%'}}>
         <Stack direction="row" spacing={15} justifyContent="center">
@@ -71,5 +110,6 @@ export default function StudentDetail() {
         </Stack>
       </Stack>
     </Grid>
+    </>
   );
 }

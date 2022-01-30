@@ -1,7 +1,8 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
-import {Link as RouterLink} from 'react-router-dom';
+import {Link as RouterLink, useNavigate} from 'react-router-dom';
+import axios from 'axios';
 
 const columns = [
   { field: 'name', headerName: 'Full Name', width: 250},
@@ -32,16 +33,38 @@ const columns = [
   },
 ];
 
-// static at the moment
-const rows = [
-  { name: 'A B', email: "ab@gmail.com", address: "1 Main St." , admin: true, id: "1"},
-  { name: 'D e', email: "bc@gmail.com", address: "2 Main St.", admin: false, id:"2"},
-  { name: 'School 3',email: "ab@gmail.com", address: "3 Main St." , admin: false,id:"3"},
-  { name: 'School 4', email: "ab@gmail.com",address: "4 Main St." , admin: false,id:"4"},
-  { name: 'School 5', email: "ab@gmail.com",address: "5 Main St." , admin: false,id:"5"},
-];
+export default function DataTable(props) {
 
-export default function DataTable() {
+  const [rows, setRows] = React.useState([]);
+  let navigate = useNavigate();
+
+  React.useEffect(()=> {
+    const fetchData = async() => {
+      const result = await axios.get(
+        'http://localhost:5000/user', {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (result.data.success){
+        console.log(result.data.users);
+        let arr = result.data.users.map((value) => {
+          console.log({name: value.full_name, id: value.id, address: value.uaddress, email: value.email, admin: value.admin_flag});
+          return {name: value.full_name, id: value.id, address: value.uaddress, email: value.email, admin: value.admin_flag};
+        });
+        setRows(arr);
+      }
+      else{
+        props.setSnackbarMsg(`Users could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/users");
+      }
+    };
+    fetchData();
+  }, [])
+
   return (
     <>
     <div style={{ height: 400, width: '100%' }}>
