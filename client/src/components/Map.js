@@ -1,67 +1,147 @@
 import React from 'react'
-import { GoogleMap, LoadScript, MarkerClusterer } from '@react-google-maps/api';
-import CustomMarker from './CustomMarker';
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Stack from '@mui/material/Stack';
-import { DataGrid } from '@mui/x-data-grid';
 import Geocode from "react-geocode";
+import { DataGridPro, useGridApiRef } from '@mui/x-data-grid-pro';
 
+Geocode.setApiKey("AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o");
+Geocode.setLocationType("ROOFTOP");
 
 const containerStyle = {
   width: '50%',
   height: '50vh'
 };
 
-const center = { 
-  lat: -28.024, 
-  lng: 140.887 
+const addresses = [
+  "4610 Club Terrace NE, Atlanta, GA",
+  "10320 Bergtold Road, Clarence, NY",
+  "Duke University",
+  "White House",
+  "104 E Hammond Street, Durham, NC",
+];
+
+const locations = [];
+
+for (var i=0; i<addresses.length; i++) {
+  const g = Geocode.fromAddress(addresses[i]).then(
+    response => {
+      return response.results[0].geometry.location;
+    },
+    error => {
+      console.error(error);
+    }
+    );
+
+    g.then((a) => {
+      const {lat, lng} = a;
+      locations.push({lat, lng});
+    });
+}
+
+async function helper(latitude, longitude) {
+  let g = await Geocode.fromLatLng(latitude, longitude).then(
+    (response) => {
+      const address = response.results[0].formatted_address;
+      let city, state, country;
+      for (let i = 0; i < response.results[0].address_components.length; i++) {
+        for (let j = 0; j < response.results[0].address_components[i].types.length; j++) {
+          switch (response.results[0].address_components[i].types[j]) {
+            case "locality":
+              city = response.results[0].address_components[i].long_name;
+              break;
+            case "administrative_area_level_1":
+              state = response.results[0].address_components[i].long_name;
+              break;
+            case "country":
+              country = response.results[0].address_components[i].long_name;
+              break;
+          }
+        }
+      }
+      //console.log(city, state, country);
+      return address;
+    },
+    (error) => {
+      console.error(error);
+    }
+  );
+
+  let data = JSON.stringify(g)
+  return data;
+}
+
+const createRandomRow = (m) => {
+  let latitude = m.lat;
+  let longitude = m.lng;
+
+  let abc = await helper(latitude, longitude);
+
+  return { id: 14, studentname: "temp", address: abc };
 };
 
-const locations = [
-  { lat: -31.56391, lng: 147.154312 },
-  { lat: -33.718234, lng: 150.363181 },
-  { lat: -33.727111, lng: 150.371124 },
-  { lat: -33.848588, lng: 151.209834 },
-  { lat: -33.851702, lng: 151.216968 },
-  { lat: -34.671264, lng: 150.863657 },
-  { lat: -35.304724, lng: 148.662905 },
-  { lat: -36.817685, lng: 175.699196 },
-  { lat: -36.828611, lng: 175.790222 },
-  { lat: -37.75, lng: 145.116667 },
-  { lat: -37.759859, lng: 145.128708 },
-  { lat: -37.765015, lng: 145.133858 },
-  { lat: -37.770104, lng: 145.143299 },
-  { lat: -37.7737, lng: 145.145187 },
-  { lat: -37.774785, lng: 145.137978 },
-  { lat: -37.819616, lng: 144.968119 },
-  { lat: -38.330766, lng: 144.695692 },
-  { lat: -39.927193, lng: 175.053218 },
-  { lat: -41.330162, lng: 174.865694 },
-  { lat: -42.734358, lng: 147.439506 },
-  { lat: -42.734358, lng: 147.501315 },
-  { lat: -42.735258, lng: 147.438 },
-  { lat: -43.999792, lng: 170.463352 },
-]
+const columns = [
+  { field: 'id', width: 50},
+  { field: 'studentname', width: 150},
+  { field: 'address', width: 250},
+];
+
+const rows = [];
 
 export default function Map() {
 
-  //const [rows, setRows] = React.useState();
-  function createKey(location) {
-    return location.lat + location.lng
+  const apiRef = useGridApiRef();
+
+  let lattotal = 0;
+  let lngtotal = 0;
+
+  for (var j=0; j<locations.length;j++) {
+    lattotal += locations[j].lat
+    lngtotal += locations[j].lng
   }
 
+  let avglat = lattotal / (locations.length);
+  let avglng = lngtotal / (locations.length);
+
+  const center = { 
+    lat: avglat, 
+    lng: avglng
+  };
+
+  const handleAddRow = value => () => {
+    //alert(createRandomRow(value));
+    apiRef.current.updateRows([createRandomRow(value)]);
+  };
+
   return (
+    <Stack direction="row" spacing={5} justifyContent="center">
       <LoadScript
         googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
       >
-        <GoogleMap id='marker-example' mapContainerStyle={containerStyle} zoom={5} center={center}>
-          <MarkerClusterer gridSize={0}>
-            {(clusterer) =>
-              locations.map((location) => (
-                <CustomMarker key={createKey(location)} position={location} clusterer={clusterer} />
+        <GoogleMap id='marker-example' mapContainerStyle={containerStyle} zoom={3} center={center}>
+            {locations.map((location) => (
+                <Marker position={location} onClick={handleAddRow(location)}/>
               ))
             }
-          </MarkerClusterer>
         </GoogleMap>
       </LoadScript>
+
+      <div style={{ height: 400, width: 450 }}>
+        <div style={{ display: 'flex', height: '100%' }}>
+          <div style={{ flexGrow: 1 }}>
+            <DataGridPro
+              apiRef={apiRef}
+              rows={rows}
+              columns={columns}
+              getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
+              pageSize={5}
+              rowsPerPageOptions={[5]}
+              disableSelectionOnClick
+              density="compact"
+            />
+          </div>
+        </div>
+      </div>
+
+    </Stack>
   )
 }
