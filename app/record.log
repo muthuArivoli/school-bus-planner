@@ -120,3 +120,101 @@ NameError: name 'inspect' is not defined
    WARNING: This is a development server. Do not use it in a production deployment.
 2022-01-29 19:10:12,142 INFO werkzeug MainThread :  * Running on http://172.25.0.5:5000/ (Press CTRL+C to quit)
 2022-01-29 19:15:31,827 INFO werkzeug Thread-1 : 172.25.0.1 - - [29/Jan/2022 19:15:31] "GET /school/2 HTTP/1.1" 200 -
+2022-01-29 21:01:32,987 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-29 21:01:32,990 INFO werkzeug MainThread :  * Running on http://172.26.0.4:5000/ (Press CTRL+C to quit)
+2022-01-29 21:32:44,919 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-29 21:32:44,924 INFO werkzeug MainThread :  * Running on http://172.27.0.2:5000/ (Press CTRL+C to quit)
+2022-01-29 21:34:53,324 INFO werkzeug Thread-1 : 172.27.0.1 - - [29/Jan/2022 21:34:53] "POST /login HTTP/1.1" 200 -
+2022-01-29 21:35:50,258 INFO werkzeug Thread-2 : 172.27.0.1 - - [29/Jan/2022 21:35:50] "GET /school?search=Trin HTTP/1.1" 200 -
+2022-01-29 21:37:48,296 INFO werkzeug Thread-3 : 172.27.0.1 - - [29/Jan/2022 21:37:48] "[31m[1mPOST /school HTTP/1.1[0m" 401 -
+2022-01-29 21:38:25,550 INFO werkzeug Thread-4 : 172.27.0.1 - - [29/Jan/2022 21:38:25] "POST /school HTTP/1.1" 200 -
+2022-01-29 21:38:32,140 INFO werkzeug Thread-5 : 172.27.0.1 - - [29/Jan/2022 21:38:32] "GET /school?search=Trin HTTP/1.1" 200 -
+2022-01-29 21:38:41,040 INFO werkzeug Thread-6 : 172.27.0.1 - - [29/Jan/2022 21:38:41] "GET /school?search=Jeri HTTP/1.1" 200 -
+2022-01-29 22:08:51,136 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-29 22:08:51,151 INFO werkzeug MainThread :  * Running on http://172.28.0.4:5000/ (Press CTRL+C to quit)
+2022-01-29 22:35:05,442 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-29 22:35:05,446 INFO werkzeug MainThread :  * Running on http://172.29.0.3:5000/ (Press CTRL+C to quit)
+2022-01-29 22:40:38,405 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-29 22:40:38,413 INFO werkzeug MainThread :  * Running on http://172.30.0.3:5000/ (Press CTRL+C to quit)
+2022-01-29 23:44:19,074 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-29 23:44:19,080 INFO werkzeug MainThread :  * Running on http://172.18.0.5:5000/ (Press CTRL+C to quit)
+2022-01-29 23:46:55,437 INFO werkzeug Thread-1 : 172.18.0.1 - - [29/Jan/2022 23:46:55] "POST /login HTTP/1.1" 200 -
+2022-01-29 23:53:49,154 ERROR app Thread-2 : Exception on /student [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/view_decorators.py", line 127, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+  File "/app/app.py", line 250, in students_get
+    students = Student.query.filter(Student.name.contains(search_keyword))
+AttributeError: type object 'Student' has no attribute 'name'
+2022-01-29 23:53:49,305 INFO werkzeug Thread-2 : 172.18.0.1 - - [29/Jan/2022 23:53:49] "[35m[1mGET /student?search=32 HTTP/1.1[0m" 500 -
+2022-01-29 23:55:27,993 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-29 23:55:27,995 INFO werkzeug MainThread :  * Running on http://172.18.0.5:5000/ (Press CTRL+C to quit)
+2022-01-29 23:55:33,869 ERROR app Thread-1 : Exception on /student [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/view_decorators.py", line 127, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+  File "/app/app.py", line 251, in students_get
+    students = students + student
+TypeError: unsupported operand type(s) for +: 'BaseQuery' and 'BaseQuery'
+2022-01-29 23:55:33,883 INFO werkzeug Thread-1 : 172.18.0.1 - - [29/Jan/2022 23:55:33] "[35m[1mGET /student?search=32 HTTP/1.1[0m" 500 -
+2022-01-30 00:21:09,601 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-30 00:21:09,607 INFO werkzeug MainThread :  * Running on http://172.18.0.5:5000/ (Press CTRL+C to quit)
+2022-01-30 00:21:39,532 INFO werkzeug Thread-1 : 172.18.0.1 - - [30/Jan/2022 00:21:39] "GET /student?search=32 HTTP/1.1" 200 -
+2022-01-30 00:21:49,400 ERROR app Thread-2 : Exception on /student [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/view_decorators.py", line 127, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+  File "/app/app.py", line 253, in students_get
+    students.append(stud)
+AttributeError: 'NoneType' object has no attribute 'append'
+2022-01-30 00:21:49,414 INFO werkzeug Thread-2 : 172.18.0.1 - - [30/Jan/2022 00:21:49] "[35m[1mGET /student?search=Sim HTTP/1.1[0m" 500 -
+2022-01-30 00:23:57,081 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-30 00:23:57,083 INFO werkzeug MainThread :  * Running on http://172.18.0.5:5000/ (Press CTRL+C to quit)
+2022-01-30 00:24:02,006 INFO werkzeug Thread-1 : 172.18.0.1 - - [30/Jan/2022 00:24:02] "GET /student?search=Sim HTTP/1.1" 200 -
+2022-01-30 00:24:08,799 INFO werkzeug Thread-2 : 172.18.0.1 - - [30/Jan/2022 00:24:08] "GET /student?search=32 HTTP/1.1" 200 -
+2022-01-30 00:24:15,475 INFO werkzeug Thread-3 : 172.18.0.1 - - [30/Jan/2022 00:24:15] "GET /student?search=a HTTP/1.1" 200 -
