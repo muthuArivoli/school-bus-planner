@@ -338,6 +338,11 @@ def students(student_uid = None):
             if type(route_id) is not int:
                 return {"msg": "Invalid Query Syntax"}, 400
             student.route_id = route_id
+        if 'user_id' in content:
+            user_id = content.get('user_id', None)
+            if type(user_id) is not int:
+                return {"msg": "Invalid Query Syntax"}, 400
+            student.user_id = user_id
         try:
             db.session.commit()
         except SQLAlchemyError:
