@@ -78,7 +78,7 @@ class Student(db.Model):
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
 
     def as_dict(self):
-        return{"name": getattr(self, 'full_name'), "student_id": getattr(self, "student_id"), "id": getattr(self, "id"), "school_id": getattr(self, "school_id"), "route_id": getattr(self, "route_id")}
+        return{"name": getattr(self, 'full_name'), "student_id": getattr(self, "student_id"), "id": getattr(self, "id"), "school_id": getattr(self, "school_id"), "route_id": getattr(self, "route_id"), "user_id": getattr(self, "user_id")}
 
     def __repr__(self):
         return "<Student(full_name='{}', school_id={}, user_id={})>"\

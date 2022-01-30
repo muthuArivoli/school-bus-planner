@@ -11,12 +11,32 @@ export default function CreateSchool(props) {
 
   let navigate = useNavigate();
 
+  const [school, setSchool] = React.useState({id: "", label: ""});
+  const [user, setUser] = React.useState({id: "", label: ""});
+  const [route, setRoute] = React.useState({id: "", label: ""});
+  const [name, setName] = React.useState("")
+  const [studentId, setStudentId] = React.useState("");
+
     const handleSubmit = (event) => {
       event.preventDefault();
-      const data = new FormData(event.currentTarget);
       // eslint-disable-next-line no-console
-      axios.post('http://localhost:5000/student', {
-
+      let req = {
+        full_name: name,
+        school_id: school.id,
+        user_id: user.id
+      }
+      console.log(req);
+      if (studentId != "") {
+        req.student_id = parseInt(studentId);
+      }
+      if(route.id != "") {
+        req.route_id = route.id;
+      }
+      console.log(req);
+      axios.post('http://localhost:5000/student', req, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
       }).then((res) => {
         if (res.data.success){
           props.setSnackbarMsg(`Student successfully created`);
@@ -43,10 +63,20 @@ export default function CreateSchool(props) {
             Create Student
           </Typography>
         <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>  
-        <StudentForm/>
+        <StudentForm 
+          name={name} 
+          updateName={setName}
+          studentId={studentId}
+          updateStudentId={setStudentId}
+          user={user}
+          updateUser={setUser}
+          school={school}
+          updateSchool={setSchool}
+          route={route}
+          updateRoute={setRoute}
+          />
         <Button type="submit"
                   variant="contained"
-                  onClick={handleSubmit}
                   >
                     Submit
         </Button>

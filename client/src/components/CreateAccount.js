@@ -264,7 +264,7 @@ export default function SignUp(props) {
                 />
               </Grid>
               {students.map((element, index) => (
-                  <>
+                  <React.Fragment key={index}>
                   <Box
                     sx={{
                         marginTop: 3,
@@ -311,7 +311,7 @@ export default function SignUp(props) {
                     <Grid item xs={12}>
                     <Autocomplete
                         autoFocus
-                        disable={routes[index] == 0}
+                        disabled={routes[index] == 0}
                         options={routes[index]}
                         autoSelect
                         value={element["route"] || ""}
@@ -332,7 +332,7 @@ export default function SignUp(props) {
                   </div>
                 </Grid>
                 </Grid>
-                </>
+                </React.Fragment>
             ))}
             <Button onClick={addStudent} color="primary">
                 Add Student

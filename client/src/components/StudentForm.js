@@ -25,10 +25,11 @@ export default function StudentForm(props) {
               );
               if (result.data.success){
                 console.log(result.data.users);
-                let arr = result.data.schools.map((value) => {
-                  console.log({name: value.name, id: value.id, address: value.address});
-                  return {name: value.name, id: value.id, address: value.address};
+                let arr = result.data.users.map((value) => {
+                  console.log({label: value.email, id: value.id});
+                  return {label: value.email, id: value.id};
                 });
+                setUsers(arr);
               }
               else{
                 props.setSnackbarMsg(`Users could not be loaded`);
@@ -40,17 +41,54 @@ export default function StudentForm(props) {
             fetchData();
           }, []);
 
-    const getSchools = () => {
-        return ["abc", "cde"];
-      }
-    
-      const getRoutes = () => {
-          return ["fgh", "qrt", "wqe"];
-      }
+          React.useEffect(()=> {
+            const fetchData = async() => {
+              const result = await axios.get(
+                'http://localhost:5000/school', {
+                  headers: {
+                      Authorization: `Bearer ${localStorage.getItem('token')}`
+                  }
+                }
+              );
+              if (result.data.success){
+                console.log(result.data.schools);
+                let arr = result.data.schools.map((value) => {
+                  console.log({label: value.name, id: value.id});
+                  return {label: value.name, id: value.id};
+                });
+                setSchools(arr);
+              }
+              else{
+                props.setSnackbarMsg(`Users could not be loaded`);
+                props.setShowSnackbar(true);
+                props.setSnackbarSeverity("error");
+                navigate("/students");
+              }
+            };
+            fetchData();
+          }, []);
 
-    const getUsers = () => {
-        return ["ab", "cd"];
-    }
+
+
+      const getRoutes = (e, value) => {
+          axios.get(`http://localhost:5000/school/${value.id}`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          }).then((result) => {
+            console.log(result.data);
+            if (result.data.success){
+                let newRoutes = result.data.school.routes.map((value) => {return {label: value.name, id: value.id}});
+                setRoutes(newRoutes);
+            }
+            else{
+                props.setSnackbarMsg(`Routes could not be loaded`);
+                props.setShowSnackbar(true);
+                props.setSnackbarSeverity("error");
+                navigate("/students");
+              }
+          })
+      }
 
     return (
         <>
@@ -60,7 +98,8 @@ export default function StudentForm(props) {
                         required
                         label="Name"
                         id="name"
-                        defaultValue={props.name || ""}
+                        value={props.name}
+                        onChange={(e) => props.updateName(e.target.value)}
                         fullWidth
                     />
                     </Grid>
@@ -70,15 +109,18 @@ export default function StudentForm(props) {
                         required
                         label="Student ID"
                         id="student_id"
-                        defaultValue={props.id || ""}
+                        value={props.studentId}
+                        onChange={(e) => props.updateStudentId(e.target.value)}
                         fullWidth
                     />
                     <Grid item xs={12}>
                         <Autocomplete
                             autoFocus
                             options={users}
+                            id="user"
                             autoSelect
-                            defaultValue={props.user || ""}
+                            value={props.user}
+                            onChange={(e, new_value) => props.updateUser(new_value)}
                             renderInput={(params) => <TextField {...params} label="User Name" />}
                         />
                         </Grid>
@@ -86,9 +128,12 @@ export default function StudentForm(props) {
                     <Autocomplete
                         autoFocus
                         options={schools}
+                        id="school"
                         autoSelect
-                        defaultValue={props.school || ""}
-                        onChange={getRoutes}
+                        value={props.school}
+                        onChange={(e, new_val) => {
+                            getRoutes(e, new_val);
+                            props.updateSchool(new_val)}}
                         renderInput={(params) => <TextField {...params} label="School Name" />}
                     />
                     </Grid>
@@ -96,9 +141,11 @@ export default function StudentForm(props) {
                     <Autocomplete
                         autoFocus
                         disabled={routes.length == 0}
+                        id="route"
                         options={routes}
                         autoSelect
-                        defaultValue={props.route || ""}
+                        value={props.route}
+                        onChange={(e, new_val) => props.updateRoute(new_val)}
                         renderInput={(params) => <TextField {...params} label="Route Name" />}
                     />
                     </Grid>
