@@ -123,16 +123,16 @@ def users_get(user_id=None):
         return json.dumps({'success': True, "users": all_users})
 
 
-@app.route('/user/<username>', methods = ['PATCH','DELETE'])
+@app.route('/user/<user_id>', methods = ['PATCH','DELETE'])
 @app.route('/user', methods = ['POST'])
 @cross_origin()
 @admin_required()
-def users(username=None):
+def users(user_id=None):
     if request.method == 'DELETE':
-        user = User.query.filter_by(email=username).first()
+        user = User.query.filter_by(id=user_id).first()
         if user is None:
             return json.dumps({'error': 'Invalid Email'})
-        students = Student.query.filter_by(user_id = user.id)
+        students = Student.query.filter_by(user_id = user_id)
         for student in students:
             db.session.delete(student)
         try:
@@ -182,7 +182,7 @@ def users(username=None):
     if request.method == 'PATCH':
         content = request.json
 
-        user = User.query.filter_by(email=username).first()
+        user = User.query.filter_by(id=user_id).first()
         if user is None:
             return json.dumps({'error': 'Invalid User'})
         
