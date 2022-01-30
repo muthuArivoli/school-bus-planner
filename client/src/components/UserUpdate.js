@@ -12,14 +12,101 @@ import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const theme = createTheme();
 
-export default function UserUpdate() {
+export default function UserUpdate(props) {
 
-    const handleSubmit = () => {
-        console.log("a");
+  const { id } = useParams();
+  const [data, setData] = React.useState({});
+
+  let navigate = useNavigate();
+
+  React.useEffect(() => {
+    const fetchData = async() => {
+      const result = await axios.get(
+        `http://localhost:5000/user/${id}`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (result.data.success){
+        let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, admin: result.data.user.admin_flag}
+        setData(newData);
+      }
+      else{
+        props.setSnackbarMsg(`User could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/users");
+      }
+    };
+    fetchData();
+  }, []);
+
+    const handleAddressChange = (event) => {
+      let newData = JSON.parse(JSON.stringify(data));
+      newData.address = event.target.value;
+      setData(newData);
     }
+
+    
+    const handleNameChange = (event) => {
+      let newData = JSON.parse(JSON.stringify(data));
+      newData.name = event.target.value;
+      setData(newData);
+    }
+    const handleEmailChange = (event) => {
+      let newData = JSON.parse(JSON.stringify(data));
+      newData.email = event.target.value;
+      setData(newData);
+    }
+
+    const handlePasswordChange = (event) => {
+      let newData = JSON.parse(JSON.stringify(data));
+      newData.password = event.target.value;
+      setData(newData);
+    }
+
+    const handleAdminChange = (event) => {
+      let newData = JSON.parse(JSON.stringify(data));
+      newData.admin = event.target.checked;
+      setData(newData);
+    }
+
+    const handleSubmit = (event) => {
+      event.preventDefault();
+      let req = {
+        name: data.name,
+        email: data.email,
+        address: data.address,
+        admin: data.admin
+      }
+      if(data.password != null && data.password != ""){
+        req.password = data.password;
+      }
+      axios.patch(`http://localhost:5000/user/${id}`, req, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      }).then((res) => {
+        if (res.data.success){
+          props.setSnackbarMsg(`User successfully updated`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("success");
+          navigate("/users");
+        }
+        else{
+          props.setSnackbarMsg(`User not successfully updated`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("error");
+          navigate("/users");
+        }
+      });
+    };
 
     return(
         <>
@@ -42,7 +129,7 @@ export default function UserUpdate() {
             <Grid item md={12}>
                 <FormControl>
                   <InputLabel htmlFor="email">Email</InputLabel>
-                  <Input id="email" defaultValue={"ab"} />
+                  <Input id="email" value={data.email} onChange={handleEmailChange}/>
                 </FormControl>
               </Grid>
               <Grid item md={12}>
@@ -51,6 +138,8 @@ export default function UserUpdate() {
                   label="Password"
                   type="password"
                   id="password"
+                  value={data.password}
+                  onChange={handlePasswordChange}
                   autoComplete="new-password"
                 />
               </Grid>
@@ -66,18 +155,19 @@ export default function UserUpdate() {
               <Grid item md={12}>
                 <FormControl>
                   <InputLabel htmlFor="name">Name</InputLabel>
-                  <Input id="name" defaultValue={"ab"} />
+                  <Input id="name" value={data.name} onChange={handleNameChange} />
                 </FormControl>
               </Grid>
               <Grid item md={12}>
                 <FormControl>
                   <InputLabel htmlFor="address">Address</InputLabel>
-                  <Input id="address" defaultValue={"ab"} />
+                  <Input id="address" value={data.address} onChange={handleAddressChange}/>
                 </FormControl>
               </Grid>
               <Grid item md={12}>
                 <FormControlLabel
-                  control={<Checkbox value="admin" color="primary" />}
+
+                  control={<Checkbox checked={data.admin} onChange={handleAdminChange} color="primary" />}
                   label="Admin"
                 />
               </Grid>
