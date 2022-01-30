@@ -2,6 +2,7 @@ import './App.css';
 import React, {useState} from 'react';
 import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import Login from './Login';
+import Map from './Map';
 import CreateAccount from './CreateAccount';
 import AdminDashboard from './AdminDashboard';
 import SchoolList from './SchoolList';
@@ -190,6 +191,13 @@ export default function App () {
             </PrivateRoute>
           } />
           <Route exact path="/login" element={<Login/>} />
+          <Route exact path="/map" element={
+            <PrivateRoute>
+              <AdminDashboard>
+                <Map/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
         </Routes>
       </BrowserRouter>
     );

@@ -3,10 +3,6 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { styled } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import {Link as RouterLink, useParams} from 'react-router-dom';
-import DeleteDialog from './DeleteDialog';
 
 const Item = styled(Paper)(({ theme }) => ({
   ...theme.typography.body2,

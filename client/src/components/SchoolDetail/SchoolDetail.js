@@ -27,7 +27,8 @@ export default function SchoolDetail() {
 
         <Stack direction="row" spacing={3} justifyContent="center">
           <Button component={RouterLink}
-                to={"/schools/" + id + "/planner"}
+                //to={"/schools/" + id + "/planner"}
+                to={"/map"}
                 color="primary"
                 variant="outlined"
                 size="small"
