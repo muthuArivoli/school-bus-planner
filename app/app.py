@@ -204,6 +204,9 @@ def users(user_id=None):
                 email = content.get('email', None)
                 if type(email) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
+                email_user = User.query.filter_by(email=email).first()
+                if email_user:
+                    return {"msg": "Account already exists with this email"}, 400
                 user.email = email
             if 'name' in content:
                 full_name = content.get('name', None)
