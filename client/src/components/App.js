@@ -21,41 +21,147 @@ import RouteUpdate from './RouteUpdate';
 import ParentDashboard from './ParentDashboard';
 import ParentView from './ParentView';
 import StudentView from './StudentView';
+import axios from 'axios';
 
-function useAuth () { 
-  return true;
+function AuthRoute(props) {
+  const [loading, setLoading] = useState(true);
+  const [auth, setAuth] = useState(false);
+
+  React.useEffect( () => {
+    if (localStorage.getItem('token') == null){
+      setAuth(false);
+      setLoading(false);
+    }
+    else{
+
+    const result = axios.get(
+      `http://localhost:5000/current_user`, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      }
+    ).then((res) => {
+      console.log(res.data);
+      if(res.data.success){
+        setAuth(true);
+        if(props.admin != res.data.user.admin_flag)
+          props.setAdmin(res.data.user.admin_flag);
+        setLoading(false);
+      }
+    }).catch((res) => {
+      localStorage.removeItem('token');
+      setAuth(false);
+      setLoading(false);
+    });
+
+    }
+
+
+}, []);
+
+  if (loading)
+    return <div>Loading...</div>;
+  return auth ? props.children : <Navigate to="/login" />;
 }
 
-function useAdmin (){ 
-return true;
-}
+function LoginRoute(props) {
+  const [loading, setLoading] = useState(true);
+  const [auth, setAuth] = useState(false);
 
-function AuthRoute({ children }) {
-  const auth = useAuth();
-  return auth ? children : <Navigate to="/login" />;
+  React.useEffect( () => {
+    if (localStorage.getItem('token') == null){
+      setAuth(false);
+      setLoading(false);
+    }
+    else{
+
+    const result = axios.get(
+      `http://localhost:5000/current_user`, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      }
+    ).then((res) => {
+      console.log(res.data);
+      if(res.data.success){
+        setAuth(true);
+        setLoading(false);
+      }
+    }).catch((res) => {
+      localStorage.removeItem('token');
+      setAuth(false);
+      setLoading(false);
+    });
+
+    }
+
+
+}, []);
+
+  if (loading)
+    return <div>Loading...</div>;
+  return auth ? <Navigate to="/"/> : props.children;
 }
 
 function PrivateRoute({ children }) {
-  const auth = useAuth();
-  const admin = useAdmin();
+
+  const [loading, setLoading] = useState(true);
+  const [auth, setAuth] = useState(false);
+  const [admin, setAdmin] = useState(false);
+
+  React.useEffect( () => {
+      if (localStorage.getItem('token') == null){
+        setAuth(false);
+        setLoading(false);
+      }
+      else{
+
+      const result = axios.get(
+        `http://localhost:5000/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      ).then((res) => {
+        console.log(res.data);
+        if(res.data.success){
+          setAuth(true);
+          setAdmin(res.data.user.admin_flag);
+          setLoading(false);
+        }
+      }).catch((res) => {
+        localStorage.clear();
+        setAuth(false);
+        setLoading(false);
+      });
+
+      }
+
+
+  }, []);
+
+  if (loading)
+    return <div>Loading...</div>;
   return auth ? (admin ? children : <Navigate to='/'/>) : <Navigate to="/login" />;
 }
 
 export default function App () {
 
+    const [admin, setAdmin] = useState(false);
+
     return (
       <BrowserRouter>
         <Routes>
           <Route exact path="/" element={
-            <AuthRoute>
+            <AuthRoute setAdmin={setAdmin} admin={admin}>
               {
-              useAdmin() &&
+              admin &&
               <AdminDashboard>
                 <ParentView/>
               </AdminDashboard>
               }
               {
-              !useAdmin() &&
+              !admin &&
               <ParentDashboard>
                 <ParentView/>
               </ParentDashboard>
@@ -64,15 +170,15 @@ export default function App () {
           }
           />
           <Route exact path="/students/:id/view" element={
-            <AuthRoute>
+            <AuthRoute setAdmin={setAdmin} admin={admin}>
               {
-              useAdmin() &&
+              admin &&
               <AdminDashboard>
                 <StudentView/>
               </AdminDashboard>
               }
               {
-              !useAdmin() &&
+              !admin &&
               <ParentDashboard>
                 <StudentView/>
               </ParentDashboard>
@@ -189,7 +295,12 @@ export default function App () {
               </AdminDashboard>
             </PrivateRoute>
           } />
-          <Route exact path="/login" element={<Login/>} />
+          <Route exact path="/login" element={
+            <LoginRoute>
+              <Login/>
+            </LoginRoute>
+          }
+           />
         </Routes>
       </BrowserRouter>
     );

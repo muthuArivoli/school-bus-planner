@@ -20,13 +20,23 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Container from '@mui/material/Container';
 import ButtonBase from '@mui/material/ButtonBase';
-import {Link as RouterLink, Navigate} from 'react-router-dom';
+import {Link as RouterLink, Navigate, useNavigate} from 'react-router-dom';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
 
 const theme = createTheme();
 const drawerWidth = 240;
 
 
 export default function ParentDashboard(props){
+
+  let navigate = useNavigate();
+
+  const handleLogout = (event) => {
+    localStorage.clear();
+    navigate("/login");
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ display: 'flex' }}>
@@ -44,6 +54,11 @@ export default function ParentDashboard(props){
               Dashboard
             </Typography>
             </ButtonBase>
+            <Grid container justifyContent="flex-end">
+            <Button variant="contained" onClick={handleLogout}>
+              Logout
+            </Button>
+            </Grid>
             </Toolbar>
         </AppBar>
 

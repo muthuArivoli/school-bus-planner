@@ -20,9 +20,11 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Container from '@mui/material/Container';
 import ButtonBase from '@mui/material/ButtonBase';
-import {Link as RouterLink, Navigate} from 'react-router-dom';
+import {Link as RouterLink, Navigate, useNavigate} from 'react-router-dom';
 import MuiAlert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -81,6 +83,8 @@ export default function AdminDashboard(props){
   const [barOpen, setbarOpen] = React.useState(false);
   const [severity, setSeverity] = React.useState("error");
 
+  let navigate = useNavigate();
+
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -100,6 +104,11 @@ export default function AdminDashboard(props){
 
     setbarOpen(false);
   };
+
+  const handleLogout = (event) => {
+    localStorage.clear();
+    navigate("/login");
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -134,6 +143,12 @@ export default function AdminDashboard(props){
               Dashboard
             </Typography>
             </ButtonBase>
+            <Grid container justifyContent="flex-end">
+            <Button variant="contained" onClick={handleLogout}>
+              Logout
+            </Button>
+            </Grid>
+
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
