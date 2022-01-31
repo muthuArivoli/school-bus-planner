@@ -3,22 +3,25 @@ import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Stack from '@mui/material/Stack';
 import Geocode from "react-geocode";
 import { DataGrid } from '@mui/x-data-grid';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 
 Geocode.setApiKey("AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o");
 Geocode.setLocationType("ROOFTOP");
 
 const containerStyle = {
-  width: '50%',
+  width: '100%',
   height: '50vh'
 };
 
 const columns = [
-  { field: 'studentid', width: 0},
+  { field: 'studentid', hide: true, width: 30},
   { field: 'studentname', headerName: "Name", width: 150},
   { field: 'address', headerName: "Address", width: 400},
 ];
 
-  // TODO: This will be from the backend
+// TODO: This will be from the backend
 const addresses = [
   "4610 Club Terrace NE, Atlanta, GA",
   "10320 Bergtold Road, Clarence, NY",
@@ -113,7 +116,7 @@ export default function Map() {
       let newDisplayed = JSON.parse(JSON.stringify(displayed));
       newDisplayed[index]["isBeingDisplayed"] = false;
       setDisplayed(newDisplayed);
-      setRows(rows.filter((value, ind) => value.coords !== location));
+      setRows(rows.filter((value) => value.coords !== location));
     }
   };
 
@@ -122,35 +125,56 @@ export default function Map() {
       <LoadScript
         googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
       >
-        <GoogleMap id='marker-example' mapContainerStyle={containerStyle} zoom={3} center={center}>
-            {locations.map((location, index) => (
-                <Marker key={index} position={location} onClick={() => handleClick(location, index)}/>
-              ))
-            }
+        <GoogleMap mapContainerStyle={containerStyle} zoom={3} center={center}>
+          {locations.map((location, index) => (
+              <Marker key={index} title={addresses[index]} position={location} onClick={() => handleClick(location, index)}/> ))}
         </GoogleMap>
       </LoadScript>
 
-      <div style={{ height: 400, width: 600 }}>
-        <div style={{ display: 'flex', height: '100%' }}>
-          <div style={{ flexGrow: 1 }}>
-            <DataGrid
-              rows={rows}
-              columns={columns}
-              getRowId={(row) => row.address} //THIS WILL BE THE ID FROM THE BACKEND ONCE IMPLEMENTED
-              pageSize={5}
-              rowsPerPageOptions={[5]}
-              density="compact"
-              initialState={{
-                columns: {
-                  columnVisibilityModel: {
-                   studentid: false,
-                  },
-                },
-              }}
-            />
+      <Stack spacing={2} justifyContent="center">
+        <TextField
+          autoFocus
+          required
+          variant="outlined"
+          label="Route Name"
+          // value={}
+          // onChange={}
+        />
+
+        <TextField
+          autoFocus
+          required
+          variant="outlined"
+          label="Route Description"
+          multiline
+          rows={6}
+          // value={}
+          // onChange={}
+        />
+        
+        <Stack spacing={1} justifyContent="center">
+          <Typography variant="h5" align="left">
+            Current Students in Route:
+          </Typography>
+          <div style={{ height: 400, width: 600 }}>
+            <div style={{ display: 'flex', height: '100%' }}>
+              <div style={{ flexGrow: 1 }}>
+                <DataGrid
+                  rows={rows}
+                  columns={columns}
+                  getRowId={(row) => row.address} //THIS WILL BE THE ID FROM THE BACKEND ONCE IMPLEMENTED
+                  pageSize={5}
+                  rowsPerPageOptions={[5]}
+                  density="compact"
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </Stack>
+        <Button /*onClick={}*/ color="primary" variant="contained">
+          Create Route
+        </Button>
+      </Stack>
     </Stack>
   )
 }
