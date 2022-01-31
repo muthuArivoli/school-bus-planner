@@ -43,10 +43,6 @@ def admin_required():
     return cust_wrapper
 
 
-@app.route('/')
-def hello_geek():
-    return '<h1>Hello from Flask & Docker</h2>'
-
 #USING JWT EXTENDED LIBRARY
 @app.after_request
 def refresh_expiring_jwts(response):
@@ -59,6 +55,25 @@ def refresh_expiring_jwts(response):
         return response
     except (RuntimeError, KeyError):
         return response
+
+@app.route('/current_user', methods =['OPTIONS'])
+@cross_origin()
+def current_user_options():
+    return json.dumps({'success':True})
+
+@app.route("/current_user", methods = ['GET'])
+@cross_origin()
+def get_current_user():
+    verify_jwt_in_request()
+    user = User.query.filter_by(email = get_jwt_identity()).first()
+    if user is None:
+        return {"msg": "Invalid User ID"}, 400
+    students = Student.query.filter_by(user_id = user.id).all()
+    all_students = []
+    for student in students:
+        all_students.append(student.as_dict())
+    return json.dumps({'success': True, 'user': user.as_dict(), 'students': all_students})
+
 
 @app.route('/login', methods = ['POST'])
 @cross_origin()

@@ -20,7 +20,7 @@ const theme = createTheme();
 export default function UserUpdate(props) {
 
   const { id } = useParams();
-  const [data, setData] = React.useState({});
+  const [data, setData] = React.useState({email:"", password: "", name:"", address: "", admin: false});
 
   let navigate = useNavigate();
 

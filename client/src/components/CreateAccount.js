@@ -97,7 +97,7 @@ export default function SignUp(props) {
               school_id:  students[i]["school_id"],
             }
             if (students[i]["id"] != ""){
-              reqS.student_id = students[i]["id"]
+              reqS.student_id = parseInt(students[i]["id"]);
             }
             if (students[i]["route_id"] != null){
               reqS.route_id = students[i]["route_id"];

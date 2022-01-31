@@ -30,7 +30,7 @@ export default function StudentDetail(props) {
   };
 
   const handleDelete = () => {
-    axios.delete(` http://localhost:5000/student/${id}`, {
+    axios.delete(`http://localhost:5000/student/${id}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
