@@ -112,11 +112,11 @@ def users_get(user_id=None):
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
-            filter1 = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = filter1.get_objects()
+            user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}).paginate()
+            base_query = user_filt.get_objects()
         else:
-            filter1 = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort})
-            base_query = filter1.apply()
+            user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort})
+            base_query = user_filt.apply()
 
         users = base_query
         
@@ -258,11 +258,11 @@ def students_get(student_uid=None):
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
-            filter1 = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = filter1.get_objects()
+            student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}).paginate()
+            base_query = student_filt.get_objects()
         else:
-            filter1 = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort})
-            base_query = filter1.apply()
+            student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort})
+            base_query = student_filt.apply()
 
         students = base_query
 
@@ -390,11 +390,11 @@ def schools_get(school_uid=None):
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
-            filter1 = SchoolFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = filter1.get_objects()
+            school_filt = SchoolFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
+            base_query = school_filt .get_objects()
         else:
-            filter1 = SchoolFilter(data={'name': name_search, 'order_by': sort})
-            base_query = filter1.apply()
+            school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort})
+            base_query = school_filt .apply()
 
         schools = base_query
 
@@ -506,11 +506,11 @@ def routes_get(route_uid=None):
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
-            filter1 = RouteFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = filter1.get_objects()
+            route_filt = RouteFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
+            base_query = route_filt.get_objects()
         else:
-            filter1 = RouteFilter(data={'name': name_search, 'order_by': sort})
-            base_query = filter1.apply()
+            route_filt = RouteFilter(data={'name': name_search, 'order_by': sort})
+            base_query = route_filt.apply()
 
         routes = base_query
 

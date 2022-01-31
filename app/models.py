@@ -119,7 +119,7 @@ class SchoolFilter(Filter):
     name = StringField(lookup_operator=ContainsOperator)
 
     class Meta:
-        model = Student
+        model = School
         session = db.session
         page_size = 10
 
