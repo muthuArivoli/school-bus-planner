@@ -205,8 +205,8 @@ def users(user_id=None):
                 if type(email) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 user.email = email
-            if 'full_name' in content:
-                full_name = content.get('full_name', None)
+            if 'name' in content:
+                full_name = content.get('name', None)
                 if type(full_name) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 user.full_name = full_name
@@ -215,8 +215,8 @@ def users(user_id=None):
                 if type(address) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 user.uaddress = address
-            if 'pswd' in content:
-                pswd = content.get('pswd', None)
+            if 'password' in content:
+                pswd = content.get('password', None)
                 if type(pswd) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 encrypted_pswd = bcrypt.hashpw(pswd.encode('utf-8'), bcrypt.gensalt())
@@ -293,7 +293,7 @@ def students(student_uid = None):
     
     if request.method == 'POST':
         content = request.json
-        name = content.get('full_name', None)
+        name = content.get('name', None)
         school_id = content.get('school_id', None)
         user_id = content.get('user_id', None)
 
@@ -340,7 +340,7 @@ def students(student_uid = None):
         if student is None:
             return json.dumps({'error': 'Invalid Student Id'})
         if 'full_name' in content:
-            full_name = content.get('full_name', None)
+            full_name = content.get('name', None)
             if type(full_name) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
             student.full_name = full_name
