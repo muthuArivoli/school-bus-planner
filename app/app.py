@@ -112,11 +112,11 @@ def users_get(user_id=None):
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
-            filter1 = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = filter1.get_objects()
+            user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}).paginate()
+            base_query = user_filt.get_objects()
         else:
-            filter1 = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort})
-            base_query = filter1.apply()
+            user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort})
+            base_query = user_filt.apply()
 
         users = base_query
         
@@ -205,8 +205,8 @@ def users(user_id=None):
                 if type(email) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 user.email = email
-            if 'full_name' in content:
-                full_name = content.get('full_name', None)
+            if 'name' in content:
+                full_name = content.get('name', None)
                 if type(full_name) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 user.full_name = full_name
@@ -215,8 +215,8 @@ def users(user_id=None):
                 if type(address) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 user.uaddress = address
-            if 'pswd' in content:
-                pswd = content.get('pswd', None)
+            if 'password' in content:
+                pswd = content.get('password', None)
                 if type(pswd) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 encrypted_pswd = bcrypt.hashpw(pswd.encode('utf-8'), bcrypt.gensalt())
@@ -258,11 +258,11 @@ def students_get(student_uid=None):
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
-            filter1 = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = filter1.get_objects()
+            student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}).paginate()
+            base_query = student_filt.get_objects()
         else:
-            filter1 = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort})
-            base_query = filter1.apply()
+            student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort})
+            base_query = student_filt.apply()
 
         students = base_query
 
@@ -293,7 +293,7 @@ def students(student_uid = None):
     
     if request.method == 'POST':
         content = request.json
-        name = content.get('full_name', None)
+        name = content.get('name', None)
         school_id = content.get('school_id', None)
         user_id = content.get('user_id', None)
 
@@ -340,7 +340,7 @@ def students(student_uid = None):
         if student is None:
             return json.dumps({'error': 'Invalid Student Id'})
         if 'full_name' in content:
-            full_name = content.get('full_name', None)
+            full_name = content.get('name', None)
             if type(full_name) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
             student.full_name = full_name
@@ -390,11 +390,11 @@ def schools_get(school_uid=None):
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
-            filter1 = SchoolFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = filter1.get_objects()
+            school_filt = SchoolFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
+            base_query = school_filt .get_objects()
         else:
-            filter1 = SchoolFilter(data={'name': name_search, 'order_by': sort})
-            base_query = filter1.apply()
+            school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort})
+            base_query = school_filt .apply()
 
         schools = base_query
 
@@ -506,11 +506,11 @@ def routes_get(route_uid=None):
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
-            filter1 = RouteFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = filter1.get_objects()
+            route_filt = RouteFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
+            base_query = route_filt.get_objects()
         else:
-            filter1 = RouteFilter(data={'name': name_search, 'order_by': sort})
-            base_query = filter1.apply()
+            route_filt = RouteFilter(data={'name': name_search, 'order_by': sort})
+            base_query = route_filt.apply()
 
         routes = base_query
 

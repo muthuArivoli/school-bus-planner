@@ -899,3 +899,6 @@ WHERE students.student_id = %(student_id_1)s AND (students.full_name LIKE '%%' |
 2022-01-31 08:00:12,734 INFO werkzeug Thread-4 : 172.20.0.1 - - [31/Jan/2022 08:00:12] "GET /student?name&id&sort=school_id HTTP/1.1" 200 -
 2022-01-31 08:00:23,422 INFO werkzeug Thread-5 : 172.20.0.1 - - [31/Jan/2022 08:00:23] "GET /student?name&id&sort=full_name&dir=desc HTTP/1.1" 200 -
 2022-01-31 08:00:28,110 INFO werkzeug Thread-6 : 172.20.0.1 - - [31/Jan/2022 08:00:28] "GET /student?name&id&sort=full_name&dir=asc HTTP/1.1" 200 -
+2022-01-31 17:37:32,119 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-01-31 17:37:32,121 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
