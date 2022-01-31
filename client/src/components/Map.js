@@ -2,8 +2,7 @@ import React from 'react'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Stack from '@mui/material/Stack';
 import Geocode from "react-geocode";
-import { DataGridPro, useGridApiRef } from '@mui/x-data-grid-pro';
-import Button from '@mui/material/Button';
+import { DataGrid } from '@mui/x-data-grid';
 
 Geocode.setApiKey("AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o");
 Geocode.setLocationType("ROOFTOP");
@@ -14,11 +13,12 @@ const containerStyle = {
 };
 
 const columns = [
-  { field: 'id', width: 50},
-  { field: 'studentname', width: 150},
-  { field: 'address', width: 400},
+  { field: 'studentid', width: 0},
+  { field: 'studentname', headerName: "Name", width: 150},
+  { field: 'address', headerName: "Address", width: 400},
 ];
 
+  // TODO: This will be from the backend
 const addresses = [
   "4610 Club Terrace NE, Atlanta, GA",
   "10320 Bergtold Road, Clarence, NY",
@@ -63,7 +63,8 @@ const addLocationToRoute = async (location) => {
   let address_noformat = await CoordsToAddress(location.lat, location.lng);
   let address = address_noformat.replace(/['"]+/g, '');
 
-  return { id: 14, studentname: "temp", address: address };
+  // TODO: Non-address fields will be from the backend (barring coords)
+  return { studentid: 14, studentname: "temp", address: address, coords: location };
 };
 
 function getCenter(locations) {
@@ -87,28 +88,32 @@ function getCenter(locations) {
 
 export default function Map() {
  const [rows, setRows] = React.useState([]);
- const [selectedRows, setSelectedRows] = React.useState([]);
+ const [displayed, setDisplayed] = React.useState([]);
 
-  const apiRef = useGridApiRef();
+  React.useEffect(() => {
+  let newDisplayed = [];
+  for (var i=0;i<addresses.length;i++) {
+      newDisplayed = [...newDisplayed, {"address": addresses[i], "isBeingDisplayed": false}];
+  }
+  setDisplayed(newDisplayed);
+  }, []);
 
   const center = getCenter(locations);
 
-  const handleAddRow = (value) => {
-    addLocationToRoute(value).then((res) => {
-        let newRows = [...rows, res];
-        setRows(newRows);
-    })
-  };
-
-  const handleDeleteRow = () => {
-    let unselected_rows = [];
-    const rowIds = apiRef.current.getAllRowIds();
-    
-    for (var i=0; i<rowIds.length;i++) {
-      if (!selectedRows.includes(rowIds[i])) {
-        unselected_rows.push(apiRef.current.getRow(rowIds[i]));
-      }
-      setRows(unselected_rows);
+  const handleClick = (location, index) => {
+    if (!displayed[index]["isBeingDisplayed"]) {
+      addLocationToRoute(location).then((res) => {
+          let newDisplayed = JSON.parse(JSON.stringify(displayed));
+          newDisplayed[index]["isBeingDisplayed"] = true;
+          setDisplayed(newDisplayed);
+          let newRows = [...rows, res];
+          setRows(newRows);
+      })
+    } else if (displayed[index]["isBeingDisplayed"]) {
+      let newDisplayed = JSON.parse(JSON.stringify(displayed));
+      newDisplayed[index]["isBeingDisplayed"] = false;
+      setDisplayed(newDisplayed);
+      setRows(rows.filter((value, ind) => value.coords !== location));
     }
   };
 
@@ -118,39 +123,34 @@ export default function Map() {
         googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
       >
         <GoogleMap id='marker-example' mapContainerStyle={containerStyle} zoom={3} center={center}>
-            {locations.map((location) => (
-                <Marker position={location} onClick={() => handleAddRow(location)}/>
+            {locations.map((location, index) => (
+                <Marker key={index} position={location} onClick={() => handleClick(location, index)}/>
               ))
             }
         </GoogleMap>
       </LoadScript>
 
-      <Stack spacing={1} justifyContent="center">
-        <div style={{ height: 400, width: 600 }}>
-          <div style={{ display: 'flex', height: '100%' }}>
-            <div style={{ flexGrow: 1 }}>
-              <DataGridPro
-                apiRef={apiRef}
-                rows={rows}
-                columns={columns}
-                getRowId={(row) => row.address} //set what is used as ID ******MUST BE UNIQUE***********
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                checkboxSelection
-                onSelectionModelChange={(ids) => {
-                  const selectedIDs = new Set(ids);
-                  const selectedRows = rows.filter((row) =>
-                    selectedIDs.has(row.id),
-                  );
-                  setSelectedRows(selectedRows);
-                }}
-                density="compact"
-              />
-            </div>
+      <div style={{ height: 400, width: 600 }}>
+        <div style={{ display: 'flex', height: '100%' }}>
+          <div style={{ flexGrow: 1 }}>
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              getRowId={(row) => row.address} //THIS WILL BE THE ID FROM THE BACKEND ONCE IMPLEMENTED
+              pageSize={5}
+              rowsPerPageOptions={[5]}
+              density="compact"
+              initialState={{
+                columns: {
+                  columnVisibilityModel: {
+                   studentid: false,
+                  },
+                },
+              }}
+            />
           </div>
         </div>
-        <Button variant="contained" color="primary" onClick={handleDeleteRow}>Remove Selected Locations</Button>
-      </Stack>
+      </div>
     </Stack>
   )
 }

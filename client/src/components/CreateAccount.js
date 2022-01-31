@@ -14,54 +14,170 @@ import Container from '@mui/material/Container';
 import DeleteIcon from "@mui/icons-material/Delete";
 import IconButton from "@mui/material/IconButton";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Link as RouterLink} from 'react-router-dom';
+import { useNavigate, Link as RouterLink} from 'react-router-dom';
 import Autocomplete from '@mui/material/Autocomplete';
-
+import axios from 'axios';
 
 const theme = createTheme();
 
-export default function SignUp() {
+export default function SignUp(props) {
 
   const [students, setStudents] = React.useState([]);
+  let navigate = useNavigate();
+
+  const [schools, setSchools] = React.useState([]);
+  const [routes, setRoutes] = React.useState([]);
+
+  let [adminChecked, setAdminChecked] = React.useState(false);
 
   const deleteStudent = (index) => {
     setStudents(students.filter((value, ind) => ind !== index));
+    setRoutes(routes.filter((value, ind) => ind !== index));
   };
 
   const addStudent = () => {
-      setStudents([...students, {"name": "", "id": "", "school": "", "route": ""}])
+      setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": null}])
+      setRoutes([...routes, []]);
   }
 
-  const getSchools = () => {
-    return ["abc", "cde"];
-  }
+  React.useEffect(() => {
+    const fetchData = async() => {
+      const result = await axios.get(
+        'http://localhost:5000/school', {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (result.data.success){
+        let arr = result.data.schools.map((value) => {
+          return {id: value.id, label: value.name};
+        })
+        setSchools(arr);
+      }
+      else{
+        props.setSnackbarMsg(`Schools could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/users");
+      }
+    };
+    fetchData();
+  }, []);
 
-  const getRoutes = () => {
-      return ["fgh", "qrt", "wqe"];
-  }
+
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    // eslint-disable-next-line no-console
     console.log({
       email: data.get('email'),
       password: data.get('password'),
+      name: data.get('name'),
+      address: data.get('address'),
+      admin_flag: adminChecked
     });
+    axios.post("http://localhost:5000/user", {
+      email: data.get('email'),
+      password: data.get('password'),
+      name: data.get('name'),
+      address: data.get('address'),
+      admin_flag: adminChecked
+    }, {
+      headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }).then(async (res) => {
+      if(res.data.success){
+
+          for(let i=0; i<students.length; i++){
+            let reqS = {
+              user_id: res.data.id,
+              full_name: students[i]["name"],
+              school_id:  students[i]["school_id"],
+            }
+            if (students[i]["id"] != ""){
+              reqS.student_id = parseInt(students[i]["id"]);
+            }
+            if (students[i]["route_id"] != null){
+              reqS.route_id = students[i]["route_id"];
+            }
+            console.log(reqS)
+            const re = await axios.post("http://localhost:5000/student", reqS, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            });
+            if(!re.data.success) {
+              props.setSnackbarMsg(`Students not successfully created`);
+              props.setShowSnackbar(true);
+              props.setSnackbarSeverity("error");
+              navigate("/users");
+            }
+          }
+
+        props.setSnackbarMsg(`User successfully created`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("success");
+        navigate("/users");
+      }
+      else {
+        props.setSnackbarMsg(`User not successfully created`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/users");
+      }
+    })
+
   };
 
-  const handleStudentChange = (index, ty, new_val) => {
+  const handleStudentChange = (index, ty, new_val, index_val=0) => {
     const updatedValues = students.map((value, i) => {
       if (i === index) {
-        let new_obj = JSON.parse(JSON.stringify(value));
-        new_obj[ty] = new_val
-        return new_obj;
+          let new_obj = JSON.parse(JSON.stringify(value));
+          new_obj[ty] = new_val
+
+          if (ty =="school"){
+            new_obj["school_id"] = index_val;
+          }
+          if (ty == "route"){
+            new_obj["route_id"] = index_val;
+          }
+
+          return new_obj;
+        
       } else {
         return value;
       }
     });
     setStudents(updatedValues);
   };
+
+  const updateRoutes = (index, id) => {
+    console.log(id);
+    const fetchData = async() => {
+      const result = await axios.get(
+        `http://localhost:5000/school/${id}`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      console.log(result.data);
+      if (result.data.success){
+        let newRoutes = JSON.parse(JSON.stringify(routes));
+        newRoutes[index] = result.data.school.routes.map((value) => {return {label: value.name, id: value.id}})
+        setRoutes(newRoutes);
+      }
+      else{
+        props.setSnackbarMsg(`Routes could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/users");
+      }
+    };
+    fetchData();
+  }
 
 
   return (
@@ -87,10 +203,10 @@ export default function SignUp() {
               <Grid item xs={12}>
                 <TextField
                   autoComplete="name"
-                  name="Name"
+                  name="name"
                   required
                   fullWidth
-                  id="Name"
+                  id="name"
                   label="Full Name"
                   autoFocus
                 />
@@ -129,13 +245,26 @@ export default function SignUp() {
                 />
               </Grid>
               <Grid item xs={12}>
+                <TextField
+                  required
+                  error={false}
+                  fullWidth
+                  name="address"
+                  label="Address"
+                  id="address"
+                />
+              </Grid>
+              <Grid item xs={12}>
                 <FormControlLabel
                   control={<Checkbox value="admin" color="primary" />}
                   label="Admin"
+                  id="admin"
+                  name="admin"
+                  onChange={(e)=>{setAdminChecked(e.target.checked)}}
                 />
               </Grid>
               {students.map((element, index) => (
-                  <>
+                  <React.Fragment key={index}>
                   <Box
                     sx={{
                         marginTop: 3,
@@ -170,20 +299,23 @@ export default function SignUp() {
                     <Grid item xs={12}>
                     <Autocomplete
                         autoFocus
-                        options={getSchools()}
+                        options={schools}
                         autoSelect
                         value={element["school"] || ""}
-                        onChange={(e, newValue) => handleStudentChange(index, "school", newValue)}
+                        onChange={(e, newValue) => {handleStudentChange(index, "school", newValue.label, newValue.id);
+                                                    updateRoutes(index, newValue.id);
+                                                    }}
                         renderInput={(params) => <TextField {...params} label="School Name" />}
                     />
                     </Grid>
                     <Grid item xs={12}>
                     <Autocomplete
                         autoFocus
-                        options={getRoutes()}
+                        disabled={routes[index] == 0}
+                        options={routes[index]}
                         autoSelect
                         value={element["route"] || ""}
-                        onChange={(e, newValue) => handleStudentChange(index, "route", newValue)}
+                        onChange={(e, newValue) => handleStudentChange(index, "route", newValue.label, newValue.id)}
                         renderInput={(params) => <TextField {...params} label="Route Name" />}
                     />
                     </Grid>
@@ -200,7 +332,7 @@ export default function SignUp() {
                   </div>
                 </Grid>
                 </Grid>
-                </>
+                </React.Fragment>
             ))}
             <Button onClick={addStudent} color="primary">
                 Add Student
