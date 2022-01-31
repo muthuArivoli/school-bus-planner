@@ -20,7 +20,7 @@ const theme = createTheme();
 export default function UserUpdate(props) {
 
   const { id } = useParams();
-  const [data, setData] = React.useState({email:"", password: "", name:"", address: "", admin: false});
+  const [data, setData] = React.useState({email:"", password: "", con_password: "", name:"", address: "", admin: false});
 
   let navigate = useNavigate();
 
@@ -34,7 +34,7 @@ export default function UserUpdate(props) {
         }
       );
       if (result.data.success){
-        let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, admin: result.data.user.admin_flag}
+        let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, admin: result.data.user.admin_flag, password: "", con_password: ""}
         setData(newData);
       }
       else{
@@ -68,6 +68,12 @@ export default function UserUpdate(props) {
     const handlePasswordChange = (event) => {
       let newData = JSON.parse(JSON.stringify(data));
       newData.password = event.target.value;
+      setData(newData);
+    }
+
+    const handleConPasswordChange = (event) => {
+      let newData = JSON.parse(JSON.stringify(data));
+      newData.con_password = event.target.value;
       setData(newData);
     }
 
@@ -145,10 +151,13 @@ export default function UserUpdate(props) {
               </Grid>
               <Grid item md={12}>
                 <TextField
-                  required={false/* Implement Check */}
+                  error={data.password != data.con_password}
+                  helperText={data.password != data.con_password ? "Passwords don't match" : ""}
                   name="confirm-password"
                   label="Confirm Password"
                   type="password"
+                  value={data.con_password}
+                  onChange={handleConPasswordChange}
                   id="confirm-password"
                 />
               </Grid>
@@ -174,6 +183,7 @@ export default function UserUpdate(props) {
               <Grid item sm={12}>
                 <Button type="submit"
                   variant="contained"
+                  disabled={data.email == "" || data.address == "" || data.name == "" || data.password != data.con_password}
                   >
                     Submit
                 </Button>

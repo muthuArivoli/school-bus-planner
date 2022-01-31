@@ -31,11 +31,17 @@ export default function UserUpdate(props) {
         user_id: user.id
       }
       console.log(req);
-      if (studentId != null) {
+      if (studentId != null && studentId != "") {
         req.student_id = parseInt(studentId);
       }
-      if(route.id != null) {
+      else{
+        req.student_id = null;
+      }
+      if(route != null && route.id != "") {
         req.route_id = route.id;
+      }
+      else{
+        req.route_id = null;
       }
       console.log(req);
       axios.patch(`http://localhost:5000/student/${id}`, req, {
@@ -168,7 +174,8 @@ export default function UserUpdate(props) {
                     route={route}
                     updateRoute={setRoute}
                     />
-                    <Button type="submit" variant="contained">
+                    <Button type="submit" variant="contained"
+                      disabled={school == null || school.id == "" || user == null || user.id == "" || name == ""}>
                       Submit
                     </Button>
                   </Box>

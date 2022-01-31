@@ -28,7 +28,15 @@ export default function SignUp(props) {
   const [schools, setSchools] = React.useState([]);
   const [routes, setRoutes] = React.useState([]);
 
+
+  const [password, setPassword] = React.useState("");
+  const [con_password, setConPassword] = React.useState("");
+  const [name, setName] = React.useState("");
+  const [address, setAddress] = React.useState("");
+  const [email, setEmail] = React.useState("");
   let [adminChecked, setAdminChecked] = React.useState(false);
+
+  const [disable, setDisable] = React.useState(true);
 
   const deleteStudent = (index) => {
     setStudents(students.filter((value, ind) => ind !== index));
@@ -96,7 +104,7 @@ export default function SignUp(props) {
               full_name: students[i]["name"],
               school_id:  students[i]["school_id"],
             }
-            if (students[i]["id"] != ""){
+            if (students[i]["id"] != "" && students[i]["id"] != null){
               reqS.student_id = parseInt(students[i]["id"]);
             }
             if (students[i]["route_id"] != null){
@@ -139,6 +147,8 @@ export default function SignUp(props) {
 
           if (ty =="school"){
             new_obj["school_id"] = index_val;
+            new_obj["route"] = "";
+            new_obj["route_id"] = null;
           }
           if (ty == "route"){
             new_obj["route_id"] = index_val;
@@ -155,6 +165,12 @@ export default function SignUp(props) {
 
   const updateRoutes = (index, id) => {
     console.log(id);
+    if(id == ""){
+      let newRoutes = JSON.parse(JSON.stringify(routes));
+      newRoutes[index] = [];
+      setRoutes(newRoutes);
+      return;
+    }
     const fetchData = async() => {
       const result = await axios.get(
         `http://localhost:5000/school/${id}`, {
@@ -179,6 +195,13 @@ export default function SignUp(props) {
     fetchData();
   }
 
+  React.useEffect(() => {
+    let disabled = email == ""  || password == "" || con_password != password || name == "" || address == "";
+    for (let i=0; i<students.length; i++){
+      disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "";
+    }
+    setDisable(disabled);
+  }, [email, password, con_password, name, address, students])
 
   return (
     <ThemeProvider theme={theme}>
@@ -207,6 +230,7 @@ export default function SignUp(props) {
                   required
                   fullWidth
                   id="name"
+                  onChange={(e) => setName(e.target.value)}
                   label="Full Name"
                   autoFocus
                 />
@@ -215,6 +239,7 @@ export default function SignUp(props) {
                 <TextField
                   required
                   fullWidth
+                  onChange={(e) => setEmail(e.target.value)}
                   id="email"
                   label="Email Address"
                   name="email"
@@ -225,6 +250,7 @@ export default function SignUp(props) {
                 <TextField
                   required
                   fullWidth
+                  onChange={(e) => setPassword(e.target.value)}
                   name="password"
                   label="Password"
                   type="password"
@@ -235,8 +261,9 @@ export default function SignUp(props) {
               <Grid item xs={12}>
                 <TextField
                   required
-                  error={false}
-                  helperText={"Passwords do not match"}
+                  onChange={(e) => setConPassword(e.target.value)}
+                  error={password != con_password}
+                  helperText={password != con_password ? "Passwords do not match" : ""}
                   fullWidth
                   name="confirm-password"
                   label="Confirm Password"
@@ -247,6 +274,7 @@ export default function SignUp(props) {
               <Grid item xs={12}>
                 <TextField
                   required
+                  onChange={(e) => setAddress(e.target.value)}
                   error={false}
                   fullWidth
                   name="address"
@@ -290,8 +318,8 @@ export default function SignUp(props) {
                     <Grid item xs={12}>
                     <TextField
                         autoFocus
-                        required
                         label="Student ID"
+                        type="number"
                         value={element["id"] || ""}
                         onChange={(e) => handleStudentChange(index, "id", e.target.value)}
                         fullWidth
@@ -302,8 +330,8 @@ export default function SignUp(props) {
                         options={schools}
                         autoSelect
                         value={element["school"] || ""}
-                        onChange={(e, newValue) => {handleStudentChange(index, "school", newValue.label, newValue.id);
-                                                    updateRoutes(index, newValue.id);
+                        onChange={(e, newValue) => {handleStudentChange(index, "school", newValue == null ? "" : newValue.label, newValue == null ? 0 : newValue.id);
+                                                    updateRoutes(index, newValue == null ? "" : newValue.id);
                                                     }}
                         renderInput={(params) => <TextField {...params} label="School Name" />}
                     />
@@ -315,7 +343,7 @@ export default function SignUp(props) {
                         options={routes[index]}
                         autoSelect
                         value={element["route"] || ""}
-                        onChange={(e, newValue) => handleStudentChange(index, "route", newValue.label, newValue.id)}
+                        onChange={(e, newValue) => handleStudentChange(index, "route", newValue == null ? "" : newValue.label, newValue == null ? null :newValue.id)}
                         renderInput={(params) => <TextField {...params} label="Route Name" />}
                     />
                     </Grid>
@@ -342,6 +370,7 @@ export default function SignUp(props) {
               type="submit"
               fullWidth
               variant="contained"
+              disabled={disable}
               sx={{ mt: 3, mb: 2 }}
             >
               Create Account

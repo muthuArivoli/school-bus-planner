@@ -63,6 +63,7 @@ export default function SchoolForm(props) {
               <Grid item sm={12}>
                 <Button type="submit"
                   variant="contained"
+                  disabled={name=="" || address == ""}
                   >
                     Submit
                 </Button>

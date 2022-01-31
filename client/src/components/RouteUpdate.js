@@ -114,6 +114,7 @@ export default function RouteUpdate(props) {
               <Grid item sm={12}>
                 <Button type="submit"
                   variant="contained"
+                  disabled={name == ""}
                   >
                     Submit
                 </Button>

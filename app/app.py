@@ -340,7 +340,7 @@ def students(student_uid = None):
             student.full_name = full_name
         if 'student_id' in content:
             student_id = content.get('student_id', None)
-            if type(student_id) is not int:
+            if student_id is not None and type(student_id) is not int:
                 return {"msg": "Invalid Query Syntax"}, 400
             student.student_id = student_id
         if 'school_id' in content:
@@ -350,7 +350,7 @@ def students(student_uid = None):
             student.school_id = school_id
         if 'route_id' in content:
             route_id = content.get('route_id', None)
-            if type(route_id) is not int:
+            if route_id is not None and type(route_id) is not int:
                 return {"msg": "Invalid Query Syntax"}, 400
             student.route_id = route_id
         if 'user_id' in content:

@@ -15,7 +15,7 @@ export default function CreateSchool(props) {
   const [user, setUser] = React.useState({id: "", label: ""});
   const [route, setRoute] = React.useState({id: "", label: ""});
   const [name, setName] = React.useState("")
-  const [studentId, setStudentId] = React.useState("");
+  const [studentId, setStudentId] = React.useState(null);
 
     const handleSubmit = (event) => {
       event.preventDefault();
@@ -26,10 +26,10 @@ export default function CreateSchool(props) {
         user_id: user.id
       }
       console.log(req);
-      if (studentId != "") {
+      if (studentId != null && studentId != "") {
         req.student_id = parseInt(studentId);
       }
-      if(route.id != "") {
+      if(route != null && route.id != "") {
         req.route_id = route.id;
       }
       console.log(req);
@@ -77,6 +77,7 @@ export default function CreateSchool(props) {
           />
         <Button type="submit"
                   variant="contained"
+                  disabled={school == null || school.id == "" || user == null || user.id == "" || name == ""}
                   >
                     Submit
         </Button>

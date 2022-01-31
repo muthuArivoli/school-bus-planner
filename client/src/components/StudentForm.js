@@ -69,8 +69,15 @@ export default function StudentForm(props) {
           }, []);
 
 
+          React.useEffect(()=> {
+            getRoutes("", props.school);
+          }, [props.school]);
 
       const getRoutes = (e, value) => {
+
+          if (value == null || value.id == ""){
+              return;
+          }
           axios.get(`http://localhost:5000/school/${value.id}`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -106,34 +113,39 @@ export default function StudentForm(props) {
                     <Grid item xs={12}>
                     <TextField
                         autoFocus
-                        required
+                        type="number"
                         label="Student ID"
                         id="student_id"
-                        value={props.studentId}
+                        value={props.studentId || ""}
                         onChange={(e) => props.updateStudentId(e.target.value)}
                         fullWidth
                     />
                     <Grid item xs={12}>
                         <Autocomplete
                             autoFocus
+                            required
                             options={users}
                             id="user"
                             autoSelect
                             value={props.user}
                             onChange={(e, new_value) => props.updateUser(new_value)}
+                            isOptionEqualToValue={(option, value) => option.id === value.id}
                             renderInput={(params) => <TextField {...params} label="User Name" />}
                         />
                         </Grid>
                     <Grid item xs={12}>
                     <Autocomplete
                         autoFocus
+                        required
                         options={schools}
                         id="school"
                         autoSelect
                         value={props.school}
                         onChange={(e, new_val) => {
                             getRoutes(e, new_val);
-                            props.updateSchool(new_val)}}
+                            props.updateSchool(new_val);
+                            props.updateRoute(null)}}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
                         renderInput={(params) => <TextField {...params} label="School Name" />}
                     />
                     </Grid>
@@ -146,6 +158,7 @@ export default function StudentForm(props) {
                         autoSelect
                         value={props.route}
                         onChange={(e, new_val) => props.updateRoute(new_val)}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
                         renderInput={(params) => <TextField {...params} label="Route Name" />}
                     />
                     </Grid>
