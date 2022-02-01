@@ -902,3 +902,37 @@ WHERE students.student_id = %(student_id_1)s AND (students.full_name LIKE '%%' |
 2022-01-31 17:37:32,119 WARNING werkzeug MainThread :  * Running on all addresses.
    WARNING: This is a development server. Do not use it in a production deployment.
 2022-01-31 17:37:32,121 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-02-01 16:09:25,136 INFO werkzeug Thread-1 : 172.20.0.1 - - [01/Feb/2022 16:09:25] "[31m[1mGET /student HTTP/1.1[0m" 401 -
+2022-02-01 16:09:29,991 INFO werkzeug Thread-2 : 172.20.0.1 - - [01/Feb/2022 16:09:29] "POST /login HTTP/1.1" 200 -
+2022-02-01 16:09:39,767 INFO werkzeug Thread-3 : 172.20.0.1 - - [01/Feb/2022 16:09:39] "GET /student HTTP/1.1" 200 -
+2022-02-01 16:09:47,599 INFO werkzeug Thread-4 : 172.20.0.1 - - [01/Feb/2022 16:09:47] "GET /student?name HTTP/1.1" 200 -
+2022-02-01 16:11:20,020 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-02-01 16:11:20,023 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-02-01 16:12:08,795 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-02-01 16:12:08,799 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-02-01 16:12:14,246 ERROR app Thread-1 : Exception on /student [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/usr/local/lib/python3.8/dist-packages/flask_jwt_extended/view_decorators.py", line 127, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+  File "/app/app.py", line 274, in students_get
+    record_num = len(base_query)
+TypeError: object of type 'BaseQuery' has no len()
+2022-02-01 16:12:14,291 INFO werkzeug Thread-1 : 172.20.0.1 - - [01/Feb/2022 16:12:14] "[35m[1mGET /student HTTP/1.1[0m" 500 -
+2022-02-01 16:15:35,869 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-02-01 16:15:35,870 INFO werkzeug MainThread :  * Running on http://172.20.0.3:5000/ (Press CTRL+C to quit)
+2022-02-01 16:18:39,555 INFO werkzeug Thread-1 : 172.20.0.1 - - [01/Feb/2022 16:18:39] "GET /student HTTP/1.1" 200 -

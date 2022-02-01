@@ -102,8 +102,8 @@ def user_options(username=None):
 def users_get(user_id=None):
     if request.method == 'GET':
         args = request.args
-        name_search = args.get('name', None)
-        email_search = args.get('email', None)
+        name_search = args.get('name', '')
+        email_search = args.get('email', '')
         sort = args.get('sort', None)
         direction = args.get('dir', None)
         page = args.get('page', None, type=int)
@@ -119,7 +119,7 @@ def users_get(user_id=None):
         else:
             user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort})
             base_query = user_filt.apply()
-            record_num = len(base_query)
+            record_num = base_query.count()
 
         users = base_query
         
@@ -254,7 +254,7 @@ def student_options(student_uid=None):
 def students_get(student_uid=None):
     if request.method == 'GET':
         args = request.args
-        name_search = args.get('name',None)
+        name_search = args.get('name', '')
         id_search = args.get('id', None, type=int)
         page = args.get('page', None, type=int)
         sort = args.get('sort', None)
@@ -271,7 +271,7 @@ def students_get(student_uid=None):
         else:
             student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort})
             base_query = student_filt.apply()
-            record_num = len(base_query)
+            record_num = base_query.count()
 
         students = base_query
 
@@ -390,7 +390,7 @@ def schools_options(school_uid=None):
 def schools_get(school_uid=None):
     if request.method == 'GET':
         args = request.args
-        name_search = args.get("name", None)
+        name_search = args.get("name", '')
         page = args.get('page',None,type='int')
         sort = args.get('sort', None)
         direction = args.get('dir', 'asc')
@@ -406,7 +406,7 @@ def schools_get(school_uid=None):
         else:
             school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort})
             base_query = school_filt.apply()
-            record_num = len(base_query)
+            record_num = base_query.count()
 
         schools = base_query
 
@@ -509,7 +509,7 @@ def route_options(route_uid=None):
 def routes_get(route_uid=None):
     if request.method == 'GET':
         args = request.args
-        name_search = args.get('name', None)
+        name_search = args.get('name', '')
         page = args.get('page', None,type=int)
         sort = args.get('sort', None)
         direction = args.get('dir', 'asc')
@@ -525,7 +525,7 @@ def routes_get(route_uid=None):
         else:
             route_filt = RouteFilter(data={'name': name_search, 'order_by': sort})
             base_query = route_filt.apply()
-            record_num = len(base_query)
+            record_num = base_query.count()
 
         routes = base_query
 
