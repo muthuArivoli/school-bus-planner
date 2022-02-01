@@ -1,6 +1,7 @@
 from flask import *
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import Query
 from sqlalchemy.exc import SQLAlchemyError
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager, verify_jwt_in_request
@@ -16,11 +17,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:bus@db:5
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = "29F884FD9AB88942F0A959BA7B8E4D2C4C60A190E71571BB80FFF3DDC0F4D0E9"
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=2)
+ROWS_PER_PAGE = 10
 
 db = SQLAlchemy(app)
 cors = CORS(app)
 
-from models import User, Student, School, Route
+from models import User, Student, School, Route, UserFilter, StudentFilter, SchoolFilter, RouteFilter
 
 db.create_all()
 
@@ -115,7 +117,24 @@ def user_options(username=None):
 def users_get(user_id=None):
     if request.method == 'GET':
         args = request.args
-        search_keyword = args.get('search', None)
+        name_search = args.get('name', None)
+        email_search = args.get('email', None)
+        sort = args.get('sort', None)
+        direction = args.get('dir', None)
+        page = args.get('page', None, type=int)
+        base_query = User.query
+
+        if sort and direction == 'desc':
+            sort = '-'+sort
+        if page:
+            user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}).paginate()
+            base_query = user_filt.get_objects()
+        else:
+            user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort})
+            base_query = user_filt.apply()
+
+        users = base_query
+        
         if user_id is not None:
             user = User.query.filter_by(id=user_id).first()
             if user is None:
@@ -125,13 +144,7 @@ def users_get(user_id=None):
             for student in students:
                 all_students.append(student.as_dict())
             return json.dumps({'success': True, 'user': user.as_dict(), 'students': all_students})
-        if search_keyword:
-            users = User.query.filter(User.name.contains(search_keyword))
-            other_users = User.query.filter(User.email.contains(search_keyword))
-            for us in other_users:
-                users.append(us)
-        else:
-            users = User.query.all()
+
         all_users = []
         for user in users:
             all_users.append(user.as_dict())
@@ -206,9 +219,12 @@ def users(user_id=None):
                 email = content.get('email', None)
                 if type(email) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
+                email_user = User.query.filter_by(email=email).first()
+                if email_user:
+                    return {"msg": "Account already exists with this email"}, 400
                 user.email = email
-            if 'full_name' in content:
-                full_name = content.get('full_name', None)
+            if 'name' in content:
+                full_name = content.get('name', None)
                 if type(full_name) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 user.full_name = full_name
@@ -217,8 +233,8 @@ def users(user_id=None):
                 if type(address) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 user.uaddress = address
-            if 'pswd' in content:
-                pswd = content.get('pswd', None)
+            if 'password' in content:
+                pswd = content.get('password', None)
                 if type(pswd) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 encrypted_pswd = bcrypt.hashpw(pswd.encode('utf-8'), bcrypt.gensalt())
@@ -250,23 +266,31 @@ def student_options(student_uid=None):
 def students_get(student_uid=None):
     if request.method == 'GET':
         args = request.args
-        search_keyword = args.get('search', None)
+        name_search = args.get('name',None)
+        id_search = args.get('id', None, type=int)
+        page = args.get('page', None, type=int)
+        sort = args.get('sort', None)
+        direction = args.get('dir', None)
+        base_query = Student.query
+
+        if sort and direction == 'desc':
+            sort = '-'+sort
+        if page:
+            student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}).paginate()
+            base_query = student_filt.get_objects()
+        else:
+            student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort})
+            base_query = student_filt.apply()
+
+        students = base_query
+
+
         if student_uid is not None:
             student = Student.query.filter_by(id=student_uid).first()
             if student is None:
                 return json.dumps({'error': 'Invalid Student Id'})
             return json.dumps({'success': True, 'student': student.as_dict()})
-        if search_keyword:
-            try:
-                num = int(search_keyword)
-                students = Student.query.filter_by(student_id=num)
-            except ValueError:
-                students = []
-            other_students = Student.query.filter(Student.full_name.contains(search_keyword))
-            for stud in other_students:
-                students.append(stud)
-        else: 
-            students = Student.query.all()
+        
         all_students = []
         for student in students:
             all_students.append(student.as_dict())
@@ -287,7 +311,7 @@ def students(student_uid = None):
     
     if request.method == 'POST':
         content = request.json
-        name = content.get('full_name', None)
+        name = content.get('name', None)
         school_id = content.get('school_id', None)
         user_id = content.get('user_id', None)
 
@@ -334,7 +358,7 @@ def students(student_uid = None):
         if student is None:
             return json.dumps({'error': 'Invalid Student Id'})
         if 'full_name' in content:
-            full_name = content.get('full_name', None)
+            full_name = content.get('name', None)
             if type(full_name) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
             student.full_name = full_name
@@ -380,17 +404,29 @@ def schools_options(school_uid=None):
 def schools_get(school_uid=None):
     if request.method == 'GET':
         args = request.args
-        search_keyword = args.get("search", None)
+        name_search = args.get("name", None)
+        page = args.get('page',None,type='int')
+        sort = args.get('sort', None)
+        direction = args.get('dir', 'asc')
+        base_query = School.query
+
+        if sort and direction == 'desc':
+            sort = '-'+sort
+        if page:
+            school_filt = SchoolFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
+            base_query = school_filt .get_objects()
+        else:
+            school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort})
+            base_query = school_filt .apply()
+
+        schools = base_query
+
         if school_uid is not None:
             school = School.query.filter_by(id=school_uid).first()
             if school is None:
                 return json.dumps({'error': 'Invalid School Id'})
             return json.dumps({'success': True, 'school': school.as_dict()})
 
-        if search_keyword is not None:
-            schools = School.query.filter(School.name.contains(search_keyword))
-        else:
-            schools = School.query.all()
         all_schools = []
         for school in schools:
             all_schools.append(school.as_dict())
@@ -484,16 +520,29 @@ def route_options(route_uid=None):
 def routes_get(route_uid=None):
     if request.method == 'GET':
         args = request.args
-        search_keyword = args.get('search', None)
+        name_search = args.get('name', None)
+        page = args.get('page', None,type=int)
+        sort = args.get('sort', None)
+        direction = args.get('dir', 'asc')
+        base_query = Route.query
+
+        if sort and direction == 'desc':
+            sort = '-'+sort
+        if page:
+            route_filt = RouteFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
+            base_query = route_filt.get_objects()
+        else:
+            route_filt = RouteFilter(data={'name': name_search, 'order_by': sort})
+            base_query = route_filt.apply()
+
+        routes = base_query
+
         if route_uid is not None:
             route = Route.query.filter_by(id=route_uid).first()
             if route is None:
                 return json.dumps({'error': 'Invalid Route Id'})
             return json.dumps({'success': True, 'route': route.as_dict()})
-        if search_keyword:
-            routes = Route.query.filter(Route.name.contains(search_keyword))
-        else:
-            routes = Route.query.all()
+
         all_routes = []
         for route in routes:
             all_routes.append(route.as_dict())

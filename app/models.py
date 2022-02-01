@@ -4,6 +4,9 @@ from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, creat
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import inspect
 
+from sqlalchemy_filters import Filter, StringField, Field
+from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator
+
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -91,3 +94,40 @@ class Student(db.Model):
 # c1 = User(email='admin@gmail.com', address = '', full_name='Admin', pswd='AdminPassword', admin_flag=1)
 # session.add(c1)
 # session.commit()
+
+
+class UserFilter(Filter):
+    email = StringField(lookup_operator=ContainsOperator)
+    full_name = StringField(lookup_operator=ContainsOperator)
+
+    class Meta:
+        model = User
+        session = db.session
+        page_size = 10
+
+class StudentFilter(Filter):
+    student_id = Field(lookup_operator = EqualsOperator)
+    school_id = Field(lookup_operator = EqualsOperator)
+    full_name = StringField(lookup_operator=ContainsOperator)
+
+    class Meta:
+        model = Student
+        session = db.session
+        page_size = 10
+
+class SchoolFilter(Filter):
+    name = StringField(lookup_operator=ContainsOperator)
+
+    class Meta:
+        model = School
+        session = db.session
+        page_size = 10
+
+class RouteFilter(Filter):
+    name = StringField(lookup_operator=ContainsOperator)
+    school_id = Field()
+
+    class Meta:
+        model = Route
+        session = db.session
+        page_size = 10
