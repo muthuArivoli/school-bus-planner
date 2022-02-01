@@ -6,7 +6,6 @@ import { DataGrid } from '@mui/x-data-grid';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
 
 Geocode.setApiKey("AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o");
 Geocode.setLocationType("ROOFTOP");
@@ -25,7 +24,7 @@ const studentColumns = [
 ];
 
 const routeColumns = [
-  { field: 'routeid', hide: true, width: 30},
+  { field: 'id', hide: true, width: 30},
   { field: 'name', headerName: "Name", width: 150},
   { field: 'description', headerName: "Description", width: 100},
   { field: 'students', headerName: "Students", hide: true, width: 100},
@@ -133,25 +132,34 @@ export default function RoutePlanner() {
   };
 
   //runs when user clicks on a route in the data grid, should fill text fields with data
-  //TODO: implement
   const handleEdit = (route) => {
-    //console.log(route);
     let new_routeInfo = JSON.parse(JSON.stringify(routeInfo));
     let new_studentRows = JSON.parse(JSON.stringify(studentRows));
-    //get these values to be the values from the route.
-
+    //set values
+    new_routeInfo["name"] = route.name;
+    new_routeInfo["description"] = route.description;
+    new_studentRows = route.students;
     setRouteInfo(new_routeInfo);
     setStudentRows(new_studentRows);
-    // Remove route from route list.
-    console.log(route.routeid);
-    console.log(routeRows[0].routeid);
-    setRouteRows(routeRows.filter((value) => value.routeid != route.routeid));
+    deleteRouteRow(route.id);
+    //set displayed values to true for students
+    let newDisplayed = JSON.parse(JSON.stringify(displayed));
+    for (var i=0;i<displayed.length;i++) {
+      newDisplayed[i]["isBeingDisplayed"] = true;
+    }
+    setDisplayed(newDisplayed);
   };
+
+   const deleteRouteRow = React.useCallback((id) => {
+     setTimeout(() => {
+      setRouteRows((routeRows) => routeRows.filter((row) => row.id !== id));
+    });
+   }, []);
 
   //runs when user clicks on "Add Route" button, should add info to "Current Route" data grid
   const handleAddRoute = () => {
-    let newRoute = {"routeid": routeidcounter, "name": routeInfo["name"], "description": routeInfo["description"], "students": studentRows};
     routeidcounter += 1;
+    let newRoute = {"id": routeidcounter, "name": routeInfo["name"], "description": routeInfo["description"], "students": studentRows};
     let newRouteRows = [...routeRows, newRoute];
     setRouteRows(newRouteRows);
     // Clear fields
@@ -166,7 +174,6 @@ export default function RoutePlanner() {
   };
 
   //runs when user types in textfield, should add value into correct part of routeInfo
-  //working?
   const handleInfoChange = (fieldindicator, new_value) => {
     let newInfo = JSON.parse(JSON.stringify(routeInfo));
     if (fieldindicator == "name") {
@@ -201,7 +208,7 @@ export default function RoutePlanner() {
                 <DataGrid
                   rows={routeRows}
                   columns={routeColumns}
-                  getRowId={(row) => (row.routeid)} //THIS WILL BE THE ID FROM THE BACKEND ONCE IMPLEMENTED
+                  //getRowId={(row) => row.id} //THIS WILL BE THE ID FROM THE BACKEND ONCE IMPLEMENTED
                   pageSize={5}
                   rowsPerPageOptions={[5]}
                   density="compact"
