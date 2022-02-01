@@ -14,6 +14,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import GoogleMap from './GoogleMap'
 
 const theme = createTheme();
 
@@ -49,7 +50,7 @@ export default function UserUpdate(props) {
 
     const handleAddressChange = (event) => {
       let newData = JSON.parse(JSON.stringify(data));
-      newData.address = event.target.value;
+      newData.address = event;
       setData(newData);
     }
 
@@ -94,6 +95,7 @@ export default function UserUpdate(props) {
       if(data.password != null && data.password != ""){
         req.password = data.password;
       }
+      console.log(req);
       axios.patch(`http://localhost:5000/user/${id}`, req, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -167,11 +169,8 @@ export default function UserUpdate(props) {
                   <Input id="name" value={data.name} onChange={handleNameChange} />
                 </FormControl>
               </Grid>
-              <Grid item md={12}>
-                <FormControl>
-                  <InputLabel htmlFor="address">Address</InputLabel>
-                  <Input id="address" value={data.address} onChange={handleAddressChange}/>
-                </FormControl>
+              <Grid item md={12} sx={{ height: 450 }} >
+                <GoogleMap address={data.address} setAddress={handleAddressChange}/>
               </Grid>
               <Grid item md={12}>
                 <FormControlLabel

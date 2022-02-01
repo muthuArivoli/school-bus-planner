@@ -71,8 +71,8 @@ export default function DataTable(props) {
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
-        pageSize={5}
-        rowsPerPageOptions={[5]}
+        paginationMode="server"
+        
         disableSelectionOnClick
       />
       <Button

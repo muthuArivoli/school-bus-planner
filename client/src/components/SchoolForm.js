@@ -8,6 +8,7 @@ import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
 import Input from '@mui/material/Input';
 import InputLabel from '@mui/material/InputLabel';
+import GoogleMap from './GoogleMap';
 
 const theme = createTheme();
 
@@ -53,11 +54,8 @@ export default function SchoolForm(props) {
                   <Input id="name" label="name" value={name} onChange={handleNameChange} />
                 </FormControl>
               </Grid>
-              <Grid item md={12}>
-                <FormControl>
-                  <InputLabel htmlFor="address">School Address</InputLabel>
-                  <Input id="address" label="address" value={address} onChange={handleAddressChange} />
-                </FormControl>
+              <Grid item md={12} sx={{ height: 450 }} >
+                <GoogleMap address={address} setAddress={setAddress}/>
               </Grid>
 
               <Grid item sm={12}>

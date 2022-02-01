@@ -129,9 +129,11 @@ def users_get(user_id=None):
         if page:
             user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}).paginate()
             base_query = user_filt.get_objects()
-        else:
+        elif name_search or email_search or sort:
             user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort})
             base_query = user_filt.apply()
+        else:
+            base_query = User.query.all()
 
         users = base_query
         
@@ -220,7 +222,7 @@ def users(user_id=None):
                 if type(email) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 email_user = User.query.filter_by(email=email).first()
-                if email_user:
+                if email_user and email_user.id != int(user_id):
                     return {"msg": "Account already exists with this email"}, 400
                 user.email = email
             if 'name' in content:
@@ -278,10 +280,11 @@ def students_get(student_uid=None):
         if page:
             student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}).paginate()
             base_query = student_filt.get_objects()
-        else:
+        elif name_search or id_search or sort:
             student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort})
             base_query = student_filt.apply()
-
+        else:
+            base_query = Student.query.all()
         students = base_query
 
 
@@ -415,9 +418,11 @@ def schools_get(school_uid=None):
         if page:
             school_filt = SchoolFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
             base_query = school_filt .get_objects()
-        else:
+        elif name_search or sort:
             school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort})
             base_query = school_filt .apply()
+        else:
+            base_query = School.query.all()
 
         schools = base_query
 
@@ -531,9 +536,11 @@ def routes_get(route_uid=None):
         if page:
             route_filt = RouteFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
             base_query = route_filt.get_objects()
-        else:
+        elif name_search or sort:
             route_filt = RouteFilter(data={'name': name_search, 'order_by': sort})
             base_query = route_filt.apply()
+        else:
+            base_query = Route.query.all()
 
         routes = base_query
 

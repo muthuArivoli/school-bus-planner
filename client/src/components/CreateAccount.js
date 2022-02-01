@@ -17,6 +17,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate, Link as RouterLink} from 'react-router-dom';
 import Autocomplete from '@mui/material/Autocomplete';
 import axios from 'axios';
+import GoogleMap from './GoogleMap'
 
 const theme = createTheme();
 
@@ -82,14 +83,14 @@ export default function SignUp(props) {
       email: data.get('email'),
       password: data.get('password'),
       name: data.get('name'),
-      address: data.get('address'),
+      address: address,
       admin_flag: adminChecked
     });
     axios.post("http://localhost:5000/user", {
       email: data.get('email'),
       password: data.get('password'),
       name: data.get('name'),
-      address: data.get('address'),
+      address: address,
       admin_flag: adminChecked
     }, {
       headers: {
@@ -271,16 +272,8 @@ export default function SignUp(props) {
                   id="confirm-password"
                 />
               </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  onChange={(e) => setAddress(e.target.value)}
-                  error={false}
-                  fullWidth
-                  name="address"
-                  label="Address"
-                  id="address"
-                />
+              <Grid item md={12} sx={{ height: 450 }} >
+                <GoogleMap address={address} setAddress={setAddress}/>
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
