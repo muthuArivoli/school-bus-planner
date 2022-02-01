@@ -1534,3 +1534,15 @@ TypeError: Unicode-objects must be encoded before checking
 2022-02-01 22:17:21,018 WARNING werkzeug MainThread :  * Running on all addresses.
    WARNING: This is a development server. Do not use it in a production deployment.
 2022-02-01 22:17:21,018 INFO werkzeug MainThread :  * Running on http://172.18.0.4:5000/ (Press CTRL+C to quit)
+2022-02-01 22:19:32,369 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-02-01 22:19:32,369 INFO werkzeug MainThread :  * Running on http://172.18.0.4:5000/ (Press CTRL+C to quit)
+2022-02-01 22:22:06,589 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-02-01 22:22:06,589 INFO werkzeug MainThread :  * Running on http://172.18.0.4:5000/ (Press CTRL+C to quit)
+2022-02-01 22:22:41,099 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-02-01 22:22:41,099 INFO werkzeug MainThread :  * Running on http://172.18.0.4:5000/ (Press CTRL+C to quit)
+2022-02-01 22:38:25,861 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2022-02-01 22:38:25,862 INFO werkzeug MainThread :  * Running on http://172.18.0.4:5000/ (Press CTRL+C to quit)

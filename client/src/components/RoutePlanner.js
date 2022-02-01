@@ -187,7 +187,8 @@ export default function RoutePlanner() {
   };
 
   return (
-    <Stack direction="row" spacing={8}>
+    <Stack spacing={5} justifyContent="center">
+    <Stack direction="row" spacing={8} justifyContent="center">
       <Stack spacing={2.5} justifyContent="center">
         <LoadScript
           googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
@@ -219,7 +220,7 @@ export default function RoutePlanner() {
           </div>
         </Stack>
       </Stack>
-      <Stack spacing={2.5} justifyContent="left">
+      <Stack spacing={2.5} justifyContent="center">
         <TextField
           fullWidth
           variant="outlined"
@@ -259,6 +260,10 @@ export default function RoutePlanner() {
           Add Route
         </Button>
       </Stack>  
+    </Stack>
+    <Button variant="contained" color="primary" /*onClick={handleAddRoute}*/>
+      Submit/Finish
+    </Button>
     </Stack>
   )
 }
