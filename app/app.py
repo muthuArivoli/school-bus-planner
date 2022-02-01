@@ -363,7 +363,7 @@ def students(student_uid = None):
 
         if student is None:
             return json.dumps({'error': 'Invalid Student Id'})
-        if 'full_name' in content:
+        if 'name' in content:
             full_name = content.get('name', None)
             if type(full_name) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
@@ -411,7 +411,7 @@ def schools_get(school_uid=None):
     if request.method == 'GET':
         args = request.args
         name_search = args.get("name", '')
-        page = args.get('page',None,type='int')
+        page = args.get('page',None,type=int)
         sort = args.get('sort', None)
         direction = args.get('dir', 'asc')
         base_query = School.query
@@ -421,7 +421,7 @@ def schools_get(school_uid=None):
             sort = '-'+sort
         if page:
             school_filt = SchoolFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = school_filt .get_objects()
+            base_query = school_filt.get_objects()
             record_num = school_filt.count
         else:
             school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort})

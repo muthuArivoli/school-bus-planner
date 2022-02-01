@@ -26,7 +26,7 @@ export default function UserUpdate(props) {
       event.preventDefault();
       // eslint-disable-next-line no-console
       let req = {
-        full_name: name,
+        name: name,
         school_id: school.id,
         user_id: user.id
       }
