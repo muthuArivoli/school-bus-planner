@@ -2,7 +2,7 @@ import './App.css';
 import React, {useState} from 'react';
 import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import Login from './Login';
-import Map from './Map';
+import RoutePlanner from './RoutePlanner';
 import CreateAccount from './CreateAccount';
 import AdminDashboard from './AdminDashboard';
 import SchoolList from './SchoolList';
@@ -194,7 +194,7 @@ export default function App () {
           <Route exact path="/map" element={
             <PrivateRoute>
               <AdminDashboard>
-                <Map/>
+                <RoutePlanner/>
               </AdminDashboard>
             </PrivateRoute>
           } />
