@@ -117,23 +117,24 @@ def user_options(username=None):
 def users_get(user_id=None):
     if request.method == 'GET':
         args = request.args
-        name_search = args.get('name', None)
-        email_search = args.get('email', None)
+        name_search = args.get('name', '')
+        email_search = args.get('email', '')
         sort = args.get('sort', None)
         direction = args.get('dir', None)
         page = args.get('page', None, type=int)
         base_query = User.query
+        record_num = None
 
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
             user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}).paginate()
             base_query = user_filt.get_objects()
-        elif name_search or email_search or sort:
+            record_num = user_filt.count
+        else:
             user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort})
             base_query = user_filt.apply()
-        else:
-            base_query = User.query.all()
+            record_num = base_query.count()
 
         users = base_query
         
@@ -150,7 +151,7 @@ def users_get(user_id=None):
         all_users = []
         for user in users:
             all_users.append(user.as_dict())
-        return json.dumps({'success': True, "users": all_users})
+        return json.dumps({'success': True, "users": all_users, "records": record_num})
 
 
 @app.route('/user/<user_id>', methods = ['PATCH','DELETE'])
@@ -268,23 +269,25 @@ def student_options(student_uid=None):
 def students_get(student_uid=None):
     if request.method == 'GET':
         args = request.args
-        name_search = args.get('name',None)
+        name_search = args.get('name', '')
         id_search = args.get('id', None, type=int)
         page = args.get('page', None, type=int)
         sort = args.get('sort', None)
         direction = args.get('dir', None)
         base_query = Student.query
+        record_num = None
 
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
             student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}).paginate()
             base_query = student_filt.get_objects()
-        elif name_search or id_search or sort:
+            record_num = student_filt.count
+        else:
             student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort})
             base_query = student_filt.apply()
-        else:
-            base_query = Student.query.all()
+            record_num = base_query.count()
+
         students = base_query
 
 
@@ -297,7 +300,7 @@ def students_get(student_uid=None):
         all_students = []
         for student in students:
             all_students.append(student.as_dict())
-        return json.dumps({'success':True, "students": all_students})
+        return json.dumps({'success':True, "students": all_students, "records": record_num})
 
 @app.route('/student/<student_uid>', methods = ['PATCH', 'DELETE'])
 @app.route('/student', methods = ['POST'])
@@ -407,22 +410,23 @@ def schools_options(school_uid=None):
 def schools_get(school_uid=None):
     if request.method == 'GET':
         args = request.args
-        name_search = args.get("name", None)
+        name_search = args.get("name", '')
         page = args.get('page',None,type='int')
         sort = args.get('sort', None)
         direction = args.get('dir', 'asc')
         base_query = School.query
+        record_num = None
 
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
             school_filt = SchoolFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
             base_query = school_filt .get_objects()
-        elif name_search or sort:
-            school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort})
-            base_query = school_filt .apply()
+            record_num = school_filt.count
         else:
-            base_query = School.query.all()
+            school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort})
+            base_query = school_filt.apply()
+            record_num = base_query.count()
 
         schools = base_query
 
@@ -435,7 +439,7 @@ def schools_get(school_uid=None):
         all_schools = []
         for school in schools:
             all_schools.append(school.as_dict())
-        return json.dumps({'success':True, "schools": all_schools})
+        return json.dumps({'success':True, "schools": all_schools, "records": record_num})
      
 
 @app.route('/school/<school_uid>', methods = ['PATCH', 'DELETE'])
@@ -525,22 +529,23 @@ def route_options(route_uid=None):
 def routes_get(route_uid=None):
     if request.method == 'GET':
         args = request.args
-        name_search = args.get('name', None)
+        name_search = args.get('name', '')
         page = args.get('page', None,type=int)
         sort = args.get('sort', None)
         direction = args.get('dir', 'asc')
         base_query = Route.query
+        record_num = None
 
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
             route_filt = RouteFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
             base_query = route_filt.get_objects()
-        elif name_search or sort:
+            record_num = route_filt.count
+        else:
             route_filt = RouteFilter(data={'name': name_search, 'order_by': sort})
             base_query = route_filt.apply()
-        else:
-            base_query = Route.query.all()
+            record_num = base_query.count()
 
         routes = base_query
 
@@ -553,7 +558,7 @@ def routes_get(route_uid=None):
         all_routes = []
         for route in routes:
             all_routes.append(route.as_dict())
-        return json.dumps({'success':True, "routes": all_routes})
+        return json.dumps({'success':True, "routes": all_routes, "records": record_num})
 
 
 @app.route('/route/<route_uid>', methods = ['PATCH','DELETE'])
