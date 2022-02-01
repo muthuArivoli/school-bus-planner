@@ -11,6 +11,8 @@ import Container from '@mui/material/Container';
 Geocode.setApiKey("AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o");
 Geocode.setLocationType("ROOFTOP");
 
+let routeidcounter = 0;
+
 const containerStyle = {
     height: "400px",
     width: "500px"
@@ -133,15 +135,34 @@ export default function RoutePlanner() {
   //runs when user clicks on a route in the data grid, should fill text fields with data
   //TODO: implement
   const handleEdit = (route) => {
-    alert(JSON.stringify(route));
+    //console.log(route);
+    let new_routeInfo = JSON.parse(JSON.stringify(routeInfo));
+    let new_studentRows = JSON.parse(JSON.stringify(studentRows));
+    //get these values to be the values from the route.
+
+    setRouteInfo(new_routeInfo);
+    setStudentRows(new_studentRows);
+    // Remove route from route list.
+    console.log(route.routeid);
+    console.log(routeRows[0].routeid);
+    setRouteRows(routeRows.filter((value) => value.routeid != route.routeid));
   };
 
   //runs when user clicks on "Add Route" button, should add info to "Current Route" data grid
-  //TODO: clear the text fields and data grid of students after setting the routeRows state
   const handleAddRoute = () => {
-    let newRoute = {"routeid": 0, "name": routeInfo["name"], "description": routeInfo["description"], "students": studentRows};
+    let newRoute = {"routeid": routeidcounter, "name": routeInfo["name"], "description": routeInfo["description"], "students": studentRows};
+    routeidcounter += 1;
     let newRouteRows = [...routeRows, newRoute];
     setRouteRows(newRouteRows);
+    // Clear fields
+    setRouteInfo({"name": "", "description": ""});
+    setStudentRows([]);
+
+    let newDisplayed = JSON.parse(JSON.stringify(displayed));
+    for (var i=0;i<displayed.length;i++) {
+      newDisplayed[i]["isBeingDisplayed"] = false;
+    }
+    setDisplayed(newDisplayed);
   };
 
   //runs when user types in textfield, should add value into correct part of routeInfo
@@ -180,11 +201,11 @@ export default function RoutePlanner() {
                 <DataGrid
                   rows={routeRows}
                   columns={routeColumns}
-                  getRowId={(row) => row.name} //THIS WILL BE THE ID FROM THE BACKEND ONCE IMPLEMENTED
+                  getRowId={(row) => (row.routeid)} //THIS WILL BE THE ID FROM THE BACKEND ONCE IMPLEMENTED
                   pageSize={5}
                   rowsPerPageOptions={[5]}
                   density="compact"
-                  onRowClick={(row) => handleEdit(row)}
+                  onRowClick={(route) => handleEdit(route.row)}
                 />
               </div>
             </div>
@@ -196,7 +217,7 @@ export default function RoutePlanner() {
           fullWidth
           variant="outlined"
           label="Route Name"
-          // value={}
+          value={routeInfo["name"]}
           onChange={(e) => handleInfoChange("name", e.target.value)}
         />
         <TextField
@@ -205,7 +226,7 @@ export default function RoutePlanner() {
           label="Route Description"
           multiline
           rows={10}
-          // value={}
+          value={routeInfo["description"]}
           onChange={(e) => handleInfoChange("description", e.target.value)}
         />
         <Stack spacing={0} justifyContent="center">
