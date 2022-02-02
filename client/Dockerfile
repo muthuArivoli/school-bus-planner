@@ -10,6 +10,8 @@ COPY package-lock.json /app/package-lock.json
 
 RUN npm ci --maxsockets 5 --verbose
 RUN npm install react-scripts@latest -g --verbose --maxsockets 5
+
+COPY ./client /app
 RUN npm run build --verbose 
 # CMD ["npm", "start"]
 
@@ -25,7 +27,7 @@ RUN npm run build --verbose
 
 FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
-COPY gninx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
