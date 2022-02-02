@@ -64,6 +64,7 @@ def current_user_options():
     return json.dumps({'success':True})
 
 @app.route("/current_user", methods = ['GET'])
+@jwt_required()
 @cross_origin()
 def get_current_user():
     verify_jwt_in_request()
@@ -75,6 +76,27 @@ def get_current_user():
     for student in students:
         all_students.append(student.as_dict())
     return json.dumps({'success': True, 'user': user.as_dict(), 'students': all_students})
+
+@app.route("/current_user", methods = ['PATCH'])
+@jwt_required()
+@cross_origin()
+def patch_current_user():
+    verify_jwt_in_request()
+    user = User.query.filter_by(email = get_jwt_identity()).first()
+    if user is None:
+        return {"msg": "Invalid User ID"}, 400
+    content = request.json
+    if 'password' in content:
+        pswd = content.get('password', None)
+        if type(pswd) is not str:
+            return {"msg": "Invalid Query Syntax"}, 400
+        encrypted_pswd = bcrypt.hashpw(pswd.encode('utf-8'), bcrypt.gensalt())
+        user.pswd = encrypted_pswd.decode('utf-8')
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
+    return json.dumps({'success': True})
 
 
 @app.route('/login', methods = ['POST'])

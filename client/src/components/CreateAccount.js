@@ -168,7 +168,7 @@ export default function SignUp(props) {
       props.setShowSnackbar(true);
       props.setSnackbarSeverity("error");
       navigate("/users");
-    })
+    });
 
   };
 

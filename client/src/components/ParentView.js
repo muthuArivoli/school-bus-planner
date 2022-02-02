@@ -10,6 +10,10 @@ import DeleteDialog from './DeleteDialog';
 import { DataGrid } from '@mui/x-data-grid';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import TextField from '@mui/material/TextField';
+
 
 const Item = styled(Paper)(({ theme }) => ({
   ...theme.typography.body2,
@@ -46,6 +50,13 @@ export default function ParentView() {
   const [rows, setRows] = React.useState([]);
   const [data, setData] = React.useState({});
 
+  const [error, setError] = React.useState(false);
+  const [snackbarMsg, setSnackbarMsg] = React.useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState("error");
+
+  const [password, setPassword] = React.useState("");
+  const [conPassword, setConPassword] = React.useState("");
+
   React.useEffect(() =>{
     const fetchData = async() => {
       const result = await axios.get(
@@ -63,8 +74,52 @@ export default function ParentView() {
     fetchData();
   }, []);
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log("PATCH current user");
+    axios.patch(`http://localhost:5000/current_user`, {
+      password: password,
+    }, {
+      headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }).then((res) => {
+      if (res.data.success){
+        setSnackbarMsg(`Password successfully updated`);
+        setError(true);
+        setSnackbarSeverity("success");
+      }
+      else{
+        setSnackbarMsg(`Password not successfully updated`);
+        setError(true);
+        setSnackbarSeverity("error");
+      }
+      setPassword("");
+      setConPassword("");
+    }).catch((err) => {
+      setSnackbarMsg(`Password not successfully updated`);
+      setError(true);
+      setSnackbarSeverity("error");
+      setPassword("");
+      setConPassword("");
+    });
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setError(false);
+  };
+
   return (
-    
+    <>
+    <Snackbar open={error} onClose={handleClose}>
+    <Alert onClose={handleClose} severity={snackbarSeverity}>
+      {snackbarMsg}
+    </Alert>
+  </Snackbar>
     <Grid container alignItems="center" justifyContent="center" pt={5}>
         <Stack spacing={4} sx={{ width: '100%'}}>
           <Stack direction="row" spacing={25} justifyContent="center">
@@ -95,6 +150,36 @@ export default function ParentView() {
         </div>
       </div>
 
+      <TextField
+                  fullWidth
+                  onChange={(e) => setPassword(e.target.value)}
+                  value={password}
+                  name="password"
+                  label="Password"
+                  type="password"
+                  id="password"
+                  autoComplete="new-password"
+                />
+                <TextField
+                  onChange={(e) => setConPassword(e.target.value)}
+                  value={conPassword}
+                  error={password != conPassword}
+                  helperText={password != conPassword ? "Passwords do not match" : ""}
+                  fullWidth
+                  name="confirm-password"
+                  label="Confirm Password"
+                  type="password"
+                  id="confirm-password"
+                />
+                  <Button
+                  variant="contained"
+                  onClick={handleSubmit}
+                  disabled={password == "" || password != conPassword}
+                  >
+                    Submit
+                </Button>
+
       </Grid>
+      </>
   );
 }
