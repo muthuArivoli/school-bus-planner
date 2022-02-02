@@ -939,3 +939,11 @@ TypeError: object of type 'BaseQuery' has no len()
 2022-02-02 02:16:37,239 WARNING werkzeug MainThread :  * Running on all addresses.
    WARNING: This is a development server. Do not use it in a production deployment.
 2022-02-02 02:16:37,245 INFO werkzeug MainThread :  * Running on http://172.21.0.4:5000/ (Press CTRL+C to quit)
+2022-02-02 07:22:44,516 DEBUG root ThreadPoolExecutor-0_0 : [9, 5, 3]
+2022-02-02 07:22:44,630 DEBUG root ThreadPoolExecutor-0_0 : in here9
+2022-02-02 07:22:44,636 DEBUG root ThreadPoolExecutor-0_0 : in here5
+2022-02-02 07:22:44,638 DEBUG root ThreadPoolExecutor-0_0 : in here3
+2022-02-02 07:25:15,031 DEBUG root ThreadPoolExecutor-0_0 : [9, 5, 3]
+2022-02-02 07:25:15,089 DEBUG root ThreadPoolExecutor-0_0 : in here9
+2022-02-02 07:25:15,103 DEBUG root ThreadPoolExecutor-0_0 : in here5
+2022-02-02 07:25:15,122 DEBUG root ThreadPoolExecutor-0_0 : in here3
