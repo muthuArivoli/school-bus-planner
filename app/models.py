@@ -99,13 +99,6 @@ class Student(db.Model):
         return "<Student(full_name='{}', school_id={}, user_id={})>"\
             .format(self.full_name, self.school_id, self.user_id)
 
-# engine = create_engine('postgresql+psycopg2://postgres:bus@db:5432/db', echo = True)
-# Session = sessionmaker(bind = engine)
-# session = Session()
-
-# c1 = User(email='admin@gmail.com', address = '', full_name='Admin', pswd='AdminPassword', admin_flag=1)
-# session.add(c1)
-# session.commit()
 
 
 class UserFilter(Filter):

@@ -21,6 +21,7 @@ ROWS_PER_PAGE = 10
 
 db = SQLAlchemy(app)
 cors = CORS(app)
+api = Blueprint('api', __name__)
 
 from models import User, Student, School, Route, UserFilter, StudentFilter, SchoolFilter, RouteFilter
 
@@ -605,11 +606,12 @@ def routes(route_uid = None):
         content = request.json
         name = content.get('name', None)
         school_id = content.get('school_id', None)
+        students = content.get('students',[])
 
         if not name or not school_id:
             return {"msg": "Invalid Query Syntax"}, 400
         
-        if type(name) is not str or type(school_id) is not int:
+        if type(name) is not str or type(school_id) is not int or type(students) is not list or not all(isinstance(x, int) for x in students):
             return {"msg": "Invalid Query Syntax"}, 400
 
         new_route = Route(name = name, school_id = school_id)
@@ -619,6 +621,13 @@ def routes(route_uid = None):
             db.session.refresh(new_route)
         except SQLAlchemyError:
             return {"msg": "Database Error"}, 400
+        
+        for student_num in students:
+            logging.debug("in here" + str(student_num))
+            student = Student.query.filter_by(id=student_num).first()
+            if student:
+                student.route_id = new_route.id
+
         if 'description' in content:
             description = content.get('description', None)
             if type(description) is not str:
@@ -636,6 +645,14 @@ def routes(route_uid = None):
         route = Route.query.filter_by(id=route_uid).first()
         if route is None:
             return json.dumps({'error': 'Invalid Route Id'})
+        if 'students' in content:
+            students = content.get('students',[])
+            if type(students) is not list or not all(isinstance(x, int) for x in students):
+                return {"msg": "Invalid Query Syntax"}, 400
+            for student_num in students:
+                student = Student.query.filter_by(id=student_num).first()
+                if student:
+                    student.route_id = new_route.id
         if 'name' in content:
             name = content.get('name', None)
             if type(name) is not str:
@@ -652,6 +669,8 @@ def routes(route_uid = None):
             return {"msg": "Database Error"}, 400
         return json.dumps({'success': True})
     return json.dumps({'success': False})
+
+app.register_blueprint(api, url_prefix='/api')
 
 if __name__ == "__main__":
     app.run(debug=True)
