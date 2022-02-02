@@ -27,7 +27,7 @@ export default function SignIn() {
       event.preventDefault();
       const data = new FormData(event.currentTarget);
       // eslint-disable-next-line no-console
-      axios.post(REACT_APP_BASE_URL+'/login', {
+      axios.post(process.env.REACT_APP_BASE_URL+'/login', {
         email: data.get('email'),
         password: data.get('password'),
       }).then((res) => {
