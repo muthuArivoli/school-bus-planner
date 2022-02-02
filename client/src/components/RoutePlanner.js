@@ -15,32 +15,6 @@ import Alert from '@mui/material/Alert';
 Geocode.setApiKey("AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o");
 Geocode.setLocationType("ROOFTOP");
 
-// @todo: https://github.com/JustFly1984/react-google-maps-api/issues/70
-// see: https://github.com/JustFly1984/react-google-maps-api/issues/159#issuecomment-502446663
-class LoadScriptOnlyIfNeeded extends LoadScript {
-    componentDidMount() {
-      const cleaningUp = true;
-      const isBrowser = typeof document !== 'undefined'; // require('@react-google-maps/api/src/utils/isbrowser')
-      const isAlreadyLoaded =
-        window.google &&
-        window.google.maps &&
-        document.querySelector('body.first-hit-completed'); // AJAX page loading system is adding this class the first time the app is loaded
-      if (!isAlreadyLoaded && isBrowser) {
-        // @ts-ignore
-        if (window.google && !cleaningUp) {
-          console.error('google api is already presented');
-          return;
-        }
-  
-        this.isCleaningUp().then(this.injectScript);
-      }
-  
-      if (isAlreadyLoaded) {
-        this.setState({ loaded: true });
-      }
-    }
-  }
-
 const containerStyle = {
     height: "400px",
     width: "500px"
@@ -92,9 +66,9 @@ export default function RoutePlanner(props) {
 
     const [selectionModel, setSelectionModel] = React.useState([]);
     const [students, setStudents] = React.useState([]);
-    const [center, setCenter] =React.useState({lat: 0, lng:0});
     const [resetRoute, setResetRoute] = React.useState(false);
 
+  const [schoolLocation, setSchoolLocation] = React.useState({lat: 0, lng:0});
     let { id } = useParams();
     let navigate = useNavigate();
 
@@ -164,7 +138,8 @@ export default function RoutePlanner(props) {
                             console.log(userRes.data.user);
                             const g = await Geocode.fromAddress(userRes.data.user.uaddress);
                             const {lat, lng} = g.results[0].geometry.location;
-                            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], address: userRes.data.user.uaddress, location: {lat: lat, lng: lng}}]
+                            console.log(studentRes.data);
+                            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], address: userRes.data.user.uaddress, location: {lat: lat, lng: lng}, route: studentRes.data.student.route_id}]
                         }
                         else{
                             props.setSnackbarMsg(`Route could not be loaded`);
@@ -192,11 +167,32 @@ export default function RoutePlanner(props) {
             }
           };
           fetchData();
-    },[])
+    },[resetRoute])
 
     React.useEffect(()=>{
-        setCenter(getCenter(students));
-    }, [students])
+      const fetchData = async() => {
+        const result = await axios.get(
+          process.env.REACT_APP_BASE_URL+`/school/${id}`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        );
+        if(result.data.success){
+          const g = await Geocode.fromAddress(result.data.school.address);
+          const {lat, lng} = g.results[0].geometry.location;
+          console.log({lat: lat, lng: lng})
+          setSchoolLocation({lat: lat, lng: lng})
+        }
+        else{
+          props.setSnackbarMsg(`Route could not be loaded`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("error");
+          navigate("/routes");
+        }
+      }
+      fetchData();  
+    },[])
 
   const handleClick = (student, index) => {
     let ids = studentRows.map((value)=>{return value.id});
@@ -357,9 +353,10 @@ export default function RoutePlanner(props) {
         <LoadScript
           googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
         >
-          <GoogleMap mapContainerStyle={containerStyle} zoom={3} center={center}>
+          <GoogleMap mapContainerStyle={containerStyle} zoom={3} center={schoolLocation}>
+            <Marker title="School" position={schoolLocation}/>
             {students.map((student, index) => (
-                <Marker key={index} title={student.address} position={student.location} onClick={() => handleClick(student, index)}/> ))}
+                <Marker key={index} title={student.address} position={student.location} onClick={() => handleClick(student, index)} label={student.route == null ? "0" : "1"}/> ))}
           </GoogleMap>
         </LoadScript>
 
