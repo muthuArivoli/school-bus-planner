@@ -50,7 +50,7 @@ services:
     volumes:
       - './client:/app'
       - '/app/node_modules'
-      - /etc/letsencrypt/live/hypotheticaltransportfive.colab.duke.edu:/etc/nginx/certs
+      - '/etc/letsencrypt/live/hypotheticaltransportfive.colab.duke.edu:/etc/nginx/certs'
     depends_on:
       - app
     environment:
