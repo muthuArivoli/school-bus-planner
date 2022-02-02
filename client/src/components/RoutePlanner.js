@@ -122,6 +122,7 @@ export default function RoutePlanner(props) {
             setRouteRows(newRouteRows);
         }
         else{
+            console.log("a");
             props.setSnackbarMsg(`Route could not be loaded`);
             props.setShowSnackbar(true);
             props.setSnackbarSeverity("error");
@@ -141,6 +142,7 @@ export default function RoutePlanner(props) {
               }
             );
             if (result.data.success){
+              console.log(result.data)
                 let newRows = [];
                 for(let i=0; i<result.data.school.students.length; i++){
                   const studentRes = await axios.get(
@@ -152,7 +154,7 @@ export default function RoutePlanner(props) {
                   );
                   if(studentRes.data.success){
                         const userRes = await axios.get(
-                            `http://localhost:5000/student/${studentRes.data.student.user_id}`, {
+                            `http://localhost:5000/user/${studentRes.data.student.user_id}`, {
                             headers: {
                                 Authorization: `Bearer ${localStorage.getItem('token')}`
                             }
@@ -162,7 +164,7 @@ export default function RoutePlanner(props) {
                             console.log(userRes.data.user);
                             const g = await Geocode.fromAddress(userRes.data.user.uaddress);
                             const {lat, lng} = g.results[0].geometry.location;
-                            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.route.students[i], address: userRes.data.user.address, location: {lat: lat, lng: lng}}]
+                            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], address: userRes.data.user.uaddress, location: {lat: lat, lng: lng}}]
                         }
                         else{
                             props.setSnackbarMsg(`Route could not be loaded`);
@@ -182,6 +184,7 @@ export default function RoutePlanner(props) {
                 setStudents(newRows);
             }
             else{
+              console.log("d");
               props.setSnackbarMsg(`Route could not be loaded`);
               props.setShowSnackbar(true);
               props.setSnackbarSeverity("error");
@@ -236,7 +239,7 @@ export default function RoutePlanner(props) {
                 if(studentRes.data.success){
                     console.log(studentRes.data);
                     const userRes = await axios.get(
-                        `http://localhost:5000/student/${studentRes.data.student.user_id}`, {
+                        `http://localhost:5000/user/${studentRes.data.student.user_id}`, {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem('token')}`
                         }
@@ -247,6 +250,7 @@ export default function RoutePlanner(props) {
                         newRows = [...newRows, {name: studentRes.data.student.name, id: response.data.route.students[i], address: userRes.data.user.uaddress}]
                     }
                     else{
+                      console.log("c")
                         props.setSnackbarMsg(`Route could not be loaded`);
                         props.setShowSnackbar(true);
                         props.setSnackbarSeverity("error");
@@ -254,6 +258,7 @@ export default function RoutePlanner(props) {
                     }
                 }
                 else{
+                  console.log("b");
                     props.setSnackbarMsg(`Route could not be loaded`);
                     props.setShowSnackbar(true);
                     props.setSnackbarSeverity("error");
