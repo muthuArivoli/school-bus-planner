@@ -8,8 +8,8 @@ ENV PATH /app/node_modules/.bin:$PATH
 COPY package.json /app/package.json
 COPY package-lock.json /app/package-lock.json
 
-RUN npm ci --maxsockets 5 --verbose
-RUN npm install react-scripts@latest -g --verbose --maxsockets 5
+RUN npm ci --maxsockets 5 
+RUN npm install react-scripts@latest -g --maxsockets 5
 
 COPY . /app
 ARG URI
