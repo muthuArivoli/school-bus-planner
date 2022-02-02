@@ -649,10 +649,13 @@ def routes(route_uid = None):
             students = content.get('students',[])
             if type(students) is not list or not all(isinstance(x, int) for x in students):
                 return {"msg": "Invalid Query Syntax"}, 400
+            curr_students = Student.query.filter_by(route_id=route.id)
+            for student in curr_students:
+                student.route_id = float("NaN")
             for student_num in students:
                 student = Student.query.filter_by(id=student_num).first()
                 if student:
-                    student.route_id = new_route.id
+                    student.route_id = route.id
         if 'name' in content:
             name = content.get('name', None)
             if type(name) is not str:
