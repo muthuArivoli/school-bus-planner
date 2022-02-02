@@ -13,17 +13,6 @@ RUN npm install react-scripts@latest -g --verbose --maxsockets 5
 
 COPY . /app
 RUN npm run build --verbose 
-# CMD ["npm", "start"]
-
-# FROM node:latest as build
-# RUN mkdir -p /usr/src/app
-# WORKDIR /usr/src/app
-# COPY package.json /usr/src/app
-
-# RUN npm install
-
-# COPY . /usr/src/app
-# RUN npm run build
 
 FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
