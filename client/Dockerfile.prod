@@ -12,7 +12,9 @@ RUN npm ci --maxsockets 5 --verbose
 RUN npm install react-scripts@latest -g --verbose --maxsockets 5
 
 COPY . /app
-RUN npm run build --verbose 
+ARG URI
+ENV REACT_APP_BASE_URL=$URI
+RUN npm run build
 
 
 FROM nginx:alpine
