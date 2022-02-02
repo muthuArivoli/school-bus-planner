@@ -2,6 +2,12 @@ version: "3.9"
 
 services:
 
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
   db:
     image: postgres
     container_name: postgres-db
@@ -15,7 +21,6 @@ services:
       - type: bind
         source: ./db
         target: /var/lib/postgresql/data
-
   
   app:
     build: ./app
@@ -33,18 +38,18 @@ services:
       
 
   client: 
-    build: ./client
+    build: 
+        context: ./client
+        dockerfile: Dockerfile.dev
     image: marivoli/school-bus-node
     container_name: client
     ports: 
-      - 80:80
-      - 443:443
+      - 3000:3000
     volumes:
       - './client:/app'
       - '/app/node_modules'
-      - /etc/letsencrypt/:/etc/letsencrypt
     depends_on:
       - app
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
