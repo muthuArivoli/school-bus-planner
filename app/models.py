@@ -2,7 +2,8 @@ from app import db
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine
 from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy import inspect
+from sqlalchemy import inspect, select, func
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
 from sqlalchemy_filters import Filter, StringField, Field
 from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator
@@ -59,6 +60,17 @@ class Route(db.Model):
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     description = db.Column(db.String())
     students = relationship("Student")
+
+    @hybrid_property
+    def student_count(self):
+        return self.students.count()
+    
+    @student_count.expression
+    def student_count(cls):
+        return (select([func.count(Student.id)]).
+                where(Student.route_id == cls.id).
+                label("student_count")
+                )
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
