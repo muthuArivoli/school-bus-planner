@@ -2,19 +2,11 @@ version: "3.9"
 
 services:
 
-  # adminer:
-  #   image: adminer
-  #   restart: always
-  #   ports:
-  #     - 8080:8080
-
   db:
     image: postgres
     container_name: postgres-db
     ports:
       - 5432:5432
-    expose:
-      - 5432
     environment:
       - POSTGRES_PASSWORD=bus
       - POSTGRES_DB=db
@@ -56,23 +48,3 @@ services:
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
-
-  # nginx:
-  #   build: ./client
-  #   container_name: prod_nginx
-  #   ports:
-  #     - 80:80
-  #     - 443:443
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/nginx.conf
-  #   # networks:
-  #   #   - nginx_network
-  #   depends_on:
-  #     - app
-  #     - client
-      
-# networks:
-#   nginx_network:
-#     driver: bridge
-#   postgres_network:
-#     driver: bridge
