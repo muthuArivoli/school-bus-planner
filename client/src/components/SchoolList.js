@@ -50,15 +50,18 @@ export default function DataTable(props) {
   const [filterModel, setFilterModel] = React.useState({items: []});
   const [buttonStr, setButtonStr] = React.useState("Show all schools");
 
+  const [showAll, setShowAll] = React.useState(false);
   let navigate = useNavigate();
 
   const handleShowAll = () => {
-    if (buttonStr == "Show all schools"){
+    if (!showAll){
       setButtonStr("Show less schools");
-      setPage(-1);
+      setShowAll(true);
+      setPage(0);
     }
     else{
       setButtonStr("Show all schools");
+      setShowAll(false);
       setPage(0);
     }
   }
@@ -66,7 +69,7 @@ export default function DataTable(props) {
   React.useEffect(()=> {
     const fetchData = async() => {
       let params = {}
-      params.page = page + 1;
+      params.page = showAll ? null : page + 1;
 
       console.log(sortModel);
       if(sortModel.length > 0) {
@@ -94,7 +97,7 @@ export default function DataTable(props) {
       if (result.data.success){
         console.log(result.data);
         setTotalRows(result.data.records);
-        if(page == -1){
+        if(showAll){
           setPageSize(result.data.records);
         }
         else{
@@ -114,7 +117,7 @@ export default function DataTable(props) {
       }
     };
     fetchData();
-  }, [page, sortModel, filterModel])
+  }, [page, sortModel, filterModel, showAll])
 
   return (
     <div style={{ height: 400, width: '100%' }}>

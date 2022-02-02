@@ -10,6 +10,7 @@ import RouteDetailStudentList from './RouteDetailStudentList';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import MuiAlert from '@mui/material/Alert';
+import TextField from '@mui/material/TextField';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -137,9 +138,24 @@ export default function RouteDetail(props) {
               School: {school}
             </Typography>
           </Stack>
-          <Typography variant="h5" align="center">
-            Description: {data.description}
-          </Typography>
+          <TextField
+          label="Description"
+          value={data.description}
+          InputProps={{
+            readOnly: true,
+          }}
+          multiline
+          focused
+          />
+
+<Button component={RouterLink}
+              to={"/schools/" + data.school_id}
+              color="primary"
+              variant="outlined"
+              size="small"
+              style={{ marginLeft: 16 }}>
+              View School
+            </Button>
         </Stack>
 
         <RouteDetailStudentList rows={rows}/>

@@ -22,6 +22,9 @@ export default function UserUpdate(props) {
 
   const { id } = useParams();
   const [data, setData] = React.useState({email:"", password: "", con_password: "", name:"", address: "", admin: false});
+  const [emailList, setEmailList] = React.useState([])
+  const [oldEmail, setOldEmail] = React.useState("");
+
 
   let navigate = useNavigate();
 
@@ -37,6 +40,7 @@ export default function UserUpdate(props) {
       if (result.data.success){
         let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, admin: result.data.user.admin_flag, password: "", con_password: ""}
         setData(newData);
+        setOldEmail(result.data.user.email);
       }
       else{
         props.setSnackbarMsg(`User could not be loaded`);
@@ -47,6 +51,31 @@ export default function UserUpdate(props) {
     };
     fetchData();
   }, []);
+
+  React.useEffect(()=>{
+    const fetchEmailList = async() => {
+      const result = await axios.get(
+        'http://localhost:5000/user', {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (result.data.success){
+        let arr = result.data.users.map((value) => {
+          return value.email;
+        })
+        setEmailList(arr);
+      }
+      else{
+        props.setSnackbarMsg(`Users could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/users");
+      }
+    };
+    fetchEmailList();
+  }, [data])
 
     const handleAddressChange = (event) => {
       let newData = JSON.parse(JSON.stringify(data));
@@ -135,10 +164,17 @@ export default function UserUpdate(props) {
         <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
         <Grid container spacing={2}>
             <Grid item md={12}>
-                <FormControl>
-                  <InputLabel htmlFor="email">Email</InputLabel>
-                  <Input id="email" value={data.email} onChange={handleEmailChange}/>
-                </FormControl>
+                <TextField
+                  error={data.email!=oldEmail && emailList.includes(data.email)}
+                  helperText={(data.email!=oldEmail && emailList.includes(data.email)) ? "Email already taken" : ""}
+                  name="email"
+                  label="Email"
+                  type="email"
+                  id="email"
+                  value={data.email}
+                  onChange={handleEmailChange}
+                  autoComplete="email"
+                />
               </Grid>
               <Grid item md={12}>
                 <TextField
@@ -182,7 +218,7 @@ export default function UserUpdate(props) {
               <Grid item sm={12}>
                 <Button type="submit"
                   variant="contained"
-                  disabled={data.email == "" || data.address == "" || data.name == "" || data.password != data.con_password}
+                  disabled={data.email == "" || data.address == "" || data.name == "" || data.password != data.con_password || (data.email!=oldEmail && emailList.includes(data.email))}
                   >
                     Submit
                 </Button>

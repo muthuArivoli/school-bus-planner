@@ -39,6 +39,8 @@ export default function SignUp(props) {
 
   const [disable, setDisable] = React.useState(true);
 
+  const [emailList, setEmailList] = React.useState([]);
+
   const deleteStudent = (index) => {
     setStudents(students.filter((value, ind) => ind !== index));
     setRoutes(routes.filter((value, ind) => ind !== index));
@@ -48,6 +50,31 @@ export default function SignUp(props) {
       setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": null}])
       setRoutes([...routes, []]);
   }
+
+  React.useEffect(()=>{
+    const fetchEmailList = async() => {
+      const result = await axios.get(
+        'http://localhost:5000/user', {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (result.data.success){
+        let arr = result.data.users.map((value) => {
+          return value.email;
+        })
+        setEmailList(arr);
+      }
+      else{
+        props.setSnackbarMsg(`Users could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/users");
+      }
+    };
+    fetchEmailList();
+  }, [email])
 
   React.useEffect(() => {
     const fetchData = async() => {
@@ -102,7 +129,7 @@ export default function SignUp(props) {
           for(let i=0; i<students.length; i++){
             let reqS = {
               user_id: res.data.id,
-              full_name: students[i]["name"],
+              name: students[i]["name"],
               school_id:  students[i]["school_id"],
             }
             if (students[i]["id"] != "" && students[i]["id"] != null){
@@ -136,6 +163,11 @@ export default function SignUp(props) {
         props.setSnackbarSeverity("error");
         navigate("/users");
       }
+    }).catch((error) =>{
+      props.setSnackbarMsg(`User not successfully created`);
+      props.setShowSnackbar(true);
+      props.setSnackbarSeverity("error");
+      navigate("/users");
     })
 
   };
@@ -201,6 +233,7 @@ export default function SignUp(props) {
     for (let i=0; i<students.length; i++){
       disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "";
     }
+    disabled = disabled || emailList.includes(email);
     setDisable(disabled);
   }, [email, password, con_password, name, address, students])
 
@@ -239,6 +272,8 @@ export default function SignUp(props) {
               <Grid item xs={12}>
                 <TextField
                   required
+                  error={emailList.includes(email)}
+                  helperText={emailList.includes(email) ? "Email already taken":""}
                   fullWidth
                   onChange={(e) => setEmail(e.target.value)}
                   id="email"

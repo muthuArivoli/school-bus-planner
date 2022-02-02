@@ -54,14 +54,17 @@ export default function DataTable(props) {
   const [sortModel, setSortModel] = React.useState([]);
   const [filterModel, setFilterModel] = React.useState({items: []});
   const [buttonStr, setButtonStr] = React.useState("Show all users");
+  const [showAll, setShowAll] = React.useState(false);
 
   const handleShowAll = () => {
-    if (buttonStr == "Show all users"){
+    if (!showAll){
       setButtonStr("Show less users");
-      setPage(-1);
+      setShowAll(true);
+      setPage(0);
     }
     else{
       setButtonStr("Show all users");
+      setShowAll(false);
       setPage(0);
     }
   }
@@ -72,7 +75,7 @@ export default function DataTable(props) {
     const fetchData = async() => {
 
       let params = {}
-      params.page = page + 1;
+      params.page = showAll ? null : page + 1;
 
       console.log(sortModel);
       if(sortModel.length > 0) {
@@ -102,7 +105,7 @@ export default function DataTable(props) {
         console.log(result.data.users);
         console.log(result.data);
         setTotalRows(result.data.records);
-        if(page == -1){
+        if(showAll){
           setPageSize(result.data.records);
         }
         else{
@@ -122,7 +125,7 @@ export default function DataTable(props) {
       }
     };
     fetchData();
-  }, [page, sortModel, filterModel])
+  }, [page, sortModel, filterModel, showAll])
 
   return (
     <>

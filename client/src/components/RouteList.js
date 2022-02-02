@@ -55,13 +55,17 @@ export default function DataTable(props) {
   const [buttonStr, setButtonStr] = React.useState("Show all routes");
   let navigate = useNavigate();
 
+  const [showAll, setShowAll] = React.useState(false);
+
   const handleShowAll = () => {
-    if (buttonStr == "Show all routes"){
+    if (!showAll){
       setButtonStr("Show less routes");
-      setPage(-1);
+      setShowAll(true);
+      setPage(0);
     }
     else{
       setButtonStr("Show all routes");
+      setShowAll(false);
       setPage(0);
     }
   }
@@ -71,7 +75,7 @@ export default function DataTable(props) {
   React.useEffect(()=> {
     const fetchData = async() => {
       let params = {}
-      params.page = page + 1;
+      params.page = showAll ? null : page + 1;
 
       console.log(sortModel);
       if(sortModel.length > 0) {
@@ -101,7 +105,7 @@ export default function DataTable(props) {
         let data = result.data.routes
         console.log(data);
         setTotalRows(result.data.records);
-        if(page == -1){
+        if(showAll){
           setPageSize(result.data.records);
         }
         else{
@@ -135,7 +139,7 @@ export default function DataTable(props) {
       }
     };
     fetchData();
-  }, [page, sortModel, filterModel])
+  }, [page, sortModel, filterModel, showAll])
 
   return (
     <div style={{ height: 400, width: '100%' }}>

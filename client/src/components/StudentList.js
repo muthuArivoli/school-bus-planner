@@ -59,13 +59,17 @@ export default function DataTable(props) {
 
   const mappings = {"name": "full_name", "student_id": "student_id", "school": "school_id"}
 
+  const [showAll, setShowAll] = React.useState(false);
+
   const handleShowAll = () => {
-    if (buttonStr == "Show all students"){
+    if (!showAll){
       setButtonStr("Show less students");
-      setPage(-1);
+      setShowAll(true);
+      setPage(0);
     }
     else{
       setButtonStr("Show all students");
+      setShowAll(false);
       setPage(0);
     }
   }
@@ -73,7 +77,7 @@ export default function DataTable(props) {
   React.useEffect(()=> {
     const fetchData = async() => {
       let params = {}
-      params.page = page + 1;
+      params.page = showAll ? null : page + 1;
 
       console.log(sortModel);
       if(sortModel.length > 0) {
@@ -103,7 +107,7 @@ export default function DataTable(props) {
         let arr = [];
         let data = result.data.students
         setTotalRows(result.data.records);
-        if(page == -1){
+        if(showAll){
           setPageSize(result.data.records);
         }
         else{
@@ -157,7 +161,7 @@ export default function DataTable(props) {
       }
     };
     fetchData();
-  }, [page, sortModel, filterModel])
+  }, [page, sortModel, filterModel, showAll])
 
   return (
     <>
