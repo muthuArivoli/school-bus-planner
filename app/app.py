@@ -21,6 +21,7 @@ ROWS_PER_PAGE = 10
 
 db = SQLAlchemy(app)
 cors = CORS(app)
+api = Blueprint('api', __name__)
 
 from models import User, Student, School, Route, UserFilter, StudentFilter, SchoolFilter, RouteFilter
 
@@ -611,6 +612,8 @@ def routes(route_uid = None):
             return {"msg": "Database Error"}, 400
         return json.dumps({'success': True})
     return json.dumps({'success': False})
+
+app.register_blueprint(api, url_prefix='/api')
 
 if __name__ == "__main__":
     app.run(debug=True)
