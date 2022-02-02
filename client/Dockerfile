@@ -10,8 +10,8 @@ COPY package-lock.json /app/package-lock.json
 
 RUN npm ci --maxsockets 5 --verbose
 RUN npm install react-scripts@latest -g --verbose --maxsockets 5
-RUN npm run build
-
+# RUN npm run build
+CMD ["npm", "start"]
 
 # FROM node:latest as build
 # RUN mkdir -p /usr/src/app
