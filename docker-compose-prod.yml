@@ -36,6 +36,8 @@ services:
     build: 
       context: ./client
       dockerfile: Dockerfile.prod
+      args:
+        - REACT_APP_BASE_URL=api
     image: marivoli/school-bus-node
     container_name: client
     ports: 
@@ -50,4 +52,3 @@ services:
     environment:
       - NODE_ENV=production
       - CHOKIDAR_USEPOLLING=true
-      - REACT_APP_BASE_URL=api
