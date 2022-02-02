@@ -27,7 +27,7 @@ export default function SignIn() {
       event.preventDefault();
       const data = new FormData(event.currentTarget);
       // eslint-disable-next-line no-console
-      axios.post('http://hypotheticaltransportfive.colab.duke.edu:5000/login', {
+      axios.post('https://hypotheticaltransportfive.colab.duke.edu:5000/login', {
         email: data.get('email'),
         password: data.get('password'),
       }).then((res) => {
