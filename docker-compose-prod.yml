@@ -37,7 +37,7 @@ services:
       context: ./client
       dockerfile: Dockerfile.prod
       args:
-        - URI=api
+        - URI=/api
     image: marivoli/school-bus-node
     container_name: client
     ports: 
