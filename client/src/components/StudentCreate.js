@@ -33,7 +33,7 @@ export default function CreateSchool(props) {
         req.route_id = route.id;
       }
       console.log(req);
-      axios.post('http://localhost:5000/student', req, {
+      axios.post(process.env.REACT_APP_BASE_URL+'/student', req, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
         }

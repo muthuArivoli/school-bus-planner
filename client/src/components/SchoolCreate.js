@@ -13,7 +13,7 @@ export default function CreateSchool(props) {
     const handleSubmit = (event, name, address) => {
       event.preventDefault();
 
-      axios.post("http://localhost:5000/school", {
+      axios.post(process.env.REACT_APP_BASE_URL+"/school", {
         name: name,
         address: address
       }, {

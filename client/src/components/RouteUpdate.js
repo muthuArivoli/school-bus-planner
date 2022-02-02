@@ -31,7 +31,7 @@ export default function RouteUpdate(props) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
-    axios.patch(`http://localhost:5000/route/${id}`, {
+    axios.patch(process.env.REACT_APP_BASE_URL+`/route/${id}`, {
       name: name,
       description: description
     }, {
@@ -58,7 +58,7 @@ export default function RouteUpdate(props) {
   React.useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
-        `http://localhost:5000/route/${id}`, {
+        process.env.REACT_APP_BASE_URL+`/route/${id}`, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }

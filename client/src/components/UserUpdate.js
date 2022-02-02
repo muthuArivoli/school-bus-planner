@@ -31,7 +31,7 @@ export default function UserUpdate(props) {
   React.useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
-        `http://localhost:5000/user/${id}`, {
+        process.env.REACT_APP_BASE_URL+`/user/${id}`, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -55,7 +55,7 @@ export default function UserUpdate(props) {
   React.useEffect(()=>{
     const fetchEmailList = async() => {
       const result = await axios.get(
-        'http://localhost:5000/user', {
+        process.env.REACT_APP_BASE_URL+'/user', {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -125,7 +125,7 @@ export default function UserUpdate(props) {
         req.password = data.password;
       }
       console.log(req);
-      axios.patch(`http://localhost:5000/user/${id}`, req, {
+      axios.patch(process.env.REACT_APP_BASE_URL+`/user/${id}`, req, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
         }

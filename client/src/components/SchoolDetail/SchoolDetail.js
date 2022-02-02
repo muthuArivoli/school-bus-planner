@@ -24,7 +24,7 @@ export default function SchoolDetail(props) {
   React.useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
-        `http://localhost:5000/school/${id}`, {
+        process.env.REACT_APP_BASE_URL+`/school/${id}`, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -37,7 +37,7 @@ export default function SchoolDetail(props) {
         let newRows = [];
         for(let i=0; i<result.data.school.students.length; i++){
           const studentRes = await axios.get(
-            `http://localhost:5000/student/${result.data.school.students[i]}`, {
+            process.env.REACT_APP_BASE_URL+`/student/${result.data.school.students[i]}`, {
               headers: {
                   Authorization: `Bearer ${localStorage.getItem('token')}`
               }
@@ -80,7 +80,7 @@ export default function SchoolDetail(props) {
   };
 
  const handleDelete = () => {
-  axios.delete(` http://localhost:5000/school/${id}`, {
+  axios.delete(process.env.REACT_APP_BASE_URL+`/school/${id}`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`
     }

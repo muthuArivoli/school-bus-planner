@@ -87,7 +87,7 @@ export default function DataTable(props) {
 
       console.log(params);
       const result = await axios.get(
-        'http://localhost:5000/school', {
+        process.env.REACT_APP_BASE_URL+'/school', {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           },

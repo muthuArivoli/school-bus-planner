@@ -17,7 +17,7 @@ export default function StudentForm(props) {
         React.useEffect(()=> {
             const fetchData = async() => {
               const result = await axios.get(
-                'http://localhost:5000/user', {
+                process.env.REACT_APP_BASE_URL+'/user', {
                   headers: {
                       Authorization: `Bearer ${localStorage.getItem('token')}`
                   }
@@ -44,7 +44,7 @@ export default function StudentForm(props) {
           React.useEffect(()=> {
             const fetchData = async() => {
               const result = await axios.get(
-                'http://localhost:5000/school', {
+                process.env.REACT_APP_BASE_URL+'/school', {
                   headers: {
                       Authorization: `Bearer ${localStorage.getItem('token')}`
                   }
@@ -78,7 +78,7 @@ export default function StudentForm(props) {
           if (value == null || value.id == ""){
               return;
           }
-          axios.get(`http://localhost:5000/school/${value.id}`, {
+          axios.get(process.env.REACT_APP_BASE_URL+`/school/${value.id}`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             }

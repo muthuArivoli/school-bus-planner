@@ -36,7 +36,7 @@ function AuthRoute(props) {
     else{
 
     const result = axios.get(
-      `http://localhost:5000/current_user`, {
+      process.env.REACT_APP_BASE_URL+`/current_user`, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -77,7 +77,7 @@ function LoginRoute(props) {
     else{
 
     const result = axios.get(
-      `http://localhost:5000/current_user`, {
+      process.env.REACT_APP_BASE_URL+`/current_user`, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -118,7 +118,7 @@ function PrivateRoute({ children }) {
       else{
 
       const result = axios.get(
-        `http://localhost:5000/current_user`, {
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }

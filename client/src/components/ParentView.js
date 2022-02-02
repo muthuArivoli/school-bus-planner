@@ -60,7 +60,7 @@ export default function ParentView() {
   React.useEffect(() =>{
     const fetchData = async() => {
       const result = await axios.get(
-        `http://localhost:5000/current_user`, {
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -77,7 +77,7 @@ export default function ParentView() {
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log("PATCH current user");
-    axios.patch(`http://localhost:5000/current_user`, {
+    axios.patch(process.env.REACT_APP_BASE_URL+`/current_user`, {
       password: password,
     }, {
       headers: {

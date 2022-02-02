@@ -44,7 +44,7 @@ export default function UserUpdate(props) {
         req.route_id = null;
       }
       console.log(req);
-      axios.patch(`http://localhost:5000/student/${id}`, req, {
+      axios.patch(process.env.REACT_APP_BASE_URL+`/student/${id}`, req, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -71,7 +71,7 @@ export default function UserUpdate(props) {
     React.useEffect(() => {
       const fetchData = async() => {
         const result = await axios.get(
-          `http://localhost:5000/student/${id}`, {
+          process.env.REACT_APP_BASE_URL+`/student/${id}`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             }
@@ -84,7 +84,7 @@ export default function UserUpdate(props) {
 
           if(result.data.student.route_id != null){
             const routRes = await axios.get(
-              `http://localhost:5000/route/${result.data.student.route_id}`, {
+              process.env.REACT_APP_BASE_URL+`/route/${result.data.student.route_id}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
@@ -102,7 +102,7 @@ export default function UserUpdate(props) {
           }
 
           const schoolRes = await axios.get(
-            `http://localhost:5000/school/${result.data.student.school_id}`, {
+            process.env.REACT_APP_BASE_URL+`/school/${result.data.student.school_id}`, {
               headers: {
                   Authorization: `Bearer ${localStorage.getItem('token')}`
               }
@@ -119,7 +119,7 @@ export default function UserUpdate(props) {
           }
 
           const userRes = await axios.get(
-            `http://localhost:5000/user/${result.data.student.user_id}`, {
+            process.env.REACT_APP_BASE_URL+`/user/${result.data.student.user_id}`, {
               headers: {
                   Authorization: `Bearer ${localStorage.getItem('token')}`
               }

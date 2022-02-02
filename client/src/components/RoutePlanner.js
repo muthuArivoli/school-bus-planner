@@ -110,7 +110,7 @@ export default function RoutePlanner(props) {
     // set route rows
     const fetchData = async() => {
         const result = await axios.get(
-            `http://localhost:5000/school/${id}`, {
+            process.env.REACT_APP_BASE_URL+`/school/${id}`, {
               headers: {
                   Authorization: `Bearer ${localStorage.getItem('token')}`
               }
@@ -135,7 +135,7 @@ export default function RoutePlanner(props) {
     React.useEffect(()=>{
         const fetchData = async() => {
             const result = await axios.get(
-              `http://localhost:5000/school/${id}`, {
+              process.env.REACT_APP_BASE_URL+`/school/${id}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
@@ -146,7 +146,7 @@ export default function RoutePlanner(props) {
                 let newRows = [];
                 for(let i=0; i<result.data.school.students.length; i++){
                   const studentRes = await axios.get(
-                    `http://localhost:5000/student/${result.data.school.students[i]}`, {
+                    process.env.REACT_APP_BASE_URL+`/student/${result.data.school.students[i]}`, {
                       headers: {
                           Authorization: `Bearer ${localStorage.getItem('token')}`
                       }
@@ -154,7 +154,7 @@ export default function RoutePlanner(props) {
                   );
                   if(studentRes.data.success){
                         const userRes = await axios.get(
-                            `http://localhost:5000/user/${studentRes.data.student.user_id}`, {
+                            process.env.REACT_APP_BASE_URL+`/user/${studentRes.data.student.user_id}`, {
                             headers: {
                                 Authorization: `Bearer ${localStorage.getItem('token')}`
                             }
@@ -219,7 +219,7 @@ export default function RoutePlanner(props) {
         }
         console.log(selectionModel[0]);
         let response = await axios.get(
-            `http://localhost:5000/route/${selectionModel[0]}`, {
+            process.env.REACT_APP_BASE_URL+`/route/${selectionModel[0]}`, {
               headers: {
                   Authorization: `Bearer ${localStorage.getItem('token')}`
               }
@@ -230,7 +230,7 @@ export default function RoutePlanner(props) {
             let newRows = [];
             for(let i=0; i<response.data.route.students.length; i++){
                 const studentRes = await axios.get(
-                    `http://localhost:5000/student/${response.data.route.students[i]}`, {
+                    process.env.REACT_APP_BASE_URL+`/student/${response.data.route.students[i]}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
@@ -239,7 +239,7 @@ export default function RoutePlanner(props) {
                 if(studentRes.data.success){
                     console.log(studentRes.data);
                     const userRes = await axios.get(
-                        `http://localhost:5000/user/${studentRes.data.student.user_id}`, {
+                        process.env.REACT_APP_BASE_URL+`/user/${studentRes.data.student.user_id}`, {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem('token')}`
                         }
@@ -283,7 +283,7 @@ export default function RoutePlanner(props) {
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id})
         })
-        axios.post(`http://localhost:5000/route`, {
+        axios.post(process.env.REACT_APP_BASE_URL+`/route`, {
             school_id: parseInt(id),
             name: routeInfo["name"],
             description: routeInfo["description"],
@@ -305,7 +305,7 @@ export default function RoutePlanner(props) {
         );
     }
     else{
-        axios.patch(`http://localhost:5000/route/${selectionModel[0]}`, {
+        axios.patch(process.env.REACT_APP_BASE_URL+`/route/${selectionModel[0]}`, {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id})

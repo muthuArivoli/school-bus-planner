@@ -15,7 +15,7 @@ export default function UpdateSchool(props) {
     const handleSubmit = (event, na, ad) => {
         event.preventDefault();
     
-        axios.patch(`http://localhost:5000/school/${id}`, {
+        axios.patch(process.env.REACT_APP_BASE_URL+`/school/${id}`, {
           name: na,
           address: ad
         }, {
@@ -41,7 +41,7 @@ export default function UpdateSchool(props) {
       React.useEffect(() => {
         const fetchData = async() => {
           const result = await axios.get(
-            `http://localhost:5000/school/${id}`, {
+            process.env.REACT_APP_BASE_URL+`/school/${id}`, {
               headers: {
                   Authorization: `Bearer ${localStorage.getItem('token')}`
               }

@@ -19,7 +19,7 @@ export default function UserDetail(props) {
   let navigate = useNavigate();
 
   const handleDelete = () => {
-    axios.delete(`http://localhost:5000/user/${id}`, {
+    axios.delete(process.env.REACT_APP_BASE_URL+`/user/${id}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -51,7 +51,7 @@ export default function UserDetail(props) {
   React.useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
-        `http://localhost:5000/user/${id}`, {
+        process.env.REACT_APP_BASE_URL+`/user/${id}`, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -63,7 +63,7 @@ export default function UserDetail(props) {
         let newRows = [];
         for(let i=0;i<result.data.user.children.length; i++){
           const studentRes = await axios.get(
-            `http://localhost:5000/student/${result.data.user.children[i]}`, {
+            process.env.REACT_APP_BASE_URL+`/student/${result.data.user.children[i]}`, {
               headers: {
                   Authorization: `Bearer ${localStorage.getItem('token')}`
               }

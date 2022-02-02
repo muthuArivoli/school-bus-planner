@@ -93,7 +93,7 @@ export default function DataTable(props) {
 
       console.log(params);
       const result = await axios.get(
-        'http://localhost:5000/route', {
+        process.env.REACT_APP_BASE_URL+'/route', {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           },
@@ -113,7 +113,7 @@ export default function DataTable(props) {
         }
         for (let i=0;i<data.length; i++){
           const getRes = await axios.get(
-            `http://localhost:5000/school/${data[i].school_id}`, {
+            process.env.REACT_APP_BASE_URL+`/school/${data[i].school_id}`, {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
               }

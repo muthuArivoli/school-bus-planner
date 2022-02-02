@@ -28,7 +28,7 @@ export default function RouteDetail(props) {
   let navigate = useNavigate();
 
   const handleDelete = () => {
-      axios.delete(`http://localhost:5000/route/${id}`, {
+      axios.delete(process.env.REACT_APP_BASE_URL+`/route/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -60,7 +60,7 @@ export default function RouteDetail(props) {
   useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
-        `http://localhost:5000/route/${id}`, {
+        process.env.REACT_APP_BASE_URL+`/route/${id}`, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -70,7 +70,7 @@ export default function RouteDetail(props) {
         setData(result.data.route);
 
         const schoolRes = await axios.get(
-          `http://localhost:5000/school/${result.data.route.school_id}`, {
+          process.env.REACT_APP_BASE_URL+`/school/${result.data.route.school_id}`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             }
@@ -90,7 +90,7 @@ export default function RouteDetail(props) {
         let newRows = [];
         for(let i=0; i<result.data.route.students.length; i++){
           const studentRes = await axios.get(
-            `http://localhost:5000/student/${result.data.route.students[i]}`, {
+            process.env.REACT_APP_BASE_URL+`/student/${result.data.route.students[i]}`, {
               headers: {
                   Authorization: `Bearer ${localStorage.getItem('token')}`
               }

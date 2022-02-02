@@ -26,7 +26,7 @@ export default function StudentDetail() {
   React.useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
-        `http://localhost:5000/student/${id}`, {
+        process.env.REACT_APP_BASE_URL+`/student/${id}`, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -37,7 +37,7 @@ export default function StudentDetail() {
 
         if(result.data.student.route_id != null){
           const routRes = await axios.get(
-            `http://localhost:5000/route/${result.data.student.route_id}`, {
+            process.env.REACT_APP_BASE_URL+`/route/${result.data.student.route_id}`, {
               headers: {
                   Authorization: `Bearer ${localStorage.getItem('token')}`
               }
@@ -52,7 +52,7 @@ export default function StudentDetail() {
         }
 
         const schoolRes = await axios.get(
-          `http://localhost:5000/school/${result.data.student.school_id}`, {
+          process.env.REACT_APP_BASE_URL+`/school/${result.data.student.school_id}`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             }

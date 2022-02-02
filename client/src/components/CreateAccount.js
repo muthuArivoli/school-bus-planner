@@ -54,7 +54,7 @@ export default function SignUp(props) {
   React.useEffect(()=>{
     const fetchEmailList = async() => {
       const result = await axios.get(
-        'http://localhost:5000/user', {
+        process.env.REACT_APP_BASE_URL+'/user', {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -79,7 +79,7 @@ export default function SignUp(props) {
   React.useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
-        'http://localhost:5000/school', {
+        process.env.REACT_APP_BASE_URL+'/school', {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -113,7 +113,7 @@ export default function SignUp(props) {
       address: address,
       admin_flag: adminChecked
     });
-    axios.post("http://localhost:5000/user", {
+    axios.post(process.env.REACT_APP_BASE_URL+"/user", {
       email: data.get('email'),
       password: data.get('password'),
       name: data.get('name'),
@@ -139,7 +139,7 @@ export default function SignUp(props) {
               reqS.route_id = students[i]["route_id"];
             }
             console.log(reqS)
-            const re = await axios.post("http://localhost:5000/student", reqS, {
+            const re = await axios.post(process.env.REACT_APP_BASE_URL+"/student", reqS, {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
               }
@@ -206,7 +206,7 @@ export default function SignUp(props) {
     }
     const fetchData = async() => {
       const result = await axios.get(
-        `http://localhost:5000/school/${id}`, {
+        process.env.REACT_APP_BASE_URL+`/school/${id}`, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
           }
