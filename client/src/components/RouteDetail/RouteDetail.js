@@ -160,8 +160,6 @@ export default function RouteDetail(props) {
 
         <RouteDetailStudentList rows={rows}/>
 
-        //MAP GOES HERE
-
         <Stack direction="row" spacing={3} justifyContent="center">
           <Button component={RouterLink}
               to={"/schools/" + data.school_id +"/routes"}

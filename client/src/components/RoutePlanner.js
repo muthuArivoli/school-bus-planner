@@ -6,11 +6,40 @@ import { DataGrid } from '@mui/x-data-grid';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+
 
 Geocode.setApiKey("AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o");
 Geocode.setLocationType("ROOFTOP");
 
-let routeidcounter = 0;
+// @todo: https://github.com/JustFly1984/react-google-maps-api/issues/70
+// see: https://github.com/JustFly1984/react-google-maps-api/issues/159#issuecomment-502446663
+class LoadScriptOnlyIfNeeded extends LoadScript {
+    componentDidMount() {
+      const cleaningUp = true;
+      const isBrowser = typeof document !== 'undefined'; // require('@react-google-maps/api/src/utils/isbrowser')
+      const isAlreadyLoaded =
+        window.google &&
+        window.google.maps &&
+        document.querySelector('body.first-hit-completed'); // AJAX page loading system is adding this class the first time the app is loaded
+      if (!isAlreadyLoaded && isBrowser) {
+        // @ts-ignore
+        if (window.google && !cleaningUp) {
+          console.error('google api is already presented');
+          return;
+        }
+  
+        this.isCleaningUp().then(this.injectScript);
+      }
+  
+      if (isAlreadyLoaded) {
+        this.setState({ loaded: true });
+      }
+    }
+  }
 
 const containerStyle = {
     height: "400px",
@@ -18,8 +47,8 @@ const containerStyle = {
 };
 
 const studentColumns = [
-  { field: 'studentid', hide: true, width: 30},
-  { field: 'studentname', headerName: "Name", width: 150},
+  { field: 'id', hide: true, width: 30},
+  { field: 'name', headerName: "Name", width: 150},
   { field: 'address', headerName: "Address", width: 400},
 ];
 
@@ -27,69 +56,23 @@ const routeColumns = [
   { field: 'id', hide: true, width: 30},
   { field: 'name', headerName: "Name", width: 150},
   { field: 'description', headerName: "Description", width: 100},
-  { field: 'students', headerName: "Students", hide: true, width: 100},
 ];
 
-// TODO: This will be from the backend
-const addresses = [
-  "4610 Club Terrace NE, Atlanta, GA",
-  "10320 Bergtold Road, Clarence, NY",
-  "Duke University",
-  "White House",
-  "104 E Hammond Street, Durham, NC",
-];
-
-const locations = [];
-
-for (var i=0; i<addresses.length; i++) {
-  const g = Geocode.fromAddress(addresses[i]).then(
-    response => {
-      return response.results[0].geometry.location;
-    },
-    error => {
-      console.error(error);
-    }
-    );
-
-    g.then((a) => {
-      const {lat, lng} = a;
-      locations.push({lat, lng});
-    });
-}
-
-async function CoordsToAddress(latitude, longitude) {
-  let g = await Geocode.fromLatLng(latitude, longitude).then(
-    (response) => {
-      return response.results[0].formatted_address;
-    },
-    (error) => {
-      console.error(error);
-    }
-  );
-
-  let data = JSON.stringify(g)
-  return data;
-}
-
-const addLocationToRoute = async (location) => {
-  let address_noformat = await CoordsToAddress(location.lat, location.lng);
-  let address = address_noformat.replace(/['"]+/g, '');
-
-  // TODO: Non-address fields will be from the backend (barring coords)
-  return { studentid: 14, studentname: "temp", address: address, coords: location };
-};
-
-function getCenter(locations) {
+function getCenter(students) {
   let lattotal = 0;
   let lngtotal = 0;
 
-  for (var j = 0; j < locations.length; j++) {
-    lattotal += locations[j].lat;
-    lngtotal += locations[j].lng;
+  if(students.length == 0){
+      return {lat: 0, lng: 0}
   }
 
-  let avglat = lattotal / (locations.length);
-  let avglng = lngtotal / (locations.length);
+  for (var j = 0; j < students.length; j++) {
+    lattotal += students[j].location.lat;
+    lngtotal += students[j].location.lng;
+  }
+
+  let avglat = lattotal / (students.length);
+  let avglng = lngtotal / (students.length);
 
   const center = {
     lat: avglat,
@@ -98,80 +81,250 @@ function getCenter(locations) {
   return center;
 }
 
-export default function RoutePlanner() {
- const [studentRows, setStudentRows] = React.useState([]); //rows of data grid: "Students in Current Row"
- const [routeRows, setRouteRows] = React.useState([]); //rows of data grid: "Current Rows"
+export default function RoutePlanner(props) {
+  const [studentRows, setStudentRows] = React.useState([]); //rows of data grid: "Students in Current Row"
+  const [routeRows, setRouteRows] = React.useState([]); //rows of data grid: "Current Rows"
  const [routeInfo, setRouteInfo] = React.useState({"name": "", "description": ""}); //values from text fields
- const [displayed, setDisplayed] = React.useState([]); //behind-the-scenes state to track studentRow display
+
+ const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+ const [snackbarMsg, setSnackbarMsg] = React.useState("");
+ const [snackbarSeverity, setSnackbarSeverity] = React.useState("error");
+
+    const [selectionModel, setSelectionModel] = React.useState([]);
+    const [students, setStudents] = React.useState([]);
+    const [center, setCenter] =React.useState({lat: 0, lng:0});
+    const [resetRoute, setResetRoute] = React.useState(false);
+
+    let { id } = useParams();
+    let navigate = useNavigate();
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+          return;
+        }
+    
+        setSnackbarOpen(false);
+      };
+
+    React.useEffect(()=>{
+    // set route rows
+    const fetchData = async() => {
+        const result = await axios.get(
+            `http://localhost:5000/school/${id}`, {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+        if(result.data.success) {
+            console.log(result.data.school);
+            let newRouteRows = result.data.school.routes.map((value)=>{return {name: value.name, id: value.id, description: value.description}});
+            setRouteRows(newRouteRows);
+        }
+        else{
+            props.setSnackbarMsg(`Route could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/routes");
+        }
+    };
+    fetchData();
+    }, [resetRoute]);
+
+    React.useEffect(()=>{
+        const fetchData = async() => {
+            const result = await axios.get(
+              `http://localhost:5000/school/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+              }
+            );
+            if (result.data.success){
+                let newRows = [];
+                for(let i=0; i<result.data.school.students.length; i++){
+                  const studentRes = await axios.get(
+                    `http://localhost:5000/student/${result.data.school.students[i]}`, {
+                      headers: {
+                          Authorization: `Bearer ${localStorage.getItem('token')}`
+                      }
+                    }
+                  );
+                  if(studentRes.data.success){
+                        const userRes = await axios.get(
+                            `http://localhost:5000/student/${studentRes.data.student.user_id}`, {
+                            headers: {
+                                Authorization: `Bearer ${localStorage.getItem('token')}`
+                            }
+                            }
+                        );
+                        if(userRes.data.success){
+                            console.log(userRes.data.user);
+                            const g = await Geocode.fromAddress(userRes.data.user.uaddress);
+                            const {lat, lng} = g.results[0].geometry.location;
+                            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.route.students[i], address: userRes.data.user.address, location: {lat: lat, lng: lng}}]
+                        }
+                        else{
+                            props.setSnackbarMsg(`Route could not be loaded`);
+                            props.setShowSnackbar(true);
+                            props.setSnackbarSeverity("error");
+                            navigate("/routes");
+                        }
+                  }
+                  else{
+                    props.setSnackbarMsg(`School could not be loaded`);
+                    props.setShowSnackbar(true);
+                    props.setSnackbarSeverity("error");
+                    navigate("/schools");
+                  }
+                }
+
+                setStudents(newRows);
+            }
+            else{
+              props.setSnackbarMsg(`Route could not be loaded`);
+              props.setShowSnackbar(true);
+              props.setSnackbarSeverity("error");
+              navigate("/routes");
+            }
+          };
+          fetchData();
+    },[])
+
+    React.useEffect(()=>{
+        setCenter(getCenter(students));
+    }, [students])
+
+  const handleClick = (student, index) => {
+    let ids = studentRows.map((value)=>{return value.id});
+    if(ids.includes(student.id)){
+        let newStudentRows = studentRows.filter(value=> value.id != student.id)
+        setStudentRows(newStudentRows)
+    }
+    else{
+        let newStudentRows = [...studentRows, {id: student.id, address: student.address, name: student.name}];
+        setStudentRows(newStudentRows);
+    }
+  };
 
   React.useEffect(() => {
-  let newDisplayed = [];
-  for (var i=0;i<addresses.length;i++) {
-      newDisplayed = [...newDisplayed, {"address": addresses[i], "isBeingDisplayed": false}];
-  }
-  setDisplayed(newDisplayed);
-  }, []);
-
-  const center = getCenter(locations);
-
-  const handleClick = (location, index) => {
-    if (!displayed[index]["isBeingDisplayed"]) {
-      addLocationToRoute(location).then((res) => {
-          let newDisplayed = JSON.parse(JSON.stringify(displayed));
-          newDisplayed[index]["isBeingDisplayed"] = true;
-          setDisplayed(newDisplayed);
-          let newRows = [...studentRows, res];
+    const fetchStudents = async() => {
+        if(selectionModel.length == 0){
+            setRouteInfo({"name": "", "description": ""});
+            setStudentRows([]);
+            return;
+        }
+        console.log(selectionModel[0]);
+        let response = await axios.get(
+            `http://localhost:5000/route/${selectionModel[0]}`, {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          if(response.data.success){
+            setRouteInfo({"name": response.data.route.name, "description": response.data.route.description});
+            let newRows = [];
+            for(let i=0; i<response.data.route.students.length; i++){
+                const studentRes = await axios.get(
+                    `http://localhost:5000/student/${response.data.route.students[i]}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                    }
+                );
+                if(studentRes.data.success){
+                    console.log(studentRes.data);
+                    const userRes = await axios.get(
+                        `http://localhost:5000/student/${studentRes.data.student.user_id}`, {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('token')}`
+                        }
+                        }
+                    );
+                    if(userRes.data.success){
+                        console.log(userRes.data);
+                        newRows = [...newRows, {name: studentRes.data.student.name, id: response.data.route.students[i], address: userRes.data.user.uaddress}]
+                    }
+                    else{
+                        props.setSnackbarMsg(`Route could not be loaded`);
+                        props.setShowSnackbar(true);
+                        props.setSnackbarSeverity("error");
+                        navigate("/routes");
+                    }
+                }
+                else{
+                    props.setSnackbarMsg(`Route could not be loaded`);
+                    props.setShowSnackbar(true);
+                    props.setSnackbarSeverity("error");
+                    navigate("/routes");
+                }
+          }
+          console.log(newRows);
           setStudentRows(newRows);
-      })
-    } else if (displayed[index]["isBeingDisplayed"]) {
-      let newDisplayed = JSON.parse(JSON.stringify(displayed));
-      newDisplayed[index]["isBeingDisplayed"] = false;
-      setDisplayed(newDisplayed);
-      setStudentRows(studentRows.filter((value) => value.coords !== location));
+        }
+        
+
     }
-  };
 
-  //runs when user clicks on a route in the data grid, should fill text fields with data
-  const handleEdit = (route) => {
-    let new_routeInfo = JSON.parse(JSON.stringify(routeInfo));
-    let new_studentRows = JSON.parse(JSON.stringify(studentRows));
-    //set values
-    new_routeInfo["name"] = route.name;
-    new_routeInfo["description"] = route.description;
-    new_studentRows = route.students;
-    setRouteInfo(new_routeInfo);
-    setStudentRows(new_studentRows);
-    deleteRouteRow(route.id);
-    //set displayed values to true for students
-    let newDisplayed = JSON.parse(JSON.stringify(displayed));
-    for (var i=0;i<displayed.length;i++) {
-      newDisplayed[i]["isBeingDisplayed"] = true;
+    fetchStudents();
+  }, [selectionModel])
+
+  const handleSubmit = (event) => {
+    if(selectionModel.length == 0){
+        console.log({
+            school_id: id,
+            name: routeInfo["name"],
+            description: routeInfo["description"],
+            students: studentRows.map((value)=>{return value.id})
+        })
+        axios.post(`http://localhost:5000/route`, {
+            school_id: parseInt(id),
+            name: routeInfo["name"],
+            description: routeInfo["description"],
+            students: studentRows.map((value)=>{return value.id})
+        }).then((res)=>{
+            if(res.data.success){
+                setRouteInfo({"name": "", "description": ""});
+                setStudentRows([]);
+                setSnackbarOpen(true);
+                setSnackbarSeverity('success');
+                setSnackbarMsg('Route successfully created');
+            }
+            else{
+                setSnackbarOpen(true);
+                setSnackbarSeverity('error');
+                setSnackbarMsg('Failed to create route');
+            }
+        }
+        );
     }
-    setDisplayed(newDisplayed);
-  };
+    else{
+        axios.patch(`http://localhost:5000/route/${selectionModel[0]}`, {
+            name: routeInfo["name"],
+            description: routeInfo["description"],
+            students: studentRows.map((value)=>{return value.id})
+        }).then((res)=>{
+            if(res.data.success){
+                setRouteInfo({"name": "", "description": ""});
+                setStudentRows([]);
+                setSnackbarOpen(true);
+                setSnackbarSeverity('success');
+                setSnackbarMsg('Route successfully updated');
+            }
+            else{
+                setSnackbarOpen(true);
+                setSnackbarSeverity('error');
+                setSnackbarMsg('Failed to update route');
+            }
+        }
+        );
 
-   const deleteRouteRow = React.useCallback((id) => {
-     setTimeout(() => {
-      setRouteRows((routeRows) => routeRows.filter((row) => row.id !== id));
-    });
-   }, []);
-
-  //runs when user clicks on "Add Route" button, should add info to "Current Route" data grid
-  const handleAddRoute = () => {
-    routeidcounter += 1;
-    let newRoute = {"id": routeidcounter, "name": routeInfo["name"], "description": routeInfo["description"], "students": studentRows};
-    let newRouteRows = [...routeRows, newRoute];
-    setRouteRows(newRouteRows);
-    // Clear fields
-    setRouteInfo({"name": "", "description": ""});
-    setStudentRows([]);
-
-    let newDisplayed = JSON.parse(JSON.stringify(displayed));
-    for (var i=0;i<displayed.length;i++) {
-      newDisplayed[i]["isBeingDisplayed"] = false;
     }
-    setDisplayed(newDisplayed);
-  };
+    setSelectionModel([]);
+    setResetRoute(!resetRoute);
+  }
+
 
   //runs when user types in textfield, should add value into correct part of routeInfo
   const handleInfoChange = (fieldindicator, new_value) => {
@@ -187,6 +340,12 @@ export default function RoutePlanner() {
   };
 
   return (
+    <>
+    <Snackbar open={snackbarOpen} onClose={handleClose}>
+    <Alert onClose={handleClose} severity={snackbarSeverity}>
+      {snackbarMsg}
+    </Alert>
+  </Snackbar>
     <Stack spacing={5} justifyContent="center">
     <Stack direction="row" spacing={8} justifyContent="center">
       <Stack spacing={2.5} justifyContent="center">
@@ -194,8 +353,8 @@ export default function RoutePlanner() {
           googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
         >
           <GoogleMap mapContainerStyle={containerStyle} zoom={3} center={center}>
-            {locations.map((location, index) => (
-                <Marker key={index} title={addresses[index]} position={location} onClick={() => handleClick(location, index)}/> ))}
+            {students.map((student, index) => (
+                <Marker key={index} title={student.address} position={student.location} onClick={() => handleClick(student, index)}/> ))}
           </GoogleMap>
         </LoadScript>
 
@@ -209,11 +368,12 @@ export default function RoutePlanner() {
                 <DataGrid
                   rows={routeRows}
                   columns={routeColumns}
-                  //getRowId={(row) => row.id} //THIS WILL BE THE ID FROM THE BACKEND ONCE IMPLEMENTED
+                  selectionModel={selectionModel}
+                  onSelectionModelChange={(selectionModel) => setSelectionModel(selectionModel)}
+                  getRowId={(row) => row.id}
                   pageSize={5}
                   rowsPerPageOptions={[5]}
                   density="compact"
-                  onRowClick={(route) => handleEdit(route.row)}
                 />
               </div>
             </div>
@@ -247,7 +407,7 @@ export default function RoutePlanner() {
                 <DataGrid
                   rows={studentRows}
                   columns={studentColumns}
-                  getRowId={(row) => row.address} //THIS WILL BE THE ID FROM THE BACKEND ONCE IMPLEMENTED
+                  getRowId={(row) => row.id} //THIS WILL BE THE ID FROM THE BACKEND ONCE IMPLEMENTED
                   pageSize={5}
                   rowsPerPageOptions={[5]}
                   density="compact"
@@ -256,14 +416,12 @@ export default function RoutePlanner() {
             </div>
           </div>
         </Stack>
-        <Button variant="contained" color="primary" onClick={handleAddRoute}>
-          Add Route
+        <Button variant="contained" color="primary" onClick={handleSubmit} disabled={routeInfo["name"] == ""}>
+          {selectionModel.length == 0 ? "Add Route" : "Update Route"}
         </Button>
       </Stack>  
     </Stack>
-    <Button variant="contained" color="primary" /*onClick={handleAddRoute}*/>
-      Submit/Finish
-    </Button>
     </Stack>
+    </>
   )
 } 

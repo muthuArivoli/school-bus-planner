@@ -123,7 +123,7 @@ export default function SchoolDetail(props) {
 
         <Stack direction="row" spacing={3} justifyContent="center">
           <Button component={RouterLink}
-                to={"/schools/" + id + "/planner"}
+                to={"/schools/" + id + "/routes"}
                 color="primary"
                 variant="outlined"
                 size="small"
