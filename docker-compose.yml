@@ -21,6 +21,7 @@ services:
       - type: bind
         source: ./db
         target: /var/lib/postgresql/data
+
   
   app:
     build: ./app
@@ -41,6 +42,8 @@ services:
     build: ./client
     image: marivoli/school-bus-node
     container_name: client
+    expose: 
+      - "3000"
     ports: 
       - 3000:3000
     volumes:
@@ -51,3 +54,20 @@ services:
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
+
+  nginx:
+    build: ./client
+    container_name: prod_nginx
+    ports:
+      - 80:80
+      - 443:443
+    # networks:
+    #   - nginx_network
+    depends_on:
+      - app
+      
+# networks:
+#   nginx_network:
+#     driver: bridge
+#   postgres_network:
+#     driver: bridge
