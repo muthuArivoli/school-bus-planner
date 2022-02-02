@@ -21,6 +21,7 @@ import RouteUpdate from './RouteUpdate';
 import ParentDashboard from './ParentDashboard';
 import ParentView from './ParentView';
 import StudentView from './StudentView';
+import RoutePlanner from './RoutePlanner';
 import axios from 'axios';
 
 function AuthRoute(props) {
@@ -215,6 +216,13 @@ export default function App () {
               </AdminDashboard>
             </PrivateRoute>
           } /> 
+          <Route exact path="/schools/:id/routes" element={
+            <PrivateRoute>
+              <AdminDashboard>
+                <RoutePlanner/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
           <Route exact path="/users" element={
             <PrivateRoute>
               <AdminDashboard>
@@ -285,13 +293,6 @@ export default function App () {
             <PrivateRoute>
               <AdminDashboard>
                 <RouteDetail/>
-              </AdminDashboard>
-            </PrivateRoute>
-          } />
-          <Route exact path="/routes/:id/update" element={
-            <PrivateRoute>
-              <AdminDashboard>
-                <RouteUpdate/>
               </AdminDashboard>
             </PrivateRoute>
           } />
