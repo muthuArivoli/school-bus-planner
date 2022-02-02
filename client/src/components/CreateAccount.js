@@ -113,6 +113,7 @@ export default function SignUp(props) {
       address: address,
       admin_flag: adminChecked
     });
+    console.log(process.env.REACT_APP_BASE_URL);
     axios.post(process.env.REACT_APP_BASE_URL+"/user", {
       email: data.get('email'),
       password: data.get('password'),
