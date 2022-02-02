@@ -33,7 +33,9 @@ services:
       
 
   client: 
-    build: ./client
+    build: 
+      context: ./client
+      dockerfile: Dockerfile.prod
     image: marivoli/school-bus-node
     container_name: client
     ports: 
