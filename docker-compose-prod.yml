@@ -50,4 +50,4 @@ services:
     environment:
       - NODE_ENV=production
       - CHOKIDAR_USEPOLLING=true
-      - REACT_APP_BASE_URL="api"
+      - REACT_APP_BASE_URL=api
