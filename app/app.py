@@ -594,7 +594,7 @@ def routes(route_uid = None):
                 return json.dumps({'error': 'Invalid Route Id'})
         students = Student.query.filter_by(route_id=route.id)
         for student in students:
-            student.route_id = float("NaN")
+            student.route_id = None
         try:
             db.session.delete(route)
             db.session.commit()
@@ -651,7 +651,7 @@ def routes(route_uid = None):
                 return {"msg": "Invalid Query Syntax"}, 400
             curr_students = Student.query.filter_by(route_id=route.id)
             for student in curr_students:
-                student.route_id = float("NaN")
+                student.route_id = None
             for student_num in students:
                 student = Student.query.filter_by(id=student_num).first()
                 if student:
