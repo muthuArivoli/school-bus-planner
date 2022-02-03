@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Button from '@mui/material/Button';
 import Input from '@mui/material/Input';
 import InputLabel from '@mui/material/InputLabel';
@@ -119,7 +119,7 @@ export default function UserUpdate(props) {
         name: data.name,
         email: data.email,
         address: data.address,
-        admin: data.admin
+        admin_flag: data.admin
       }
       if(data.password != null && data.password != ""){
         req.password = data.password;
@@ -208,17 +208,15 @@ export default function UserUpdate(props) {
               <Grid item md={12} sx={{ height: 450 }} >
                 <GoogleMap address={data.address} setAddress={handleAddressChange}/>
               </Grid>
-              <Grid item md={12} sx={{mt:12}}>
-              <FormControl>
-              <FormControlLabel
-                  sx={{mb:5}}
-                  control={<Checkbox value="admin" />}
-                  label="admin1"
+              <Grid item md={12}>
+                <FormControlLabel
+                  control={<Checkbox value="admin" color="primary" />}
+                  label="Admin"
                   id="admin"
                   name="admin"
-                  
+                  checked={data.admin}
+                  onChange={handleAdminChange}
                 />
-              </FormControl>
               </Grid>
               <Grid item sm={12}>
                 <Button type="submit"
