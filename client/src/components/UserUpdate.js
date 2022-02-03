@@ -208,12 +208,17 @@ export default function UserUpdate(props) {
               <Grid item md={12} sx={{ height: 450 }} >
                 <GoogleMap address={data.address} setAddress={handleAddressChange}/>
               </Grid>
-              <Grid item md={12}>
-                <FormControlLabel
-
-                  control={<Checkbox checked={data.admin} onChange={handleAdminChange} color="primary" />}
-                  label="Admin"
+              <Grid item md={12} sx={{mt:12}}>
+              <FormControl>
+              <FormControlLabel
+                  sx={{mb:5}}
+                  control={<Checkbox value="admin" />}
+                  label="admin1"
+                  id="admin"
+                  name="admin"
+                  
                 />
+              </FormControl>
               </Grid>
               <Grid item sm={12}>
                 <Button type="submit"
