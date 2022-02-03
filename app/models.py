@@ -1,7 +1,13 @@
 from app import db
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy import inspect, select, func
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+
+from sqlalchemy_filters import Filter, StringField, Field
+from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator
+
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -12,10 +18,18 @@ class User(db.Model):
     uaddress = db.Column(db.String())
     pswd = db.Column(db.String())
     admin_flag = db.Column(db.Boolean())
+    children = relationship("Student")
+
+    def as_dict(self):
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        main.pop('pswd')
+        students = [student.id for student in self.children]
+        main['children'] = students
+        return main
 
     def __repr__(self):
-        return "<User(email='{}', full_name='{}', uaddress={}, pswd={}, admin_flag={})>"\
-            .format(self.email, self.full_name, self.uaddress, self.pswd, self.admin_flag) 
+        return "<User(email='{}', full_name='{}', pswd={}, admin_flag={})>"\
+            .format(self.email, self.full_name, self.pswd, self.admin_flag) 
 
 class School(db.Model):
     __tablename__ = 'schools'
@@ -23,7 +37,16 @@ class School(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
     address = db.Column(db.String())
-    
+    routes = relationship("Route")
+    students = relationship("Student")
+
+    def as_dict(self):
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        routes = [route.as_dict() for route in self.routes]
+        students = [student.id for student in self.students]
+        main['routes'] = routes
+        main['students'] = students
+        return main
 
     def __repr__(self):
         return "<School(name='{}', address='{}')>"\
@@ -36,10 +59,28 @@ class Route(db.Model):
     name = db.Column(db.String())
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     description = db.Column(db.String())
+    students = relationship("Student")
+
+    @hybrid_property
+    def student_count(self):
+        return self.students.count()
+    
+    @student_count.expression
+    def student_count(cls):
+        return (select([func.count(Student.id)]).
+                where(Student.route_id == cls.id).
+                label("student_count")
+                )
+
+    def as_dict(self):
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        students = [student.id for student in self.students]
+        main['students'] = students
+        return main
 
     def __repr__(self):
-        return "<Route(name='{}', school_id='{}', description={})>"\
-            .format(self.name, self.school_id, self.description)
+        return "<Route(name='{}', school_id='{}')>"\
+            .format(self.name, self.school_id)
 
 class Student(db.Model):
     __tablename__ = 'students'
@@ -51,14 +92,47 @@ class Student(db.Model):
     route_id = db.Column(db.Integer, ForeignKey('routes.id'))
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
 
+    def as_dict(self):
+        return{"name": getattr(self, 'full_name'), "student_id": getattr(self, "student_id"), "id": getattr(self, "id"), "school_id": getattr(self, "school_id"), "route_id": getattr(self, "route_id"), "user_id": getattr(self, "user_id")}
+
     def __repr__(self):
-        return "<Student(full_name='{}', student_id='{}', school_id={}, route_id={}, user_id={})>"\
-            .format(self.full_name, self.student_id, self.school_id, self.route_id, self.user_id)
+        return "<Student(full_name='{}', school_id={}, user_id={})>"\
+            .format(self.full_name, self.school_id, self.user_id)
 
-# engine = create_engine('postgresql+psycopg2://postgres:bus@db:5432/db', echo = True)
-# Session = sessionmaker(bind = engine)
-# session = Session()
 
-# c1 = User(email='cac.100199@gmail.com', full_name='Claudia Chapman', uaddress='10 Warren Ave', pswd='S@cred18', admin_flag=0)
-# session.add(c1)
-# session.commit()
+
+class UserFilter(Filter):
+    email = StringField(lookup_operator=ContainsOperator)
+    full_name = StringField(lookup_operator=ContainsOperator)
+
+    class Meta:
+        model = User
+        session = db.session
+        page_size = 10
+
+class StudentFilter(Filter):
+    student_id = Field(lookup_operator = EqualsOperator)
+    school_id = Field(lookup_operator = EqualsOperator)
+    full_name = StringField(lookup_operator=ContainsOperator)
+
+    class Meta:
+        model = Student
+        session = db.session
+        page_size = 10
+
+class SchoolFilter(Filter):
+    name = StringField(lookup_operator=ContainsOperator)
+
+    class Meta:
+        model = School
+        session = db.session
+        page_size = 10
+
+class RouteFilter(Filter):
+    name = StringField(lookup_operator=ContainsOperator)
+    school_id = Field()
+
+    class Meta:
+        model = Route
+        session = db.session
+        page_size = 10
