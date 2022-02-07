@@ -2,7 +2,7 @@
 
 Instructions for Deployment:
 
-SSH into VM --> ssh cac146@vcm-25134 and enter password S@cred18
+SSH into VM --> ssh vcm@vcm-25134 and enter password va8dtLekyk
 
 Install Docker --> sudo apt install docker-ce
 
