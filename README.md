@@ -2,7 +2,7 @@
 
 Instructions for Deployment:
 
-SSH into VM --> ssh vcm@vcm-25134 and enter password va8dtLekyk
+SSH into VM --> ssh vcm@vcm-25134.vm.duke.edu and enter password va8dtLekyk
 
 Install Docker --> sudo apt install docker-ce
 
