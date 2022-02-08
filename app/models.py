@@ -29,7 +29,8 @@ class User(db.Model):
 
     def __repr__(self):
         return "<User(email='{}', full_name='{}', pswd={}, admin_flag={})>"\
-            .format(self.email, self.full_name, self.pswd, self.admin_flag) 
+            .format(self.email, self.full_name, self.pswd, self.admin_flag)
+  
 
 class School(db.Model):
     __tablename__ = 'schools'
