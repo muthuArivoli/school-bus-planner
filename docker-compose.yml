@@ -16,7 +16,6 @@ services:
     environment:
       - POSTGRES_PASSWORD=bus
       - POSTGRES_DB=db
-      - "POSTGRES_HOST_AUTH_METHOD=trust"
     volumes:
       - type: bind
         source: ./db
