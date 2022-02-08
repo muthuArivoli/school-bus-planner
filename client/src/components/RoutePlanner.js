@@ -195,13 +195,14 @@ export default function RoutePlanner(props) {
     },[])
 
   const handleClick = (student, index) => {
-    let ids = studentRows.map((value)=>{return value.id});
-    if(ids.includes(student.id)){
-        let newStudentRows = studentRows.filter(value=> value.id != student.id)
+    let addresses = studentRows.map((value)=>{return value.address});
+    if(addresses.includes(student.address)){
+        let newStudentRows = studentRows.filter(value=> value.address != student.address)
         setStudentRows(newStudentRows)
     }
     else{
-        let newStudentRows = [...studentRows, {id: student.id, address: student.address, name: student.name}];
+        let allStudents = students.filter(value => value.address == student.address)
+        let newStudentRows = [...studentRows, ...allStudents];
         setStudentRows(newStudentRows);
     }
   };
