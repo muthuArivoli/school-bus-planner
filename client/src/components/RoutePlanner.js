@@ -284,6 +284,10 @@ export default function RoutePlanner(props) {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id})
+        }, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
         }).then((res)=>{
             if(res.data.success){
                 setRouteInfo({"name": "", "description": ""});
@@ -305,6 +309,10 @@ export default function RoutePlanner(props) {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id})
+        }, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
         }).then((res)=>{
             if(res.data.success){
                 setRouteInfo({"name": "", "description": ""});
