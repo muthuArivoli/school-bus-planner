@@ -5,7 +5,7 @@ import { styled } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
-import {Link as RouterLink, useParams} from 'react-router-dom';
+import {Link as RouterLink, useParams, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import Typography from '@mui/material/Typography';
 
@@ -19,51 +19,37 @@ const Item = styled(Paper)(({ theme }) => ({
 export default function StudentDetail() {
 
   let { id } = useParams();
+  let navigate = useNavigate();
   const [data, setData] = React.useState({});
   const [school, setSchool] = React.useState({});
   const [route, setRoute] = React.useState({name: "No Route", description: ""});
 
   React.useEffect(() => {
     const fetchData = async() => {
-      const result = await axios.get(
-        process.env.REACT_APP_BASE_URL+`/student/${id}`, {
-          headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        }
-      );
-      if (result.data.success){
-        setData(result.data.student);
-
-        if(result.data.student.route_id != null){
-          const routRes = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/route/${result.data.student.route_id}`, {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if (routRes.data.success){
-            setRoute(routRes.data.route);
-          }
-        }
-        else {
-          setRoute({name: "No Route", description: ""});
-        }
-
-        const schoolRes = await axios.get(
-          process.env.REACT_APP_BASE_URL+`/school/${result.data.student.school_id}`, {
+      try {
+        const result = await axios.get(
+          process.env.REACT_APP_BASE_URL+`/current_user/${id}`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             }
           }
         );
-        if (schoolRes.data.success){
-          setSchool(schoolRes.data.school);
+        if (result.data.success){
+          setData(result.data.student);
+          setSchool(result.data.school);
+          if(result.data.route == null){
+            setRoute({name: "No Route", description: ""});
+          }
+          else{
+            setRoute(result.data.route);
+          }
         }
-
+        else {
+          navigate("/")
+        }
+      } catch (e) {
+        navigate("/")
       }
-
     };
 
     fetchData();

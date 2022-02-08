@@ -60,8 +60,9 @@ def refresh_expiring_jwts(response):
         return response
 
 @app.route('/current_user', methods =['OPTIONS'])
+@app.route("/current_user/<student_id>", methods = ['OPTIONS'])
 @cross_origin()
-def current_user_options():
+def current_user_options(student_id=None):
     return json.dumps({'success':True})
 
 @app.route("/current_user", methods = ['GET'])
@@ -77,6 +78,28 @@ def get_current_user():
     for student in students:
         all_students.append(student.as_dict())
     return json.dumps({'success': True, 'user': user.as_dict(), 'students': all_students})
+
+
+@app.route("/current_user/<student_id>", methods = ['GET'])
+@jwt_required()
+@cross_origin()
+def get_current_user_student(student_id=None):
+    if student_id is None:
+        return {"msg": "Invalid Query Syntax"}, 400
+    verify_jwt_in_request()
+    user = User.query.filter_by(email = get_jwt_identity()).first()
+    if user is None:
+        return {"msg": "Invalid User ID"}, 400
+    student = Student.query.filter_by(id=student_id).first()
+    if student.user_id != user.id:
+        return jsonify(msg="User not authorized to do this action"), 403
+    school = School.query.filter_by(id=student.school_id).first()
+    school_dict = {"id": school.id, "name": school.name, "address": school.address}
+    route_dict = None
+    if student.route_id is not None:
+        route = Route.query.filter_by(id=student.route_id).first()
+        route_dict = {"id": route.id, "name": route.name, "description": route.description}
+    return json.dumps({'success': True, 'student': student.as_dict(), 'school': school_dict, 'route': route_dict})
 
 @app.route("/current_user", methods = ['PATCH'])
 @jwt_required()
@@ -136,7 +159,7 @@ def user_options(username=None):
 @app.route('/user/<user_id>', methods = ['GET'])
 @app.route('/user', methods = ['GET'])
 @cross_origin()
-@jwt_required()
+@admin_required()
 def users_get(user_id=None):
     if request.method == 'GET':
         args = request.args
@@ -288,7 +311,7 @@ def student_options(student_uid=None):
 @app.route('/student/<student_uid>', methods = ['GET'])
 @app.route('/student', methods = ['GET'])
 @cross_origin()
-@jwt_required()
+@admin_required()
 def students_get(student_uid=None):
     if request.method == 'GET':
         args = request.args
@@ -429,7 +452,7 @@ def schools_options(school_uid=None):
 @app.route('/school/<school_uid>', methods = ['GET'])
 @app.route('/school', methods = ['GET'])
 @cross_origin()
-@jwt_required()
+@admin_required()
 def schools_get(school_uid=None):
     if request.method == 'GET':
         args = request.args
@@ -467,8 +490,8 @@ def schools_get(school_uid=None):
 
 @app.route('/school/<school_uid>', methods = ['PATCH', 'DELETE'])
 @app.route('/school', methods = ['POST'])
-@admin_required()
 @cross_origin()
+@admin_required()
 def schools(school_uid = None):  
     if request.method == 'DELETE':
         school = School.query.filter_by(id=school_uid).first()
@@ -548,7 +571,7 @@ def route_options(route_uid=None):
 @app.route('/route/<route_uid>', methods = ['GET'])
 @app.route('/route', methods = ['GET'])
 @cross_origin()
-@jwt_required()
+@admin_required()
 def routes_get(route_uid=None):
     if request.method == 'GET':
         args = request.args
@@ -587,6 +610,7 @@ def routes_get(route_uid=None):
 @app.route('/route/<route_uid>', methods = ['PATCH','DELETE'])
 @app.route('/route', methods = ['POST'])
 @cross_origin()
+@admin_required()
 def routes(route_uid = None):
     if request.method == 'DELETE':
         route = Route.query.filter_by(id=route_uid).first()
