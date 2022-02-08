@@ -48,7 +48,7 @@ def seed_db():
 
     for f in range(0,len(names)):
         new_user = User(email=emails[f], full_name=names[f], pswd=encrypted_pswd.decode('utf-8'), admin_flag=0)
-        new_user.address = addresses[f]
+        new_user.uaddress = addresses[f]
         db.session.add(new_user)
         db.session.flush()
         db.session.refresh(new_user)
