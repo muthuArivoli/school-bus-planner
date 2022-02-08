@@ -17,7 +17,6 @@ import StudentDetail from './StudentDetail';
 import StudentCreate from './StudentCreate';
 import StudentUpdate from './StudentUpdate';
 import RouteDetail from './RouteDetail/RouteDetail';
-import RouteUpdate from './RouteUpdate';
 import ParentDashboard from './ParentDashboard';
 import ParentView from './ParentView';
 import StudentView from './StudentView';
