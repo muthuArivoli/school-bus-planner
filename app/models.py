@@ -100,6 +100,23 @@ class Student(db.Model):
         return "<Student(full_name='{}', school_id={}, user_id={})>"\
             .format(self.full_name, self.school_id, self.user_id)
 
+class Stop(db.Model):
+    __tablename__ = 'stops'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String())
+    location = db.Column(db.String())
+    pickup_time = db.Column(db.Time)
+    dropoff_time = db.Column(db.Time)
+    route_id = db.Column(db.Integer, ForeignKey('routes.id'))
+
+    def as_dict(self):
+        return{"name": getattr(self, 'name'), "location": getattr(self, "location"), "id": getattr(self, "id"), "pickup_time": getattr(self, "pickup_time"), "route_id": getattr(self, "route_id"), "dropoff_time": getattr(self, "dropoff_time")}
+
+
+    def __repr__(self):
+        return "<User(name='{}', location='{}', route_id={})>"\
+            .format(self.name, self.location, self.route_id)
 
 
 class UserFilter(Filter):
