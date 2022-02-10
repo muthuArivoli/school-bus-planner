@@ -12,7 +12,7 @@ from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator
 class User(db.Model):
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer(), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String())
     full_name = db.Column(db.String())
     uaddress = db.Column(db.String())
@@ -37,7 +37,7 @@ class User(db.Model):
 class School(db.Model):
     __tablename__ = 'schools'
 
-    id = db.Column(db.Integer(), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), unique=True)
     address = db.Column(db.String())
     routes = relationship("Route")
@@ -63,9 +63,9 @@ class School(db.Model):
 class Route(db.Model):
     __tablename__ = 'routes'
 
-    id = db.Column(db.Integer(), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
-    school_id = db.Column(db.Integer(), ForeignKey('schools.id'))
+    school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     description = db.Column(db.String())
     students = relationship("Student")
     complete = db.Column(db.Boolean())
@@ -95,12 +95,12 @@ class Route(db.Model):
 class Student(db.Model):
     __tablename__ = 'students'
 
-    id = db.Column(db.Integer(), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String())
-    student_id = db.Column(db.Integer(), positive=True)
-    school_id = db.Column(db.Integer(), ForeignKey('schools.id'))
-    route_id = db.Column(db.Integer(), ForeignKey('routes.id'))
-    user_id = db.Column(db.Integer(), ForeignKey('users.id'))
+    student_id = db.Column(db.Integer, positive=True)
+    school_id = db.Column(db.Integer, ForeignKey('schools.id'))
+    route_id = db.Column(db.Integer, ForeignKey('routes.id'))
+    user_id = db.Column(db.Integer, ForeignKey('users.id'))
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -113,12 +113,12 @@ class Student(db.Model):
 class Stop(db.Model):
     __tablename__ = 'stops'
 
-    id = db.Column(db.Integer(), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
     location = db.Column(db.String())
     pickup_time = db.Column(db.Time())
     dropoff_time = db.Column(db.Time())
-    route_id = db.Column(db.Integer(), ForeignKey('routes.id'))
+    route_id = db.Column(db.Integer, ForeignKey('routes.id'))
     longitude = db.Column(db.Float())
     latitude = db.Column(db.Float())
 
