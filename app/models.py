@@ -12,13 +12,15 @@ from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator
 class User(db.Model):
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer(), primary_key=True)
     email = db.Column(db.String())
     full_name = db.Column(db.String())
     uaddress = db.Column(db.String())
     pswd = db.Column(db.String())
     admin_flag = db.Column(db.Boolean())
     children = relationship("Student")
+    longitude = db.Column(db.Float())
+    latitude = db.Column(db.Float())
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -28,18 +30,23 @@ class User(db.Model):
         return main
 
     def __repr__(self):
-        return "<User(email='{}', full_name='{}', pswd={}, admin_flag={})>"\
-            .format(self.email, self.full_name, self.pswd, self.admin_flag)
+        return "<User(email='{}', uaddress='{}',full_name='{}', pswd={}, admin_flag={}, latitude='{}', longitude='{})>"\
+            .format(self.email, self.uaddress, self.full_name, self.pswd, self.admin_flag, self.latitude, self.longitude)
   
 
 class School(db.Model):
     __tablename__ = 'schools'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(), unique=True)
     address = db.Column(db.String())
     routes = relationship("Route")
     students = relationship("Student")
+    #CHECK THIS DATATYPE...
+    longitude = db.Column(db.Float())
+    latitude = db.Column(db.Float())
+    arrival_time = db.Column(db.Time())
+    departure_time = db.Column(db.Time())
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -50,18 +57,19 @@ class School(db.Model):
         return main
 
     def __repr__(self):
-        return "<School(name='{}', address='{}')>"\
-            .format(self.name, self.address)
+        return "<School(name='{}', address='{}',latitude='{}', longitude='{})>"\
+            .format(self.name, self.address, self.latitude, self.longitude)
 
 class Route(db.Model):
     __tablename__ = 'routes'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String())
-    school_id = db.Column(db.Integer, ForeignKey('schools.id'))
+    school_id = db.Column(db.Integer(), ForeignKey('schools.id'))
     description = db.Column(db.String())
     students = relationship("Student")
     complete = db.Column(db.Boolean())
+    stops = relationship("Stop")
 
     @hybrid_property
     def student_count(self):
@@ -87,12 +95,12 @@ class Route(db.Model):
 class Student(db.Model):
     __tablename__ = 'students'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer(), primary_key=True)
     full_name = db.Column(db.String())
-    student_id = db.Column(db.Integer, positive=True)
-    school_id = db.Column(db.Integer, ForeignKey('schools.id'))
-    route_id = db.Column(db.Integer, ForeignKey('routes.id'))
-    user_id = db.Column(db.Integer, ForeignKey('users.id'))
+    student_id = db.Column(db.Integer(), positive=True)
+    school_id = db.Column(db.Integer(), ForeignKey('schools.id'))
+    route_id = db.Column(db.Integer(), ForeignKey('routes.id'))
+    user_id = db.Column(db.Integer(), ForeignKey('users.id'))
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -105,20 +113,22 @@ class Student(db.Model):
 class Stop(db.Model):
     __tablename__ = 'stops'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String())
     location = db.Column(db.String())
-    pickup_time = db.Column(db.Time)
-    dropoff_time = db.Column(db.Time)
-    route_id = db.Column(db.Integer, ForeignKey('routes.id'))
+    pickup_time = db.Column(db.Time())
+    dropoff_time = db.Column(db.Time())
+    route_id = db.Column(db.Integer(), ForeignKey('routes.id'))
+    longitude = db.Column(db.Float())
+    latitude = db.Column(db.Float())
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
         return main
 
     def __repr__(self):
-        return "<Stop(name='{}', location='{}', route_id={})>"\
-            .format(self.name, self.location, self.route_id)
+        return "<Stop(name='{}', location='{}', route_id={}, latitude='{}', longitude='{})>"\
+            .format(self.name, self.location, self.route_id, self.latitude, self.longitude)
 
 
 class UserFilter(Filter):

@@ -23,7 +23,7 @@ db = SQLAlchemy(app)
 cors = CORS(app)
 api = Blueprint('api', __name__)
 
-from models import User, Student, School, Route, UserFilter, StudentFilter, SchoolFilter, RouteFilter
+from models import User, Student, School, Route, Stop, UserFilter, StudentFilter, SchoolFilter, RouteFilter
 
 db.create_all()
 
@@ -60,9 +60,8 @@ def refresh_expiring_jwts(response):
         return response
 
 @app.route('/current_user', methods =['OPTIONS'])
-@app.route("/current_user/<student_id>", methods = ['OPTIONS'])
 @cross_origin()
-def current_user_options(student_id=None):
+def current_user_options():
     return json.dumps({'success':True})
 
 @app.route("/current_user", methods = ['GET'])
@@ -78,28 +77,6 @@ def get_current_user():
     for student in students:
         all_students.append(student.as_dict())
     return json.dumps({'success': True, 'user': user.as_dict(), 'students': all_students})
-
-
-@app.route("/current_user/<student_id>", methods = ['GET'])
-@jwt_required()
-@cross_origin()
-def get_current_user_student(student_id=None):
-    if student_id is None:
-        return {"msg": "Invalid Query Syntax"}, 400
-    verify_jwt_in_request()
-    user = User.query.filter_by(email = get_jwt_identity()).first()
-    if user is None:
-        return {"msg": "Invalid User ID"}, 400
-    student = Student.query.filter_by(id=student_id).first()
-    if student.user_id != user.id:
-        return jsonify(msg="User not authorized to do this action"), 403
-    school = School.query.filter_by(id=student.school_id).first()
-    school_dict = {"id": school.id, "name": school.name, "address": school.address}
-    route_dict = None
-    if student.route_id is not None:
-        route = Route.query.filter_by(id=student.route_id).first()
-        route_dict = {"id": route.id, "name": route.name, "description": route.description}
-    return json.dumps({'success': True, 'student': student.as_dict(), 'school': school_dict, 'route': route_dict})
 
 @app.route("/current_user", methods = ['PATCH'])
 @jwt_required()
@@ -159,7 +136,7 @@ def user_options(username=None):
 @app.route('/user/<user_id>', methods = ['GET'])
 @app.route('/user', methods = ['GET'])
 @cross_origin()
-@admin_required()
+@jwt_required()
 def users_get(user_id=None):
     if request.method == 'GET':
         args = request.args
@@ -225,11 +202,14 @@ def users(user_id=None):
         password = content.get('password', None)
         name = content.get('name', None)
         admin_flag = content.get('admin_flag', None)
+        address = content.get('address', None)
+        longitude = content.get('longitude', None)
+        latitude = content.get('latitude', None)
 
-        if not email or not password or not name or admin_flag is None:
+        if not email or not password or not name or not admin_flag or not address or not longitude or not latitude:
             return {"msg": "Invalid Query Syntax"}, 400
         
-        if type(email) is not str or type(password) is not str or type(name) is not str or type(admin_flag) is not bool:
+        if type(email) is not str or type(password) is not str or type(name) is not str or type(admin_flag) is not bool or type(address) is not str or type(latitude) is not float or type(longitude) is not float:
             return {"msg": "Invalid Query Syntax"}, 400
         
         user = User.query.filter_by(email=email).first()
@@ -238,18 +218,13 @@ def users(user_id=None):
 
         encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-        new_user = User(email=email, full_name=name, admin_flag=admin_flag, pswd=encrypted_pswd.decode('utf-8'))
+        new_user = User(email=email, full_name=name, uaddress = address, admin_flag=admin_flag, pswd=encrypted_pswd.decode('utf-8'), latitude=latitude, longitude=longitude)
         try:
             db.session.add(new_user)
             db.session.flush()
             db.session.refresh(new_user)
         except SQLAlchemyError:
             return {"msg": "Database Error"}, 400
-        if 'address' in content:
-            address = content.get('address', None)
-            if type(address) is not str:
-                return {"msg": "Invalid Query Syntax"}, 400
-            new_user.uaddress = address
         try:
             db.session.commit()
         except SQLAlchemyError:
@@ -279,9 +254,15 @@ def users(user_id=None):
                 user.full_name = full_name
             if 'address' in content:
                 address = content.get('address', None)
-                if type(address) is not str:
+                longitude = content.get('longitude', None)
+                latitude = content.get('latitude', None)
+                if not latitude or not longitude:
+                    return {"msg": "Invalid Query Syntax"}, 400
+                if type(address) is not str or type(longitude) is not float or type(latitude) is not float:
                     return {"msg": "Invalid Query Syntax"}, 400
                 user.uaddress = address
+                user.longitude = longitude
+                user.latitude = latitude
             if 'password' in content:
                 pswd = content.get('password', None)
                 if type(pswd) is not str:
@@ -311,7 +292,7 @@ def student_options(student_uid=None):
 @app.route('/student/<student_uid>', methods = ['GET'])
 @app.route('/student', methods = ['GET'])
 @cross_origin()
-@admin_required()
+@jwt_required()
 def students_get(student_uid=None):
     if request.method == 'GET':
         args = request.args
@@ -452,7 +433,7 @@ def schools_options(school_uid=None):
 @app.route('/school/<school_uid>', methods = ['GET'])
 @app.route('/school', methods = ['GET'])
 @cross_origin()
-@admin_required()
+@jwt_required()
 def schools_get(school_uid=None):
     if request.method == 'GET':
         args = request.args
@@ -490,8 +471,8 @@ def schools_get(school_uid=None):
 
 @app.route('/school/<school_uid>', methods = ['PATCH', 'DELETE'])
 @app.route('/school', methods = ['POST'])
-@cross_origin()
 @admin_required()
+@cross_origin()
 def schools(school_uid = None):  
     if request.method == 'DELETE':
         school = School.query.filter_by(id=school_uid).first()
@@ -520,14 +501,18 @@ def schools(school_uid = None):
         content = request.json
         name = content.get('name', None)
         address = content.get('address', None)
+        longitude = content.get('longitude',None)
+        latitude = content.get('latitude', None)
         
-        if not name or not address:
+        #REQUIRED FIELDS
+        if not name or not address or not longitude or not latitude:
             return {"msg": "Invalid Query Syntax"}, 400
         
-        if type(name) is not str or type(address) is not str:
+        #TYPE CHECKING
+        if type(name) is not str or type(address) is not str or type(longitude) is not float or type(latitude) is not float:
             return {"msg": "Invalid Query Syntax"}, 400
 
-        new_school = School(name=name, address=address)
+        new_school = School(name=name, address=address, longitude=longitude, latitude=latitude)
         try:
             db.session.add(new_school)
             db.session.flush()
@@ -550,9 +535,15 @@ def schools(school_uid = None):
             school.name = name
         if 'address' in content:
             address = content.get('address', None)
-            if type(address) is not str:
+            longitude = content.get('longitude', None)
+            latitude = content.get('latitude', None)
+            if not latitude or not longitude:
+                return {"msg": "Invalid Query Syntax"}, 400
+            if type(address) is not str or type(longitude) is not float or type(latitude) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
             school.address = address
+            school.longitude = longitude
+            school.latitude = latitude
         try:
             db.session.commit()
         except SQLAlchemyError:
@@ -571,7 +562,7 @@ def route_options(route_uid=None):
 @app.route('/route/<route_uid>', methods = ['GET'])
 @app.route('/route', methods = ['GET'])
 @cross_origin()
-@admin_required()
+@jwt_required()
 def routes_get(route_uid=None):
     if request.method == 'GET':
         args = request.args
@@ -610,16 +601,18 @@ def routes_get(route_uid=None):
 @app.route('/route/<route_uid>', methods = ['PATCH','DELETE'])
 @app.route('/route', methods = ['POST'])
 @cross_origin()
-@admin_required()
 def routes(route_uid = None):
     if request.method == 'DELETE':
         route = Route.query.filter_by(id=route_uid).first()
         if route is None:
                 return json.dumps({'error': 'Invalid Route Id'})
         students = Student.query.filter_by(route_id=route.id)
+        stops = Stop.query.filter_by(route_id=route.id)
         for student in students:
             student.route_id = None
         try:
+            for stop in stops:
+                db.session.delete(stop)
             db.session.delete(route)
             db.session.commit()
         except SQLAlchemyError:
