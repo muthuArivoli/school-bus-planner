@@ -115,7 +115,7 @@ class Stop(db.Model):
 
 
     def __repr__(self):
-        return "<User(name='{}', location='{}', route_id={})>"\
+        return "<Stop(name='{}', location='{}', route_id={})>"\
             .format(self.name, self.location, self.route_id)
 
 
