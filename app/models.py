@@ -61,6 +61,7 @@ class Route(db.Model):
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     description = db.Column(db.String())
     students = relationship("Student")
+    complete = db.Column(db.Boolean())
 
     @hybrid_property
     def student_count(self):
@@ -94,7 +95,8 @@ class Student(db.Model):
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
 
     def as_dict(self):
-        return{"name": getattr(self, 'full_name'), "student_id": getattr(self, "student_id"), "id": getattr(self, "id"), "school_id": getattr(self, "school_id"), "route_id": getattr(self, "route_id"), "user_id": getattr(self, "user_id")}
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        return main
 
     def __repr__(self):
         return "<Student(full_name='{}', school_id={}, user_id={})>"\
@@ -111,8 +113,8 @@ class Stop(db.Model):
     route_id = db.Column(db.Integer, ForeignKey('routes.id'))
 
     def as_dict(self):
-        return{"name": getattr(self, 'name'), "location": getattr(self, "location"), "id": getattr(self, "id"), "pickup_time": getattr(self, "pickup_time"), "route_id": getattr(self, "route_id"), "dropoff_time": getattr(self, "dropoff_time")}
-
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        return main
 
     def __repr__(self):
         return "<Stop(name='{}', location='{}', route_id={})>"\
