@@ -36,7 +36,7 @@ class School(db.Model):
     __tablename__ = 'schools'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String())
+    name = db.Column(db.String(), unique=True)
     address = db.Column(db.String())
     routes = relationship("Route")
     students = relationship("Student")
@@ -89,7 +89,7 @@ class Student(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String())
-    student_id = db.Column(db.Integer)
+    student_id = db.Column(db.Integer, positive=True)
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     route_id = db.Column(db.Integer, ForeignKey('routes.id'))
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
