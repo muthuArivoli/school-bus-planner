@@ -46,7 +46,6 @@ class School(db.Model):
     address = db.Column(db.String())
     routes = relationship("Route")
     students = relationship("Student")
-    #CHECK THIS DATATYPE...
     longitude = db.Column(db.Float())
     latitude = db.Column(db.Float())
     arrival_time = db.Column(db.Time())
@@ -63,8 +62,8 @@ class School(db.Model):
         return main
 
     def __repr__(self):
-        return "<School(name='{}', address='{}',latitude='{}', longitude='{})>"\
-            .format(self.name, self.address, self.latitude, self.longitude)
+        return "<School(name='{}', address='{}',latitude='{}', longitude='{}', 'arrival_time='{}', departure_time='{}')>"\
+            .format(self.name, self.address, self.latitude, self.longitude, self.arrival_time, self.departure_time)
 
 class Route(db.Model):
     __tablename__ = 'routes'

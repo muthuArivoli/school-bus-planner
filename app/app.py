@@ -163,10 +163,7 @@ def calc_distance_miles():
     if type(long1) is not float or type(lat1) is not float or type(long2) is not float or type(lat2) is not float:
         return {"msg": "Invalid Query Syntax"}, 400
     
-    coords_1 = (lat1, long1)
-    coords_2 = (lat2, long2)
-
-    distance = geopy.distance.geodesic(coords_1, coords_2).miles
+    distance = get_distance(lat1, long1, lat2, long2)
     response = {"success": True, "miles": distance}
     return response
 
@@ -550,16 +547,21 @@ def schools(school_uid = None):
         address = content.get('address', None)
         longitude = content.get('longitude',None)
         latitude = content.get('latitude', None)
+        arrival_time = content.get('arrival_time', None)
+        departure_time = content.get('departure_time', None)
         
         #REQUIRED FIELDS
-        if not name or not address or not longitude or not latitude:
+        if not name or not address or not longitude or not latitude or not arrival_time or not departure_time:
             return {"msg": "Invalid Query Syntax"}, 400
         
         #TYPE CHECKING
-        if type(name) is not str or type(address) is not str or type(longitude) is not float or type(latitude) is not float:
+        if type(name) is not str or type(address) is not str or type(longitude) is not float or type(latitude) is not float or type(arrival_time) is not str or type(departure_time) is not str:
             return {"msg": "Invalid Query Syntax"}, 400
 
-        new_school = School(name=name, address=address, longitude=longitude, latitude=latitude)
+        parsed_arrival_time = datetime.strptime(arrival_time, "%Y-%m-%dT%H:%M:%SZ")
+        parsed_departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%SZ")
+
+        new_school = School(name=name, address=address, longitude=longitude, latitude=latitude, arrival_time=parsed_arrival_time, departure_time=parsed_departure_time)
         try:
             db.session.add(new_school)
             db.session.flush()
@@ -591,6 +593,18 @@ def schools(school_uid = None):
             school.address = address
             school.longitude = longitude
             school.latitude = latitude
+        if 'arrival_time' in content:
+            arrival_time = content.get('arrival_time', None)
+            if type(arrival_time) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            parsed_arrival_time = datetime.strptime(arrival_time, "%Y-%m-%dT%H:%M:%SZ")
+            school.arrival_time = parsed_arrival_time
+        if 'departure_time' in content:
+            departure_time = content.get('departure_time', None)
+            if type(departure_time) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            parsed_departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%SZ")
+            school.departure_time = parsed_departure_time
         try:
             db.session.commit()
         except SQLAlchemyError:
@@ -679,29 +693,30 @@ def routes(route_uid = None):
         if type(name) is not str or type(school_id) is not int or type(students) is not list or not all(isinstance(x, int) for x in students):
             return {"msg": "Invalid Query Syntax"}, 400
 
-        new_route = Route(name = name, school_id = school_id)
-        try:
-            db.session.add(new_route)
-            db.session.flush()
-            db.session.refresh(new_route)
-        except SQLAlchemyError:
-            return {"msg": "Database Error"}, 400
-        
-        for student_num in students:
-            logging.debug("in here" + str(student_num))
-            student = Student.query.filter_by(id=student_num).first()
-            if student:
-                student.route_id = new_route.id
 
+        new_route = Route(name = name, school_id = school_id)
         if 'description' in content:
             description = content.get('description', None)
             if type(description) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
             new_route.description = description
+        for student_num in students:
+            logging.debug("in here" + str(student_num))
+            student = Student.query.filter_by(id=student_num).first()
+            if student:
+                student.route_id = new_route.id
+        try:
+            db.session.add(new_route)
+            db.session.flush()
+            db.session.refresh(new_route)
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
+        check_complete(new_route.id)
         try:
             db.session.commit()
         except SQLAlchemyError:
-            return {"msg": "Invalid Query Syntax"}, 400
+            return {"msg": "Database Error"}, 400
         return json.dumps({'success': True, 'id': new_route.id})
     
     if request.method == 'PATCH':
@@ -721,6 +736,7 @@ def routes(route_uid = None):
                 student = Student.query.filter_by(id=student_num).first()
                 if student:
                     student.route_id = route.id
+            check_complete(route_uid)
         if 'name' in content:
             name = content.get('name', None)
             if type(name) is not str:
@@ -805,6 +821,12 @@ def stops(stop_uid = None):
             db.session.commit()
         except SQLAlchemyError:
             return {"msg": "Database Error"}, 400
+         #ADD TRY EXCEPT
+        check_complete(route_id)
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
         return json.dumps({'success': True, 'id': new_stop.id})
     
     if request.method == 'PATCH':
@@ -835,11 +857,42 @@ def stops(stop_uid = None):
             db.session.commit()
         except SQLAlchemyError:
             return {"msg": "Database Error"}, 400
+        check_complete(route_id)
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
+def get_distance(lat1, long1, lat2, long2):
+    coords_1 = (lat1, long1)
+    coords_2 = (lat2, long2)
+    return geopy.distance.geodesic(coords_1, coords_2).miles 
 
-      
+def check_complete(route_id):
+    route = Route.query.filter_by(id=route_id).first()
+    students = route.students
+    stops = route.stops
+    incomplete = students.copy()
+    for stop in stops:
+        stop_lat = stop.latitude
+        stop_long = stop.longitude
+        for student in incomplete:
+            stud_lat = student.latitude
+            stud_long = student.longitude
+            if get_distance(stop_lat, stop_long, stud_lat, stud_long) < 0.3:
+                incomplete.remove(student)
+    if len(incomplete)>0:
+        route.complete=False
+    route.complete=True
+
+
+    
+
+
+
+
 
 app.register_blueprint(api, url_prefix='/api')
 
