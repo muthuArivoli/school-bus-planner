@@ -61,8 +61,9 @@ def refresh_expiring_jwts(response):
         return response
 
 @app.route('/current_user', methods =['OPTIONS'])
+@app.route("/current_user/<student_id>", methods = ['OPTIONS'])
 @cross_origin()
-def current_user_options():
+def current_user_options(student_id=None):
     return json.dumps({'success':True})
 
 @app.route("/current_user", methods = ['GET'])
@@ -78,6 +79,27 @@ def get_current_user():
     for student in students:
         all_students.append(student.as_dict())
     return json.dumps({'success': True, 'user': user.as_dict(), 'students': all_students})
+
+@app.route("/current_user/<student_id>", methods = ['GET'])
+@jwt_required()
+@cross_origin()
+def get_current_user_student(student_id=None):
+    if student_id is None:
+        return {"msg": "Invalid Query Syntax"}, 400
+    verify_jwt_in_request()
+    user = User.query.filter_by(email = get_jwt_identity()).first()
+    if user is None:
+        return {"msg": "Invalid User ID"}, 400
+    student = Student.query.filter_by(id=student_id).first()
+    if student.user_id != user.id:
+        return jsonify(msg="User not authorized to do this action"), 403
+    school = School.query.filter_by(id=student.school_id).first()
+    school_dict = {"id": school.id, "name": school.name, "address": school.address}
+    route_dict = None
+    if student.route_id is not None:
+        route = Route.query.filter_by(id=student.route_id).first()
+        route_dict = {"id": route.id, "name": route.name, "description": route.description}
+    return json.dumps({'success': True, 'student': student.as_dict(), 'school': school_dict, 'route': route_dict})
 
 @app.route("/current_user", methods = ['PATCH'])
 @jwt_required()
@@ -127,6 +149,7 @@ def logout():
     return response
 
 @app.route('/distance', methods = ['POST'])
+@admin_required()
 @cross_origin()
 def calc_distance_miles():
     long1 = request.json.get('longitude1', None)
@@ -158,7 +181,7 @@ def user_options(username=None):
 @app.route('/user/<user_id>', methods = ['GET'])
 @app.route('/user', methods = ['GET'])
 @cross_origin()
-@jwt_required()
+@admin_required()
 def users_get(user_id=None):
     if request.method == 'GET':
         args = request.args
@@ -242,7 +265,7 @@ def users(user_id=None):
 
         encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-        new_user = User(email=email, full_name=name, uaddress = address, admin_flag=admin_flag, pswd=encrypted_pswd.decode('utf-8'), latitude=latitude, longitude=longitude)
+        new_user = User(email=email, full_name=name, uaddress=address, admin_flag=admin_flag, pswd=encrypted_pswd.decode('utf-8'), latitude=latitude, longitude=longitude)
         try:
             db.session.add(new_user)
             db.session.flush()
@@ -316,7 +339,7 @@ def student_options(student_uid=None):
 @app.route('/student/<student_uid>', methods = ['GET'])
 @app.route('/student', methods = ['GET'])
 @cross_origin()
-@jwt_required()
+@admin_required()
 def students_get(student_uid=None):
     if request.method == 'GET':
         args = request.args
@@ -331,11 +354,11 @@ def students_get(student_uid=None):
         if sort and direction == 'desc':
             sort = '-'+sort
         if page:
-            student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}).paginate()
+            student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}).paginate()
             base_query = student_filt.get_objects()
             record_num = student_filt.count
         else:
-            student_filt = StudentFilter(data={'full_name': name_search, 'student_id': id_search, 'order_by': sort})
+            student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort})
             base_query = student_filt.apply()
             record_num = base_query.count()
 
@@ -384,7 +407,7 @@ def students(student_uid = None):
         if user.uaddress is None:
             return json.dumps({'error': 'User must have an address to create a student'})
 
-        new_student = Student(full_name=name, school_id=school_id, user_id=user_id)
+        new_student = Student(name=name, school_id=school_id, user_id=user_id)
         try:
             db.session.add(new_student)
             db.session.flush()
@@ -415,10 +438,10 @@ def students(student_uid = None):
         if student is None:
             return json.dumps({'error': 'Invalid Student Id'})
         if 'name' in content:
-            full_name = content.get('name', None)
-            if type(full_name) is not str:
+            name = content.get('name', None)
+            if type(name) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
-            student.full_name = full_name
+            student.name = name
         if 'student_id' in content:
             student_id = content.get('student_id', None)
             if student_id is not None and type(student_id) is not int:
@@ -457,7 +480,7 @@ def schools_options(school_uid=None):
 @app.route('/school/<school_uid>', methods = ['GET'])
 @app.route('/school', methods = ['GET'])
 @cross_origin()
-@jwt_required()
+@admin_required()
 def schools_get(school_uid=None):
     if request.method == 'GET':
         args = request.args
@@ -563,7 +586,7 @@ def schools(school_uid = None):
             latitude = content.get('latitude', None)
             if not latitude or not longitude:
                 return {"msg": "Invalid Query Syntax"}, 400
-            if type(address) is not str or type(longitude) is not float or type(latitude) is not str:
+            if type(address) is not str or type(longitude) is not float or type(latitude) is not float:
                 return {"msg": "Invalid Query Syntax"}, 400
             school.address = address
             school.longitude = longitude
@@ -586,7 +609,7 @@ def route_options(route_uid=None):
 @app.route('/route/<route_uid>', methods = ['GET'])
 @app.route('/route', methods = ['GET'])
 @cross_origin()
-@jwt_required()
+@admin_required()
 def routes_get(route_uid=None):
     if request.method == 'GET':
         args = request.args
@@ -708,11 +731,11 @@ def routes(route_uid = None):
             if type(description) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
             route.description = description
-        if 'complete' in content:
-            complete = content.get('complete', None)
-            if type(complete) is not bool:
-                return {"msg": "Invalid Query Syntax"}, 400
-            route.complete = complete
+        # if 'complete' in content:
+        #     complete = content.get('complete', None)
+        #     if type(complete) is not bool:
+        #         return {"msg": "Invalid Query Syntax"}, 400
+        #     route.complete = complete
         try:
             db.session.commit()
         except SQLAlchemyError:
@@ -730,7 +753,7 @@ def stop_options(stop_uid=None):
 
 @app.route('/stop/<stop_uid>', methods = ['GET'])
 @cross_origin()
-@jwt_required()
+@admin_required()
 def stops_get(stop_uid=None):
     if request.method == 'GET':
         if stop_uid is not None:
@@ -764,9 +787,7 @@ def stops(stop_uid = None):
         route_id = content.get('route_id', None)
         longitude = content.get('longitude', None)
         latitude = content.get('latitude', None)
-        pickup_time = content.get('pickup_time', None)
-        dropoff_time = content.get('dropoff_time', None)
-
+       
         if not name or not location or not route_id or not longitude or not latitude:
             return {"msg": "Invalid Query Syntax"}, 400
         
@@ -780,19 +801,6 @@ def stops(stop_uid = None):
             db.session.refresh(new_stop)
         except SQLAlchemyError:
             return {"msg": "Database Error"}, 400
-        if 'pickup_time' in content:
-            pickup_time = content.get('pickup_time', None)
-            if type(pickup_time) is not str:
-                return {"msg": "Invalid Query Syntax"}, 400
-            #Add Try/Except
-            parsed_time = datetime.strptime(pickup_time, "%Y-%m-%dT%H:%M:%SZ")
-            new_stop.pickup_time = parsed_time
-        if 'dropoff_time' in content:
-            dropoff_time = content.get('dropoff_time', None)
-            if type(dropoff_time) is not str:
-                return {"msg": "Invalid Query Syntax"}, 400
-            parsed_time = datetime.strptime(dropoff_time, "%Y-%m-%dT%H:%M:%SZ")
-            new_stop.dropoff_time = parsed_time
         try:
             db.session.commit()
         except SQLAlchemyError:
@@ -805,19 +813,24 @@ def stops(stop_uid = None):
         stop = Stop.query.filter_by(id=stop_uid).first()
         if stop is None:
             return json.dumps({'error': 'Invalid Stop Id'})
-        if 'pickup_time' in content:
-            pickup_time = content.get('pickup_time', None)
-            if type(pickup_time) is not str:
+        if 'name' in content:
+            name = content.get('name', None)
+            if type(name) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
-            #Add Try/Except
-            parsed_time = datetime.strptime(pickup_time, "%Y-%m-%dT%H:%M:%SZ")
-            new_stop.pickup_time = parsed_time
-        if 'dropoff_time' in content:
-            dropoff_time = content.get('dropoff_time', None)
-            if type(dropoff_time) is not str:
-                return {"msg": "Invalid Query Syntax"}, 400
-            parsed_time = datetime.strptime(dropoff_time, "%Y-%m-%dT%H:%M:%SZ")
-            new_stop.dropoff_time = parsed_time
+            stop.name = name
+        # if 'pickup_time' in content:
+        #     pickup_time = content.get('pickup_time', None)
+        #     if type(pickup_time) is not str:
+        #         return {"msg": "Invalid Query Syntax"}, 400
+        #     #Add Try/Except
+        #     parsed_time = datetime.strptime(pickup_time, "%Y-%m-%dT%H:%M:%SZ")
+        #     stop.pickup_time = parsed_time
+        # if 'dropoff_time' in content:
+        #     dropoff_time = content.get('dropoff_time', None)
+        #     if type(dropoff_time) is not str:
+        #         return {"msg": "Invalid Query Syntax"}, 400
+        #     parsed_time = datetime.strptime(dropoff_time, "%Y-%m-%dT%H:%M:%SZ")
+        #     stop.dropoff_time = parsed_time
         try:
             db.session.commit()
         except SQLAlchemyError:

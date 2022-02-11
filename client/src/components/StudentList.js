@@ -57,7 +57,7 @@ export default function DataTable(props) {
   const [filterModel, setFilterModel] = React.useState({items: []});
   const [buttonStr, setButtonStr] = React.useState("Show all students");
 
-  const mappings = {"name": "full_name", "student_id": "student_id", "school": "school_id"}
+  const mappings = {"name": "name", "student_id": "student_id", "school": "school_id"}
 
   const [showAll, setShowAll] = React.useState(false);
 

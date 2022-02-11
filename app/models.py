@@ -7,6 +7,10 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
 from sqlalchemy_filters import Filter, StringField, Field
 from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator
+from datetime import datetime
+import logging
+logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+
 
 
 class User(db.Model):
@@ -96,7 +100,7 @@ class Student(db.Model):
     __tablename__ = 'students'
 
     id = db.Column(db.Integer, primary_key=True)
-    full_name = db.Column(db.String())
+    name = db.Column(db.String())
     student_id = db.Column(db.Integer)
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     route_id = db.Column(db.Integer, ForeignKey('routes.id'))
@@ -110,8 +114,8 @@ class Student(db.Model):
         return main
 
     def __repr__(self):
-        return "<Student(full_name='{}', school_id={}, user_id={})>"\
-            .format(self.full_name, self.school_id, self.user_id)
+        return "<Student(name='{}', school_id={}, user_id={})>"\
+            .format(self.name, self.school_id, self.user_id)
 
 class Stop(db.Model):
     __tablename__ = 'stops'
@@ -127,6 +131,9 @@ class Stop(db.Model):
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        logging.debug(type(self.pickup_time))
+        main['pickup_time'] = self.pickup_time.isoformat()
+        main['dropoff_time'] = self.dropoff_time.isoformat()
         return main
 
     def __repr__(self):
@@ -146,7 +153,7 @@ class UserFilter(Filter):
 class StudentFilter(Filter):
     student_id = Field(lookup_operator = EqualsOperator)
     school_id = Field(lookup_operator = EqualsOperator)
-    full_name = StringField(lookup_operator=ContainsOperator)
+    name = StringField(lookup_operator = ContainsOperator)
 
     class Meta:
         model = Student

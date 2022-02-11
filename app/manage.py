@@ -57,7 +57,7 @@ def seed_db():
         db.session.flush()
         db.session.refresh(new_user)
         associated_school = School.query.filter_by(name = student_schools[f]).first()
-        new_student = Student(full_name=student_names[f], school_id=associated_school.id, user_id=new_user.id)
+        new_student = Student(name=student_names[f], school_id=associated_school.id, user_id=new_user.id)
         db.session.add(new_student)
     
     db.session.commit()
