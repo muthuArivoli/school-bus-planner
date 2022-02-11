@@ -58,6 +58,8 @@ class School(db.Model):
         students = [student.id for student in self.students]
         main['routes'] = routes
         main['students'] = students
+        main['arrival_time'] = self.arrival_time.isoformat()
+        main['departure_time'] = self.departure_time.isoformat()
         return main
 
     def __repr__(self):
