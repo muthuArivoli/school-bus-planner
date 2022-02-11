@@ -218,7 +218,7 @@ export default function RouteDetail(props) {
               style={{ marginLeft: 16 }}>
               Modify
           </Button>
-          <DeleteDialog dialogTitle="Delete Route?" dialogDesc="Please confirm you would like to delete this route" onAccept={handleDelete}/>
+          <DeleteDialog dialogTitle="Delete Route?" dialogDesc={`Please confirm you would like to delete route ${data.name}`} onAccept={handleDelete}/>
         </Stack>
       </Stack>
     </Grid>
