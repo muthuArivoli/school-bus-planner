@@ -686,6 +686,11 @@ def routes(route_uid = None):
             if type(description) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
             route.description = description
+        if 'complete' in content:
+            complete = content.get('complete', None)
+            if type(complete) is not bool:
+                return {"msg": "Invalid Query Syntax"}, 400
+            route.complete = complete
         try:
             db.session.commit()
         except SQLAlchemyError:
