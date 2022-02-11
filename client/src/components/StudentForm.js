@@ -113,11 +113,16 @@ export default function StudentForm(props) {
                     <Grid item xs={12}>
                     <TextField
                         autoFocus
-                        type="number"
+                        type="text"
                         label="Student ID"
                         id="student_id"
                         value={props.studentId || ""}
-                        onChange={(e) => props.updateStudentId(e.target.value)}
+                        onChange={(e) => {
+                          let input = e.target.value;
+                          if( !input || input.match('^[0-9]+$')){
+                            props.updateStudentId(input);
+                          }
+                        }}
                         fullWidth
                     />
                     <Grid item xs={12}>
