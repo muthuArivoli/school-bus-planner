@@ -1,5 +1,5 @@
 import React from 'react'
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, Marker, useGoogleMap } from '@react-google-maps/api';
 import Stack from '@mui/material/Stack';
 import Geocode from "react-geocode";
 import { DataGrid } from '@mui/x-data-grid';
@@ -10,14 +10,22 @@ import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+
+let api_key = "AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o";
 
 
-Geocode.setApiKey("AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o");
+Geocode.setApiKey(api_key);
 Geocode.setLocationType("ROOFTOP");
 
 const containerStyle = {
     height: "400px",
     width: "500px"
+};
+
+const mapOptions = {
+  disableDoubleClickZoom: true
 };
 
 const studentColumns = [
@@ -32,56 +40,30 @@ const routeColumns = [
   { field: 'description', headerName: "Description", width: 100},
 ];
 
-function getCenter(students) {
-  let lattotal = 0;
-  let lngtotal = 0;
-
-  if(students.length == 0){
-      return {lat: 0, lng: 0}
-  }
-
-  for (var j = 0; j < students.length; j++) {
-    lattotal += students[j].location.lat;
-    lngtotal += students[j].location.lng;
-  }
-
-  let avglat = lattotal / (students.length);
-  let avglng = lngtotal / (students.length);
-
-  const center = {
-    lat: avglat,
-    lng: avglng
-  };
-  return center;
-}
-
 export default function RoutePlanner(props) {
   const [studentRows, setStudentRows] = React.useState([]); //rows of data grid: "Students in Current Row"
-  const [routeRows, setRouteRows] = React.useState([]); //rows of data grid: "Current Rows"
- const [routeInfo, setRouteInfo] = React.useState({"name": "", "description": ""}); //values from text fields
+  const [routeRows, setRouteRows] = React.useState([]); //rows of data grid: "Current Routes"
+  const [routeInfo, setRouteInfo] = React.useState({"name": "", "description": ""}); //values from text fields
 
- const [snackbarOpen, setSnackbarOpen] = React.useState(false);
- const [snackbarMsg, setSnackbarMsg] = React.useState("");
- const [snackbarSeverity, setSnackbarSeverity] = React.useState("error");
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [snackbarMsg, setSnackbarMsg] = React.useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState("error");
 
-    const [selectionModel, setSelectionModel] = React.useState([]);
-    const [students, setStudents] = React.useState([]);
-    const [resetRoute, setResetRoute] = React.useState(false);
+  const [selectionModel, setSelectionModel] = React.useState([]);
+  const [students, setStudents] = React.useState([]);
+  const [resetRoute, setResetRoute] = React.useState(false);
 
   const [schoolLocation, setSchoolLocation] = React.useState({lat: 0, lng:0});
+
+  const [toggleSelection, setToggleSelection] = React.useState('students');
+
+  const [stops, setStops] = React.useState([]);
+
     let { id } = useParams();
     let navigate = useNavigate();
 
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-          return;
-        }
-    
-        setSnackbarOpen(false);
-      };
-
+    // load current routes into page
     React.useEffect(()=>{
-    // set route rows
     const fetchData = async() => {
         const result = await axios.get(
             process.env.REACT_APP_BASE_URL+`/school/${id}`, {
@@ -106,6 +88,7 @@ export default function RoutePlanner(props) {
     fetchData();
     }, [resetRoute]);
 
+    // load all student data for the school into page
     React.useEffect(()=>{
         const fetchData = async() => {
             const result = await axios.get(
@@ -155,7 +138,6 @@ export default function RoutePlanner(props) {
                     navigate("/schools");
                   }
                 }
-
                 setStudents(newRows);
             }
             else{
@@ -167,8 +149,9 @@ export default function RoutePlanner(props) {
             }
           };
           fetchData();
-    },[resetRoute])
+    }, [resetRoute])
 
+    // load school data into page
     React.useEffect(()=>{
       const fetchData = async() => {
         const result = await axios.get(
@@ -194,84 +177,113 @@ export default function RoutePlanner(props) {
       fetchData();  
     },[])
 
-  const handleClick = (student, index) => {
-    let addresses = studentRows.map((value)=>{return value.address});
-    if(addresses.includes(student.address)){
-        let newStudentRows = studentRows.filter(value=> value.address != student.address)
-        setStudentRows(newStudentRows)
+    // load route info into page if came in through route modify (I think?, doesn't work if so)
+    React.useEffect(() => {
+      const fetchStudents = async() => {
+          if(selectionModel.length == 0){
+              setRouteInfo({"name": "", "description": ""});
+              setStudentRows([]);
+              return;
+          }
+          console.log(selectionModel[0]);
+          let response = await axios.get(
+              process.env.REACT_APP_BASE_URL+`/route/${selectionModel[0]}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+              }
+            );
+            if(response.data.success){
+              setRouteInfo({"name": response.data.route.name, "description": response.data.route.description});
+              let newRows = [];
+              for(let i=0; i<response.data.route.students.length; i++){
+                  const studentRes = await axios.get(
+                      process.env.REACT_APP_BASE_URL+`/student/${response.data.route.students[i]}`, {
+                      headers: {
+                          Authorization: `Bearer ${localStorage.getItem('token')}`
+                      }
+                      }
+                  );
+                  if(studentRes.data.success){
+                      console.log(studentRes.data);
+                      const userRes = await axios.get(
+                          process.env.REACT_APP_BASE_URL+`/user/${studentRes.data.student.user_id}`, {
+                          headers: {
+                              Authorization: `Bearer ${localStorage.getItem('token')}`
+                          }
+                          }
+                      );
+                      if(userRes.data.success){
+                          console.log(userRes.data);
+                          newRows = [...newRows, {name: studentRes.data.student.name, id: response.data.route.students[i], address: userRes.data.user.uaddress}]
+                      }
+                      else{
+                        console.log("c")
+                          props.setSnackbarMsg(`Route could not be loaded`);
+                          props.setShowSnackbar(true);
+                          props.setSnackbarSeverity("error");
+                          navigate("/routes");
+                      }
+                  }
+                  else{
+                    console.log("b");
+                      props.setSnackbarMsg(`Route could not be loaded`);
+                      props.setShowSnackbar(true);
+                      props.setSnackbarSeverity("error");
+                      navigate("/routes");
+                  }
+            }
+            console.log(newRows);
+            setStudentRows(newRows);
+          }
+          
+
+      }
+
+      fetchStudents();
+    }, [selectionModel])
+
+  // function when snackbar is closed
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
     }
-    else{
-        let allStudents = students.filter(value => value.address == student.address)
-        let newStudentRows = [...studentRows, ...allStudents];
-        setStudentRows(newStudentRows);
+    setSnackbarOpen(false);
+  };
+
+  // function when marker is clicked
+  const handleMarkerClick = (student, index) => {
+    if (toggleSelection=="students") {
+      let addresses = studentRows.map((value)=>{return value.address});
+      if(addresses.includes(student.address)){
+          let newStudentRows = studentRows.filter(value=> value.address != student.address)
+          setStudentRows(newStudentRows)
+      }
+      else{
+          let allStudents = students.filter(value => value.address == student.address)
+          let newStudentRows = [...studentRows, ...allStudents];
+          setStudentRows(newStudentRows);
+      }
     }
   };
 
-  React.useEffect(() => {
-    const fetchStudents = async() => {
-        if(selectionModel.length == 0){
-            setRouteInfo({"name": "", "description": ""});
-            setStudentRows([]);
-            return;
-        }
-        console.log(selectionModel[0]);
-        let response = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/route/${selectionModel[0]}`, {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if(response.data.success){
-            setRouteInfo({"name": response.data.route.name, "description": response.data.route.description});
-            let newRows = [];
-            for(let i=0; i<response.data.route.students.length; i++){
-                const studentRes = await axios.get(
-                    process.env.REACT_APP_BASE_URL+`/student/${response.data.route.students[i]}`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                    }
-                );
-                if(studentRes.data.success){
-                    console.log(studentRes.data);
-                    const userRes = await axios.get(
-                        process.env.REACT_APP_BASE_URL+`/user/${studentRes.data.student.user_id}`, {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('token')}`
-                        }
-                        }
-                    );
-                    if(userRes.data.success){
-                        console.log(userRes.data);
-                        newRows = [...newRows, {name: studentRes.data.student.name, id: response.data.route.students[i], address: userRes.data.user.uaddress}]
-                    }
-                    else{
-                      console.log("c")
-                        props.setSnackbarMsg(`Route could not be loaded`);
-                        props.setShowSnackbar(true);
-                        props.setSnackbarSeverity("error");
-                        navigate("/routes");
-                    }
-                }
-                else{
-                  console.log("b");
-                    props.setSnackbarMsg(`Route could not be loaded`);
-                    props.setShowSnackbar(true);
-                    props.setSnackbarSeverity("error");
-                    navigate("/routes");
-                }
-          }
-          console.log(newRows);
-          setStudentRows(newRows);
-        }
-        
+  // function when map is clicked (add stop)
+  const handleMapClick = (value) => {
+    if (toggleSelection=="stops") {
 
+      let loc = {
+        lat: value.lat(),
+        lng: value.lng(),
+      };
+
+      let newStop = {loc: loc};
+
+      let newStops = [...stops, newStop];
+      setStops(newStops);
     }
+  };
 
-    fetchStudents();
-  }, [selectionModel])
-
+  // function when add/update route button is clicked
   const handleSubmit = (event) => {
     if(selectionModel.length == 0){
         console.log({
@@ -335,8 +347,7 @@ export default function RoutePlanner(props) {
     setResetRoute(!resetRoute);
   }
 
-
-  //runs when user types in textfield, should add value into correct part of routeInfo
+  // function when things are typed into text fields (name, description)
   const handleInfoChange = (fieldindicator, new_value) => {
     let newInfo = JSON.parse(JSON.stringify(routeInfo));
     if (fieldindicator == "name") {
@@ -349,23 +360,41 @@ export default function RoutePlanner(props) {
     }
   };
 
+  const handleToggleMode = (event, newToggle) => {
+    if (newToggle.length) {
+      setToggleSelection(newToggle);
+    }
+    console.log("mode: "+newToggle);
+  };
+
   return (
     <>
+    <ToggleButtonGroup
+        color="primary"
+        value={toggleSelection}
+        exclusive
+        onChange={handleToggleMode}
+      >
+        <ToggleButton value="students">Student Mode</ToggleButton>
+        <ToggleButton value="stops">Stops Mode</ToggleButton>
+      </ToggleButtonGroup>
     <Snackbar open={snackbarOpen} onClose={handleClose}>
-    <Alert onClose={handleClose} severity={snackbarSeverity}>
-      {snackbarMsg}
-    </Alert>
-  </Snackbar>
-    <Stack spacing={5} justifyContent="center">
+      <Alert onClose={handleClose} severity={snackbarSeverity}>
+        {snackbarMsg}
+      </Alert>
+    </Snackbar>
+      
     <Stack direction="row" spacing={8} justifyContent="center">
       <Stack spacing={2.5} justifyContent="center">
-        <LoadScript
-          googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
-        >
-          <GoogleMap mapContainerStyle={containerStyle} zoom={3} center={schoolLocation}>
-            <Marker title="School" position={schoolLocation}/>
+        <LoadScript googleMapsApiKey={api_key}>
+          <GoogleMap mapContainerStyle={containerStyle} zoom={7} options={mapOptions} center={schoolLocation} onDblClick={(value) => handleMapClick(value.latLng)}>
+            <Marker title="School" label="School" position={schoolLocation}/>
             {students.map((student, index) => (
-                <Marker key={index} title={student.address} position={student.location} onClick={() => handleClick(student, index)} label={student.route == null ? "0" : "1"}/> ))}
+              <Marker key={index} title={student.address} position={student.location} onClick={() => handleMarkerClick(student, index)} label={student.route == null ? "0" : "1"}/> ))
+            }
+            {toggleSelection=="stops" ? stops.map((stop, index) => (
+              <Marker key={index} title={"Stop"} position={stop.loc} /**onClick={() => handleMarkerClick(student, index)}**/ label={"s"}/>)) : []
+            }
           </GoogleMap>
         </LoadScript>
 
@@ -418,7 +447,7 @@ export default function RoutePlanner(props) {
                 <DataGrid
                   rows={studentRows}
                   columns={studentColumns}
-                  getRowId={(row) => row.id} //THIS WILL BE THE ID FROM THE BACKEND ONCE IMPLEMENTED
+                  getRowId={(row) => row.id}
                   pageSize={5}
                   rowsPerPageOptions={[5]}
                   density="compact"
@@ -431,7 +460,6 @@ export default function RoutePlanner(props) {
           {selectionModel.length == 0 ? "Add Route" : "Update Route"}
         </Button>
       </Stack>  
-    </Stack>
     </Stack>
     </>
   )
