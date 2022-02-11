@@ -377,7 +377,8 @@ export default function RoutePlanner(props) {
       >
         <ToggleButton value="students">Student Mode</ToggleButton>
         <ToggleButton value="stops">Stops Mode</ToggleButton>
-      </ToggleButtonGroup>
+    </ToggleButtonGroup>
+
     <Snackbar open={snackbarOpen} onClose={handleClose}>
       <Alert onClose={handleClose} severity={snackbarSeverity}>
         {snackbarMsg}
