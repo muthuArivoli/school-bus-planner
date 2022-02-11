@@ -206,10 +206,12 @@ def users(user_id=None):
         longitude = content.get('longitude', None)
         latitude = content.get('latitude', None)
 
-        if not email or not password or not name or not admin_flag or not address or not longitude or not latitude:
+        if not email or not password or not name or not address or not longitude or not latitude or admin_flag is None:
+            logging.debug('MISSING A FIELD')
             return {"msg": "Invalid Query Syntax"}, 400
         
         if type(email) is not str or type(password) is not str or type(name) is not str or type(admin_flag) is not bool or type(address) is not str or type(latitude) is not float or type(longitude) is not float:
+            logging.debug('WRONG FIELD TYPE')
             return {"msg": "Invalid Query Syntax"}, 400
         
         user = User.query.filter_by(email=email).first()
@@ -601,6 +603,7 @@ def routes_get(route_uid=None):
 @app.route('/route/<route_uid>', methods = ['PATCH','DELETE'])
 @app.route('/route', methods = ['POST'])
 @cross_origin()
+@admin_required()
 def routes(route_uid = None):
     if request.method == 'DELETE':
         route = Route.query.filter_by(id=route_uid).first()
@@ -689,6 +692,114 @@ def routes(route_uid = None):
             return {"msg": "Database Error"}, 400
         return json.dumps({'success': True})
     return json.dumps({'success': False})
+
+# STOP CRUD
+
+@app.route('/stop/<stop_uid>', methods = ['OPTIONS'])
+@app.route('/stop', methods = ['OPTIONS'])
+@cross_origin()
+def stop_options(stop_uid=None):
+    return json.dumps({'success':True})
+
+@app.route('/stop/<stop_uid>', methods = ['GET'])
+@cross_origin()
+@jwt_required()
+def stops_get(stop_uid=None):
+    if request.method == 'GET':
+        if stop_uid is not None:
+            stop = Stop.query.filter_by(id=stop_uid).first()
+            if stop is None:
+                return json.dumps({'error': 'Invalid Stop Id'})
+            return json.dumps({'success': True, 'stop': stop.as_dict()})
+        else:
+            return {"msg": "Invalid Query Syntax"}, 400
+
+@app.route('/stop/<stop_uid>', methods = ['PATCH','DELETE'])
+@app.route('/stop', methods = ['POST'])
+@cross_origin()
+@admin_required()
+def stops(stop_uid = None):
+    if request.method == 'DELETE':
+        stop = Stop.query.filter_by(id=stop_uid).first()
+        if stop is None:
+            return json.dumps({'error': 'Invalid Stop Id'})
+        try:
+            db.session.delete(stop)
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
+        return json.dumps({'success': True})
+
+    if request.method == 'POST':
+        content = request.json
+        name = content.get('name', None)
+        location = content.get('location', None)
+        route_id = content.get('route_id', None)
+        longitude = content.get('longitude', None)
+        latitude = content.get('latitude', None)
+        pickup_time = content.get('pickup_time', None)
+        dropoff_time = content.get('dropoff_time', None)
+
+        if not name or not location or not route_id or not longitude or not latitude:
+            return {"msg": "Invalid Query Syntax"}, 400
+        
+        if type(name) is not str or type(location) is not str or type(route_id) is not int or type(longitude) is not float or type(latitude) is not float:
+            return {"msg": "Invalid Query Syntax"}, 400
+
+        new_stop = Stop(name = name, route_id = route_id, location = location, longitude = longitude, latitude = latitude)
+        try:
+            db.session.add(new_stop)
+            db.session.flush()
+            db.session.refresh(new_stop)
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
+        if 'pickup_time' in content:
+            pickup_time = content.get('pickup_time', None)
+            if type(pickup_time) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            #Add Try/Except
+            parsed_time = datetime.strptime(pickup_time, "%Y-%m-%dT%H:%M:%SZ")
+            new_stop.pickup_time = parsed_time
+        if 'dropoff_time' in content:
+            dropoff_time = content.get('dropoff_time', None)
+            if type(dropoff_time) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            parsed_time = datetime.strptime(dropoff_time, "%Y-%m-%dT%H:%M:%SZ")
+            new_stop.dropoff_time = parsed_time
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
+        return json.dumps({'success': True, 'id': new_stop.id})
+    
+    if request.method == 'PATCH':
+        content = request.json
+
+        stop = Stop.query.filter_by(id=stop_uid).first()
+        if stop is None:
+            return json.dumps({'error': 'Invalid Stop Id'})
+        if 'pickup_time' in content:
+            pickup_time = content.get('pickup_time', None)
+            if type(pickup_time) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            #Add Try/Except
+            parsed_time = datetime.strptime(pickup_time, "%Y-%m-%dT%H:%M:%SZ")
+            new_stop.pickup_time = parsed_time
+        if 'dropoff_time' in content:
+            dropoff_time = content.get('dropoff_time', None)
+            if type(dropoff_time) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            parsed_time = datetime.strptime(dropoff_time, "%Y-%m-%dT%H:%M:%SZ")
+            new_stop.dropoff_time = parsed_time
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
+        return json.dumps({'success': True})
+    return json.dumps({'success': False})
+
+
+      
 
 app.register_blueprint(api, url_prefix='/api')
 

@@ -1,6 +1,6 @@
 from app import db
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine
+from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine, CheckConstraint
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import inspect, select, func
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
@@ -97,10 +97,13 @@ class Student(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String())
-    student_id = db.Column(db.Integer, positive=True)
+    student_id = db.Column(db.Integer)
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     route_id = db.Column(db.Integer, ForeignKey('routes.id'))
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
+    __table_args__ = (
+        CheckConstraint(student_id >= 0, name='check_id_positive'),
+        {})
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}

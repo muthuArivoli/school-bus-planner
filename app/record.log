@@ -1,0 +1,141 @@
+2022-02-10 20:56:59,632 DEBUG urllib3.connectionpool MainThread : Starting new HTTPS connection (1): maps.googleapis.com:443
+2022-02-10 20:57:00,626 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=401+Chapel+Dr%2C+Durham%2C+NC+27705&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:27,615 DEBUG urllib3.connectionpool MainThread : Starting new HTTPS connection (1): maps.googleapis.com:443
+2022-02-10 21:04:28,187 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=11256+Palos+Verdes+Court%2C+Cupertino%2C+CA+95014&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:28,715 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=14524+Lodestar+Drive%2C+Grass+Valley%2C+CA+95949&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:29,043 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=4329+Howe+Street%2C+Oakland%2C+CA+94611&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:29,377 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=11+Eclipse+Court%2C+Alameda%2C+CA+94501&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:29,716 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=6420+Via+Baron%2C+Rancho+Palos+Verdes%2C+CA+90275&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:30,162 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=5472+Sunstar+Common%2C+Fremont%2C+CA+94555&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:30,510 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=5397+Wentworth+Avenue%2C+Oakland%2C+CA+94601&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:30,836 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=2640+8th+Avenue%2C+Oakland%2C+CA+94606&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:31,379 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=1870+A+Street%2C+Oroville%2C+CA+95966&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:31,780 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=775+47th+Street%2C+Oakland%2C+CA+94609&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:32,205 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=51035+Conifer+Drive%2C+Soda+Springs%2C+CA+95728&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:32,530 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=450+C+Street%2C+Hayward%2C+CA+94541&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:32,848 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=3827+West+Chapman+Avenue%2C+Orange%2C+CA+92868&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:33,199 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=37600+Sycamore+Street%2C+Newark%2C+CA+94560&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:33,486 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=4920+Quonset+Drive%2C+Sacramento%2C+CA+95820&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:34,020 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=4500+Margalo+Avenue%2C+Bakersfield%2C+CA+93313&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:34,652 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=7800+River+Mist+Avenue%2C+Bakersfield%2C+CA+93313&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:35,031 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=21950+Arnold+Center+Road%2C+Carson%2C+CA+90810&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:35,373 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=10202+Vista+Drive%2C+Cupertino%2C+CA+95014&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:35,713 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=5397+Wentworth+Avenue%2C+Oakland%2C+CA+94601&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:36,086 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=2708+Mabel+Street%2C+Berkeley%2C+CA+94702&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:36,431 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=26466+Mockingbird+Lane%2C+Hayward%2C+CA+94544&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:36,905 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=2443+Sierra+Nevada+Road%2C+Mammoth+Lakes%2C+CA+93546&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:37,354 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=3027+Badger+Drive%2C+Pleasanton%2C+CA+94566&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:37,934 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=1+Kelton+Court%2C+Oakland%2C+CA+94611&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:38,207 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=649+Praderia+Circle%2C+Fremont%2C+CA+94539&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:38,548 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=680+Quintana+Road%2C+Morro+Bay%2C+CA+93442&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:38,954 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=2747+68th+Avenue%2C+Oakland%2C+CA+94605&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:39,331 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=1234+Carmel+Street%2C+Madera%2C+CA+93638&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:39,775 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=2755+Country+Drive%2C+Fremont%2C+CA+94536&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:40,393 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=36360+Beech+Place%2C+Newark%2C+CA+94560&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:40,757 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=514+Flower+Lane%2C+Alameda%2C+CA+94502&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:41,119 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=1357+Addison+Street%2C+Berkeley%2C+CA+94702&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:41,604 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=8934+Arrowrock+Trail%2C+Smartsville%2C+CA+95977&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:41,906 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=2409+Park+Street%2C+Selma%2C+CA+93662&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:42,206 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=4920+Quonset+Drive%2C+Sacramento%2C+CA+95820&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:42,641 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=12091+Mierkey+Road%2C+Jackson%2C+CA+95642&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:42,935 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=5725+Medallion+Court%2C+Castro+Valley%2C+CA+94552&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:43,227 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=894+Windmill+Park+Lane%2C+Mountain+View%2C+CA+94043&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:04:43,535 DEBUG urllib3.connectionpool MainThread : https://maps.googleapis.com:443 "GET /maps/api/geocode/json?address=1300+Lemos+Lane%2C+Fremont%2C+CA+94539&key=AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o HTTP/1.1" 200 None
+2022-02-10 21:23:43,026 DEBUG root ThreadPoolExecutor-0_0 : MISSING A FIELD
+2022-02-10 21:24:22,713 DEBUG root ThreadPoolExecutor-0_0 : MISSING A FIELD
+2022-02-10 21:26:47,411 DEBUG root ThreadPoolExecutor-0_0 : MISSING A FIELD
+2022-02-10 21:28:08,107 DEBUG root ThreadPoolExecutor-0_0 : email = ryry@gmail.com
+2022-02-10 21:28:08,109 DEBUG root ThreadPoolExecutor-0_0 : password = hola
+2022-02-10 21:28:08,110 DEBUG root ThreadPoolExecutor-0_0 : name = Ryan
+2022-02-10 21:28:08,111 DEBUG root ThreadPoolExecutor-0_0 : address = 401 Chapel Dr, Durham, NC 27705
+2022-02-10 21:28:08,113 DEBUG root ThreadPoolExecutor-0_0 : longitude = -78.9403359
+2022-02-10 21:28:08,115 DEBUG root ThreadPoolExecutor-0_0 : latitude = 36.0019318
+2022-02-10 21:28:08,116 DEBUG root ThreadPoolExecutor-0_0 : MISSING A FIELD
+2022-02-11 01:06:51,248 ERROR app ThreadPoolExecutor-0_0 : Exception on /stop [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 42, in decorator
+    return fn(*args, **kwargs)
+  File "/app/app.py", line 761, in stops
+    parsed_time = time.strptime(pickup_time, "%Y-%m-%dT%H:%M:%SZ")
+NameError: name 'time' is not defined
+2022-02-11 01:10:02,882 ERROR app ThreadPoolExecutor-0_0 : Exception on /stop [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 42, in decorator
+    return fn(*args, **kwargs)
+  File "/app/app.py", line 761, in stops
+    parsed_time = datetime.strptime(pickup_time, "%Y-%m-%dT%H:%M:%SZ")
+  File "/usr/lib/python3.8/_strptime.py", line 568, in _strptime_datetime
+    tt, fraction, gmtoff_fraction = _strptime(data_string, format)
+  File "/usr/lib/python3.8/_strptime.py", line 349, in _strptime
+    raise ValueError("time data %r does not match format %r" %
+ValueError: time data '2018-12-10T13:45:00.000Z' does not match format '%Y-%m-%dT%H:%M:%SZ'
+2022-02-11 01:10:47,330 ERROR app ThreadPoolExecutor-0_0 : Exception on /stop [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 42, in decorator
+    return fn(*args, **kwargs)
+  File "/app/app.py", line 761, in stops
+    parsed_time = datetime.strptime(pickup_time, "%Y-%m-%dT%H:%M:%SZ")
+  File "/usr/lib/python3.8/_strptime.py", line 568, in _strptime_datetime
+    tt, fraction, gmtoff_fraction = _strptime(data_string, format)
+  File "/usr/lib/python3.8/_strptime.py", line 349, in _strptime
+    raise ValueError("time data %r does not match format %r" %
+ValueError: time data '2018-12-10T13:45:00.00Z' does not match format '%Y-%m-%dT%H:%M:%SZ'
+2022-02-11 01:11:45,390 ERROR app ThreadPoolExecutor-0_0 : Exception on /stop [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 42, in decorator
+    return fn(*args, **kwargs)
+  File "/app/app.py", line 761, in stops
+    parsed_time = datetime.strptime(pickup_time, "%Y-%m-%dT%H:%M:%SZ")
+  File "/usr/lib/python3.8/_strptime.py", line 568, in _strptime_datetime
+    tt, fraction, gmtoff_fraction = _strptime(data_string, format)
+  File "/usr/lib/python3.8/_strptime.py", line 349, in _strptime
+    raise ValueError("time data %r does not match format %r" %
+ValueError: time data '2018-12-10T13:45:00:00Z' does not match format '%Y-%m-%dT%H:%M:%SZ'

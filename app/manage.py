@@ -16,7 +16,6 @@ def create_db():
     db.create_all()
     db.session.commit()
 
-
 @cli.command("seed_db_admin")
 def seed_db_admin():
     password = 'AdminPassword'
