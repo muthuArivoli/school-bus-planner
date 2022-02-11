@@ -11,6 +11,7 @@ import sys
 import logging
 import bcrypt
 import math
+import geopy.distance
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:bus@db:5432/db'
@@ -123,6 +124,27 @@ def login():
 def logout():
     response = jsonify({"msg":"logout successful"})
     unset_jwt_cookies(response)
+    return response
+
+@app.route('/distance', methods = ['POST'])
+@cross_origin()
+def calc_distance_miles():
+    long1 = request.json.get('longitude1', None)
+    lat1 = request.json.get('latitude1', None)
+    long2 = request.json.get('longitude2', None)
+    lat2 = request.json.get('latitude2', None)
+
+    if not long1 or not lat1 or not long2 or not lat2:
+        return {"msg": "Invalid Query Syntax"}, 400
+
+    if type(long1) is not float or type(lat1) is not float or type(long2) is not float or type(lat2) is not float:
+        return {"msg": "Invalid Query Syntax"}, 400
+    
+    coords_1 = (lat1, long1)
+    coords_2 = (lat2, long2)
+
+    distance = geopy.distance.geodesic(coords_1, coords_2).miles
+    response = {"success": True, "miles": distance}
     return response
 
 #USER CRUD
