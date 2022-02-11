@@ -172,7 +172,7 @@ export default function StudentDetail(props) {
               style={{ marginLeft: 16 }}>
               Modify
           </Button>
-          <DeleteDialog dialogTitle="Delete Student?" dialogDesc="Please confirm you would like to delete this student" onAccept={handleDelete}/>
+          <DeleteDialog dialogTitle="Delete Student?" dialogDesc={`Please confirm you would like to delete student ${data.name}`} onAccept={handleDelete}/>
         </Stack>
       </Stack>
     </Grid>
