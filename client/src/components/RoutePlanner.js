@@ -40,6 +40,11 @@ const routeColumns = [
   { field: 'description', headerName: "Description", width: 100},
 ];
 
+const stopColumns = [
+  { field: 'id', hide: true, width: 30},
+  { field: 'name', headerName: "Stop Name", width: 150},
+];
+
 export default function RoutePlanner(props) {
   const [studentRows, setStudentRows] = React.useState([]); //rows of data grid: "Students in Current Row"
   const [routeRows, setRouteRows] = React.useState([]); //rows of data grid: "Current Routes"
@@ -58,9 +63,12 @@ export default function RoutePlanner(props) {
   const [toggleSelection, setToggleSelection] = React.useState('students');
 
   const [stops, setStops] = React.useState([]);
+  const [stopRows, setStopRows] = React.useState([]);
 
     let { id } = useParams();
     let navigate = useNavigate();
+
+    //var routeNameDisplay = (selectionModel.length==0 ? (routeInfo.length==0 ? "None" : routeInfo) : selectionModel);
 
     // load current routes into page
     React.useEffect(()=>{
@@ -251,8 +259,8 @@ export default function RoutePlanner(props) {
     setSnackbarOpen(false);
   };
 
-  // function when marker is clicked
-  const handleMarkerClick = (student, index) => {
+  // function when address is clicked (add address to route)
+  const handleAddressClick = (student, index) => {
     if (toggleSelection=="students") {
       let addresses = studentRows.map((value)=>{return value.address});
       if(addresses.includes(student.address)){
@@ -267,7 +275,7 @@ export default function RoutePlanner(props) {
     }
   };
 
-  // function when map is clicked (add stop)
+  // function when map is clicked (add stop to map)
   const handleMapClick = (value) => {
     if (toggleSelection=="stops") {
 
@@ -275,12 +283,23 @@ export default function RoutePlanner(props) {
         lat: value.lat(),
         lng: value.lng(),
       };
+      // update table
+      let stopindex = stopRows.length;
+      let newStopRow = {id: stopindex, name: "Stop "+stopindex};
+      let newStopRows = [...stopRows, newStopRow];
+      setStopRows(newStopRows);
 
-      let newStop = {loc: loc};
-
+      // update stops state
+      let newStop = {loc: loc}; //add more information to be passed to backend
       let newStops = [...stops, newStop];
       setStops(newStops);
     }
+  };
+
+  // function when stop icon is clicked
+  const handleStopClick = (stop, index) => {
+    let newStopRows = stopRows.filter(value => value.id != stop.id)
+    setStopRows(newStopRows)
   };
 
   // function when add/update route button is clicked
@@ -297,6 +316,7 @@ export default function RoutePlanner(props) {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id})
+            // ADD STOPS HERE 
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -305,6 +325,7 @@ export default function RoutePlanner(props) {
             if(res.data.success){
                 setRouteInfo({"name": "", "description": ""});
                 setStudentRows([]);
+                setStopRows([]);
                 setSnackbarOpen(true);
                 setSnackbarSeverity('success');
                 setSnackbarMsg('Route successfully created');
@@ -322,6 +343,7 @@ export default function RoutePlanner(props) {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id})
+            // ADD STOPS HERE
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -329,6 +351,7 @@ export default function RoutePlanner(props) {
         }).then((res)=>{
             if(res.data.success){
                 setRouteInfo({"name": "", "description": ""});
+                setStudentRows([]);
                 setStudentRows([]);
                 setSnackbarOpen(true);
                 setSnackbarSeverity('success');
@@ -368,17 +391,35 @@ export default function RoutePlanner(props) {
   };
 
   return (
-    <>
-    <ToggleButtonGroup
-        color="primary"
-        value={toggleSelection}
-        exclusive
-        onChange={handleToggleMode}
-      >
-        <ToggleButton value="students">Student Mode</ToggleButton>
-        <ToggleButton value="stops">Stops Mode</ToggleButton>
-    </ToggleButtonGroup>
-
+    <Stack spacing={2} justifyContent="center">
+      <ToggleButtonGroup
+          color="primary"
+          value={toggleSelection}
+          exclusive
+          onChange={handleToggleMode}
+        >
+          <ToggleButton value="students">Student Mode</ToggleButton>
+          <ToggleButton value="stops">Stops Mode</ToggleButton>
+      </ToggleButtonGroup>
+      {toggleSelection=="stops" ? <Stack spacing={0} justifyContent="center">
+          <Typography variant="h5" align="left">
+            Current Stops in Route:
+          </Typography>
+          <div style={{ height: 250, width: 800 }}>
+            <div style={{ display: 'flex', height: '100%' }}>
+              <div style={{ flexGrow: 1 }}>
+                <DataGrid
+                  rows={stopRows}
+                  columns={stopColumns}
+                  getRowId={(row) => row.id}
+                  pageSize={5}
+                  rowsPerPageOptions={[5]}
+                  density="compact"
+                />
+              </div>
+            </div>
+          </div>
+        </Stack> : null}
     <Snackbar open={snackbarOpen} onClose={handleClose}>
       <Alert onClose={handleClose} severity={snackbarSeverity}>
         {snackbarMsg}
@@ -391,11 +432,11 @@ export default function RoutePlanner(props) {
           <GoogleMap mapContainerStyle={containerStyle} zoom={7} options={mapOptions} center={schoolLocation} onDblClick={(value) => handleMapClick(value.latLng)}>
             <Marker title="School" label="School" position={schoolLocation}/>
             {students.map((student, index) => (
-              <Marker key={index} title={student.address} position={student.location} onClick={() => handleMarkerClick(student, index)} label={student.route == null ? "0" : "1"}/> ))
+              <Marker key={index} title={student.address} position={student.location} onClick={() => handleAddressClick(student, index)} label={student.route == null ? "0" : "1"}/> ))
             }
             {toggleSelection=="stops" ? stops.map((stop, index) => (
-              <Marker key={index} title={"Stop"} position={stop.loc} /**onClick={() => handleMarkerClick(student, index)}**/ label={"s"}/>)) : []
-            }
+              <Marker key={index} title={"Stop "+index} position={stop.loc} onClick={() => handleStopClick(stop, index)} label={"s"}/>))
+               : []}
           </GoogleMap>
         </LoadScript>
 
@@ -422,6 +463,9 @@ export default function RoutePlanner(props) {
         </Stack>
       </Stack>
       <Stack spacing={2.5} justifyContent="center">
+        <Typography variant="h5" align="left">
+          Current Route: {selectionModel.length==0 ? (routeInfo["name"].length==0 ? "None" : routeInfo["name"]) : selectionModel}
+        </Typography>
         <TextField
           fullWidth
           variant="outlined"
@@ -462,6 +506,6 @@ export default function RoutePlanner(props) {
         </Button>
       </Stack>  
     </Stack>
-    </>
+    </Stack>
   )
 } 

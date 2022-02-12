@@ -1,0 +1,127 @@
+2022-02-12 01:12:09,644 ERROR app ThreadPoolExecutor-0_0 : Exception on /route/None [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type integer: "None"
+LINE 3: WHERE routes.id = 'None' 
+                          ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 42, in decorator
+    return fn(*args, **kwargs)
+  File "/app/app.py", line 599, in routes_get
+    route = Route.query.filter_by(id=route_uid).first()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/query.py", line 2810, in first
+    return self.limit(1)._iter().first()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/query.py", line 2894, in _iter
+    result = self.session.execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 1692, in execute
+    result = conn._execute_20(statement, params or {}, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1614, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/sql/elements.py", line 325, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1481, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1845, in _execute_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 2026, in _handle_dbapi_exception
+    util.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.DataError: (psycopg2.errors.InvalidTextRepresentation) invalid input syntax for type integer: "None"
+LINE 3: WHERE routes.id = 'None' 
+                          ^
+
+[SQL: SELECT routes.id AS routes_id, routes.name AS routes_name, routes.school_id AS routes_school_id, routes.description AS routes_description 
+FROM routes 
+WHERE routes.id = %(id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'id_1': 'None', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/14/9h9h)
+2022-02-12 01:12:32,844 ERROR app ThreadPoolExecutor-0_0 : Exception on /route/None [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type integer: "None"
+LINE 3: WHERE routes.id = 'None' 
+                          ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1518, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/extension.py", line 165, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1516, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/dist-packages/flask/app.py", line 1502, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/usr/local/lib/python3.8/dist-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/app/app.py", line 42, in decorator
+    return fn(*args, **kwargs)
+  File "/app/app.py", line 599, in routes_get
+    route = Route.query.filter_by(id=route_uid).first()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/query.py", line 2810, in first
+    return self.limit(1)._iter().first()
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/query.py", line 2894, in _iter
+    result = self.session.execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/orm/session.py", line 1692, in execute
+    result = conn._execute_20(statement, params or {}, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1614, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/sql/elements.py", line 325, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1481, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1845, in _execute_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 2026, in _handle_dbapi_exception
+    util.raise_(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/util/compat.py", line 207, in raise_
+    raise exception
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/base.py", line 1802, in _execute_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.8/dist-packages/sqlalchemy/engine/default.py", line 732, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.DataError: (psycopg2.errors.InvalidTextRepresentation) invalid input syntax for type integer: "None"
+LINE 3: WHERE routes.id = 'None' 
+                          ^
+
+[SQL: SELECT routes.id AS routes_id, routes.name AS routes_name, routes.school_id AS routes_school_id, routes.description AS routes_description 
+FROM routes 
+WHERE routes.id = %(id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'id_1': 'None', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/14/9h9h)
+2022-02-12 01:29:15,525 DEBUG root ThreadPoolExecutor-0_0 : in here4
+2022-02-12 01:29:15,530 DEBUG root ThreadPoolExecutor-0_0 : in here1
+2022-02-12 01:29:15,536 DEBUG root ThreadPoolExecutor-0_0 : in here2
