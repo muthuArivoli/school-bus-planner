@@ -72,6 +72,8 @@ class GoogleMap extends Component {
                 address: ""
             });
             this.props.setAddress("");
+            this.props.setLatitude("");
+            this.props.setLongitude("");
             return;
         }
 
@@ -98,9 +100,13 @@ class GoogleMap extends Component {
                     this.zoom = 12;
                     this.setState({ address: results[0].formatted_address });
                     this.props.setAddress(results[0].formatted_address);
+                    this.props.setLatitude(this.state.lat);
+                    this.props.setLongitude(this.state.lng);
                 } else {
                     window.alert('No results found');
                     this.props.setAddress("");
+                    this.props.setLatitude("");
+                    this.props.setLongitude("");
                 }
             } else {
                 window.alert('Geocoder failed due to: ' + status);

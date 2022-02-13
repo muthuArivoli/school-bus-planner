@@ -133,6 +133,8 @@ class AutoComplete extends Component {
                     onFocus={this.clearSearchBox}
                     placeholder="Enter Address"
                 />
+
+
             </Wrapper>
         );
     }

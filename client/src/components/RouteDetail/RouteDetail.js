@@ -37,6 +37,10 @@ export default function RouteDetail(props) {
 
   const [school, setSchool] = useState("");
   const [rows, setRows] = useState([]);
+
+//const [stopLocation, setStopLocation] = useState({})
+//const [stopTime,setStopTime] = useState([pickup:, dropoff: ])
+
   let navigate = useNavigate();
 
   const handleDelete = () => {
@@ -102,6 +106,7 @@ export default function RouteDetail(props) {
           navigate("/routes");
         }
 
+        //check if student is in/out range 
         console.log(result.data.route);
         let newRows = [];
         let newStudents=[];

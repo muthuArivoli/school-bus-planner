@@ -131,6 +131,7 @@ export default function StudentDetail(props) {
           <Typography variant="h5" align="center">
             Student ID: {data.student_id}
           </Typography>
+
         </Stack>
 
         <Stack direction="row" spacing={20} justifyContent="center">
@@ -160,6 +161,13 @@ export default function StudentDetail(props) {
               style={{ marginLeft: 16 }}>
               View Route
             </Button>
+ 
+            <Typography variant="h5" align="center">
+              In Route Range:  {/* {in_range} */}
+             
+            </Typography> 
+
+
           </Stack>
         </Stack>
 
