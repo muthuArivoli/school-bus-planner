@@ -305,7 +305,7 @@ export default function SignUp(props) {
                   id="confirm-password"
                 />
               </Grid>
-              <Grid item md={12} sx={{ height: 450 }} >
+              <Grid item xs={12} sx={{ height: 450 }} >
                 <GoogleMap address={address} setAddress={setAddress}/>
               </Grid>
               <Grid item xs={12}>

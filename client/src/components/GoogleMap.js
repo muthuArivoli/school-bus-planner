@@ -10,8 +10,7 @@ import Marker from './Markers';
 
 
 const Wrapper = styled.main`
-  width: 400px;
-  height: 400px;
+  height: 380px;
 `;
 
 class GoogleMap extends Component {
@@ -23,27 +22,12 @@ class GoogleMap extends Component {
         mapApi: null,
         geoCoder: null,
         places: [],
-        center: [],
+        center: [35.9998, -78.938],
         zoom: 9,
         address: '',
         lat: null,
         lng: null
     };
-
-    componentWillMount() {
-        this.setCurrentLocation();
-    }
-
-
-    onMarkerInteraction = ( mouse) => {
-        this.setState({
-            lat: mouse.lat,
-            lng: mouse.lng
-        });
-    }
-    onMarkerInteractionMouseUp = () => {
-        this._generateAddress();
-    }
 
     _onChange = ({ center, zoom }) => {
         this.setState({
@@ -78,47 +62,11 @@ class GoogleMap extends Component {
         this.setState({
             places: [place],
             lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng()
+            lng: place.geometry.location.lng(),
+            address: place.formatted_address
         });
-        this._generateAddress()
+        this.props.setAddress(place.formatted_address);
     };
-
-    _generateAddress() {
-        const {
-            mapApi
-        } = this.state;
-
-        const geocoder = new mapApi.Geocoder;
-
-        geocoder.geocode({ 'location': { lat: this.state.lat, lng: this.state.lng } }, (results, status) => {
-            console.log(results);
-            console.log(status);
-            if (status === 'OK') {
-                if (results[0]) {
-                    this.zoom = 12;
-                    this.setState({ address: results[0].formatted_address });
-                    this.props.setAddress(results[0].formatted_address);
-                } else {
-                    window.alert('No results found');
-                    this.props.setAddress("");
-                }
-            } else {
-                window.alert('Geocoder failed due to: ' + status);
-            }
-
-        });
-    }
-
-    // Get Current Location Coordinates
-    setCurrentLocation() {
-        if ('geolocation' in navigator) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                this.setState({
-                    center: [position.coords.latitude, position.coords.longitude],
-                });
-            });
-        }
-    }
 
     render() {
         const {
@@ -137,9 +85,6 @@ class GoogleMap extends Component {
                     center={this.state.center}
                     zoom={this.state.zoom}
                     onChange={this._onChange}
-                    onChildMouseDown={this.onMarkerInteraction}
-                    onChildMouseUp={this.onMarkerInteractionMouseUp}
-                    onChildMouseMove={this.onMarkerInteraction}
                     bootstrapURLKeys={{
                         key: 'AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o',
                         libraries: ['places', 'geometry'],
