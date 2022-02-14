@@ -59,10 +59,7 @@ export default function CreateSchool(props) {
 
     return(
         <>
-          <Typography component="h1" variant="h5">
-            Create Student
-          </Typography>
-        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>  
+
         <StudentForm 
           name={name} 
           updateName={setName}
@@ -74,14 +71,10 @@ export default function CreateSchool(props) {
           updateSchool={setSchool}
           route={route}
           updateRoute={setRoute}
+          handleSubmit={handleSubmit}
+          title="Create Student"
           />
-        <Button type="submit"
-                  variant="contained"
-                  disabled={school == null || school.id == "" || user == null || user.id == "" || name == ""}
-                  >
-                    Submit
-        </Button>
-        </Box>
+
         </>
     )
 }

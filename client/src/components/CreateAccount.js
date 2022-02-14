@@ -250,9 +250,6 @@ export default function SignUp(props) {
             alignItems: 'center',
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-            <LockOutlinedIcon />
-          </Avatar>
           <Typography component="h1" variant="h5">
             Create User
           </Typography>
@@ -308,7 +305,7 @@ export default function SignUp(props) {
                   id="confirm-password"
                 />
               </Grid>
-              <Grid item md={12} sx={{ height: 450 }} >
+              <Grid item xs={12} sx={{ height: 450 }} >
                 <GoogleMap address={address} setAddress={setAddress}/>
               </Grid>
               <Grid item xs={12}>
@@ -334,6 +331,7 @@ export default function SignUp(props) {
                         Student {index + 1}
                     </Typography>
                 </Box>
+                <Grid container spacing={2}>
                     <Grid item xs={12}>
                     <TextField
                         autoFocus
@@ -353,6 +351,7 @@ export default function SignUp(props) {
                         onChange={(e) => handleStudentChange(index, "id", e.target.value)}
                         fullWidth
                     />
+                    </Grid>
                     <Grid item xs={12}>
                     <Autocomplete
                         autoFocus
@@ -376,7 +375,6 @@ export default function SignUp(props) {
                         renderInput={(params) => <TextField {...params} label="Route Name" />}
                     />
                     </Grid>
-                </Grid>
                 <Grid container justifyContent="center">
                 <Grid item xs={1}>
                   <div
@@ -387,6 +385,7 @@ export default function SignUp(props) {
                       Delete
                     </Button>
                   </div>
+                </Grid>
                 </Grid>
                 </Grid>
                 </React.Fragment>
