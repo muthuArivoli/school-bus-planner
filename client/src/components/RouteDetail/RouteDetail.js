@@ -76,6 +76,8 @@ export default function RouteDetail(props) {
     setError(false);
   };
 
+//NEED TO GET STOP INFO FOR STOP DATAGRID
+
   useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
@@ -109,7 +111,7 @@ export default function RouteDetail(props) {
           navigate("/routes");
         }
 
-        //check if student is in/out range 
+
         console.log(result.data.route);
         let newRows = [];
         let newStudents=[];
@@ -200,7 +202,7 @@ export default function RouteDetail(props) {
               size="small"
               style={{ marginLeft: 16 }}>
               View School
-            </Button>
+              </Button>
 
             </Typography>
 
