@@ -279,12 +279,14 @@ export default function RoutePlanner(props) {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id})
+            //stops: 
         })
         axios.post(process.env.REACT_APP_BASE_URL+`/route`, {
             school_id: parseInt(id),
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id})
+            
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`

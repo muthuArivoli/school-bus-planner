@@ -7,6 +7,7 @@ import {Link as RouterLink, useParams} from 'react-router-dom';
 import DeleteDialog from '../DeleteDialog';
 import Typography from '@mui/material/Typography';
 import RouteDetailStudentList from './RouteDetailStudentList';
+import RouteDetailStopList from './RouteDetailStopList';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import MuiAlert from '@mui/material/Alert';
@@ -39,7 +40,9 @@ export default function RouteDetail(props) {
   const [rows, setRows] = useState([]);
 
 //const [stopLocation, setStopLocation] = useState({})
-//const [stopTime,setStopTime] = useState([pickup:, dropoff: ])
+//const [stopTime,setStopTime] = useState({pickup:, dropoff: })  //pickup_time, dropoff_time
+//const [inRangeStudents, setInRangeStudents] = React.useState([])
+//const [routeComplete, setRouteComplete] = React.useState();
 
   let navigate = useNavigate();
 
@@ -178,10 +181,38 @@ export default function RouteDetail(props) {
             <Typography variant="h5" align="center">
               Route Name: {data.name}
             </Typography>
+
+
+            {/*route complete: 
+              route start time:
+              route end time: 
+              stop locations:
+              stop times (?): 
+            */}
+
             <Typography variant="h5" align="center">
               School: {school}
+
+              <Button component={RouterLink}
+              to={"/schools/" + data.school_id}
+              color="primary"
+              variant="outlined"
+              size="small"
+              style={{ marginLeft: 16 }}>
+              View School
+            </Button>
+
             </Typography>
+
+
           </Stack>
+
+          <Typography variant="h5" align="center">
+              Route Complete: {/*  */}
+          </Typography>
+
+
+
           <TextField
           label="Description"
           value={data.description}
@@ -192,15 +223,22 @@ export default function RouteDetail(props) {
           focused
           />
 
-<Button component={RouterLink}
-              to={"/schools/" + data.school_id}
-              color="primary"
-              variant="outlined"
-              size="small"
-              style={{ marginLeft: 16 }}>
-              View School
-            </Button>
         </Stack>
+
+        {/* ||||| */}
+
+        <Typography variant="h5" align="center">
+              Route Stop Information
+          </Typography>
+
+
+        <RouteDetailStopList rows = {rows}/>
+
+
+        
+        <Typography variant="h5" align="center">
+              Route Students
+          </Typography>
 
         <RouteDetailStudentList rows={rows}/>
 
