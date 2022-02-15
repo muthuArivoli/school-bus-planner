@@ -211,7 +211,7 @@ export default function RouteDetail(props) {
 
         <Stack direction="row" spacing={3} justifyContent="center">
           <Button component={RouterLink}
-              to={"/schools/" + data.school_id +"/routes"}
+              to={`/schools/${data.school_id}/routes?route=${id}`}
               color="primary"
               variant="outlined"
               size="small"
