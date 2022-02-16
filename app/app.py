@@ -612,6 +612,12 @@ def schools(school_uid = None):
             db.session.commit()
         except SQLAlchemyError:
             return {"msg": "Database Error"}, 400
+
+        if 'arrival_time' in content or 'departure_time' in content:
+            try:
+                update_stop_calculations(school)
+            except SQLAlchemyError:
+                return {"msg": "Database Error"}, 400
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
@@ -844,6 +850,22 @@ def get_time_and_dist(stops, departure_time, arrival_time, school_lat, school_lo
     logging.debug(dropoff_times)
     logging.debug(pickup_times)
     return dropoff_times, pickup_times
+
+
+def update_stop_calculations(school):
+    routes = Route.query.filter_by(school_id = school.id)
+    for route in routes:
+        stops = Stop.query.filter_by(route_id=route.id)
+        stop_dicts = [stop.as_dict() for stop in stops]
+        sorted_stops = sorted(stop_dicts, key=lambda x: x['index'])
+        dropoff_times, pickup_times = get_time_and_dist(sorted_stops, school.departure_time, school.arrival_time, school.latitude, school.longitude)
+        for f in range(len(stops)):
+            stop_info = sorted_stops[f]
+            stop_to_edit = Stop.query.filter_by(id=stop_info['id'])
+            stop_to_edit.pickup_time = pickup_times[f]
+            stop_to_edit.dropoff_time = dropoff_times[f]
+    db.session.commit()
+
 
 
 
