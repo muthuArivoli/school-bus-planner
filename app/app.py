@@ -721,9 +721,10 @@ def routes(route_uid = None):
             new_route.description = description
         
         #ADDED THIS FOR STOPS
-        dropoff_times, pickup_times = get_time_and_dist(stops, school.departure_time, school.arrival_time, school.latitude, school.longitude)
+        sorted_stops = sorted(stops, key=lambda x: x['index'])
+        dropoff_times, pickup_times = get_time_and_dist(sorted_stops, school.departure_time, school.arrival_time, school.latitude, school.longitude)
         for f in range(len(stops)):
-            stop_info = stops[f]
+            stop_info = sorted_stops[f]
             stop = Stop(name=stop_info['name'], route_id=new_route.id, latitude=stop_info['lat'], longitude=stop_info['long'], index=f, pickup_time=pickup_times[f], dropoff_time=dropoff_times[f])
             db.session.add(stop)
         try:
@@ -773,9 +774,10 @@ def routes(route_uid = None):
                 db.session.delete(stop)
             
             #REPLACE WITH NEW STOPS
-            dropoff_times, pickup_times = get_time_and_dist(stops, school.departure_time, school.arrival_time, school.latitude, school.longitude)
+            sorted_stops = sorted(stops, key=lambda x: x['index'])
+            dropoff_times, pickup_times = get_time_and_dist(sorted_stops, school.departure_time, school.arrival_time, school.latitude, school.longitude)
             for f in range(len(stops)):
-                stop_info = stops[f]
+                stop_info = sorted_stops[f]
                 new_stop = Stop(name=stop_info['name'], route_id=new_route.id, latitude=stop_info['lat'], longitude=stop_info['long'], index=f, pickup_time=pickup_times[f], dropoff_time=dropoff_times[f])
                 db.session.add(new_stop)   
         try:
