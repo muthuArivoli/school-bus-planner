@@ -5,13 +5,14 @@ from sqlalchemy.orm import Query
 from sqlalchemy.exc import SQLAlchemyError
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager, verify_jwt_in_request
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 import json
 import sys
 import logging
 import bcrypt
 import math
 import geopy.distance
+import googlemaps
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:bus@db:5432/db'
@@ -23,6 +24,8 @@ ROWS_PER_PAGE = 10
 db = SQLAlchemy(app)
 cors = CORS(app)
 api = Blueprint('api', __name__)
+gmaps_key = googlemaps.Client(key="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o")
+
 
 from models import User, Student, School, Route, Stop, UserFilter, StudentFilter, SchoolFilter, RouteFilter
 
@@ -686,33 +689,43 @@ def routes(route_uid = None):
         name = content.get('name', None)
         school_id = content.get('school_id', None)
         students = content.get('students',[])
+        stops = content.get('stops', [])
 
         if not name or not school_id:
             return {"msg": "Invalid Query Syntax"}, 400
         
-        if type(name) is not str or type(school_id) is not int or type(students) is not list or not all(isinstance(x, int) for x in students):
+        if type(name) is not str or type(school_id) is not int or type(stops) is not list or type(students) is not list or not all(isinstance(x, int) for x in students):
             return {"msg": "Invalid Query Syntax"}, 400
 
+        school = School.query.filter_by(id=school_id).first()
+        if school is None:
+            return {"msg": "Invalid Query"}, 400
 
         new_route = Route(name = name, school_id = school_id)
-        if 'description' in content:
-            description = content.get('description', None)
-            if type(description) is not str:
-                return {"msg": "Invalid Query Syntax"}, 400
-            new_route.description = description
+        try:
+            db.session.add(new_route)
+            db.session.flush()
+            db.session.refresh(new_route)
+        except SQLAlchemyError:
+            return {"msg": "Database Error"}, 400
+        
         for student_num in students:
             logging.debug("in here" + str(student_num))
             student = Student.query.filter_by(id=student_num).first()
             if student:
                 student.route_id = new_route.id
-        try:
-            db.session.add(new_route)
-            db.session.flush()
-            db.session.refresh(new_route)
-            db.session.commit()
-        except SQLAlchemyError:
-            return {"msg": "Database Error"}, 400
-        check_complete(new_route.id)
+        if 'description' in content:
+            description = content.get('description', None)
+            if type(description) is not str:
+                return {"msg": "Invalid Query Syntax"}, 400
+            new_route.description = description
+        
+        #ADDED THIS FOR STOPS
+        dropoff_times, pickup_times = get_time_and_dist(stops, school.departure_time, school.arrival_time, school.latitude, school.longitude)
+        for f in range(len(stops)):
+            stop_info = stops[f]
+            stop = Stop(name=stop_info['name'], route_id=new_route.id, latitude=stop_info['lat'], longitude=stop_info['long'], index=f, pickup_time=pickup_times[f], dropoff_time=dropoff_times[f])
+            db.session.add(stop)
         try:
             db.session.commit()
         except SQLAlchemyError:
@@ -736,7 +749,6 @@ def routes(route_uid = None):
                 student = Student.query.filter_by(id=student_num).first()
                 if student:
                     student.route_id = route.id
-            check_complete(route_uid)
         if 'name' in content:
             name = content.get('name', None)
             if type(name) is not str:
@@ -747,123 +759,33 @@ def routes(route_uid = None):
             if type(description) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
             route.description = description
-        # if 'complete' in content:
-        #     complete = content.get('complete', None)
-        #     if type(complete) is not bool:
-        #         return {"msg": "Invalid Query Syntax"}, 400
-        #     route.complete = complete
-        try:
-            db.session.commit()
-        except SQLAlchemyError:
-            return {"msg": "Database Error"}, 400
-        return json.dumps({'success': True})
-    return json.dumps({'success': False})
-
-# STOP CRUD
-
-@app.route('/stop/<stop_uid>', methods = ['OPTIONS'])
-@app.route('/stop', methods = ['OPTIONS'])
-@cross_origin()
-def stop_options(stop_uid=None):
-    return json.dumps({'success':True})
-
-@app.route('/stop/<stop_uid>', methods = ['GET'])
-@cross_origin()
-@admin_required()
-def stops_get(stop_uid=None):
-    if request.method == 'GET':
-        if stop_uid is not None:
-            stop = Stop.query.filter_by(id=stop_uid).first()
-            if stop is None:
-                return json.dumps({'error': 'Invalid Stop Id'})
-            return json.dumps({'success': True, 'stop': stop.as_dict()})
-        else:
-            return {"msg": "Invalid Query Syntax"}, 400
-
-@app.route('/stop/<stop_uid>', methods = ['PATCH','DELETE'])
-@app.route('/stop', methods = ['POST'])
-@cross_origin()
-@admin_required()
-def stops(stop_uid = None):
-    if request.method == 'DELETE':
-        stop = Stop.query.filter_by(id=stop_uid).first()
-        if stop is None:
-            return json.dumps({'error': 'Invalid Stop Id'})
-        try:
-            db.session.delete(stop)
-            db.session.commit()
-        except SQLAlchemyError:
-            return {"msg": "Database Error"}, 400
-        return json.dumps({'success': True})
-
-    if request.method == 'POST':
-        content = request.json
-        name = content.get('name', None)
-        location = content.get('location', None)
-        route_id = content.get('route_id', None)
-        longitude = content.get('longitude', None)
-        latitude = content.get('latitude', None)
-       
-        if not name or not location or not route_id or not longitude or not latitude:
-            return {"msg": "Invalid Query Syntax"}, 400
-        
-        if type(name) is not str or type(location) is not str or type(route_id) is not int or type(longitude) is not float or type(latitude) is not float:
-            return {"msg": "Invalid Query Syntax"}, 400
-
-        new_stop = Stop(name = name, route_id = route_id, location = location, longitude = longitude, latitude = latitude)
-        try:
-            db.session.add(new_stop)
-            db.session.flush()
-            db.session.refresh(new_stop)
-        except SQLAlchemyError:
-            return {"msg": "Database Error"}, 400
-        try:
-            db.session.commit()
-        except SQLAlchemyError:
-            return {"msg": "Database Error"}, 400
-         #ADD TRY EXCEPT
-        check_complete(route_id)
-        try:
-            db.session.commit()
-        except SQLAlchemyError:
-            return {"msg": "Database Error"}, 400
-        return json.dumps({'success': True, 'id': new_stop.id})
-    
-    if request.method == 'PATCH':
-        content = request.json
-
-        stop = Stop.query.filter_by(id=stop_uid).first()
-        if stop is None:
-            return json.dumps({'error': 'Invalid Stop Id'})
-        if 'name' in content:
-            name = content.get('name', None)
-            if type(name) is not str:
+        if 'stops' in content:
+            stops = content.get('stops', [])
+            if type(stops) is not list:
                 return {"msg": "Invalid Query Syntax"}, 400
-            stop.name = name
-        # if 'pickup_time' in content:
-        #     pickup_time = content.get('pickup_time', None)
-        #     if type(pickup_time) is not str:
-        #         return {"msg": "Invalid Query Syntax"}, 400
-        #     #Add Try/Except
-        #     parsed_time = datetime.strptime(pickup_time, "%Y-%m-%dT%H:%M:%SZ")
-        #     stop.pickup_time = parsed_time
-        # if 'dropoff_time' in content:
-        #     dropoff_time = content.get('dropoff_time', None)
-        #     if type(dropoff_time) is not str:
-        #         return {"msg": "Invalid Query Syntax"}, 400
-        #     parsed_time = datetime.strptime(dropoff_time, "%Y-%m-%dT%H:%M:%SZ")
-        #     stop.dropoff_time = parsed_time
-        try:
-            db.session.commit()
-        except SQLAlchemyError:
-            return {"msg": "Database Error"}, 400
-        check_complete(route_id)
+            school = School.query.filter_by(id=route.school_id)
+            if school is None:
+                return {"msg": "Invalid Query"}, 400
+            
+            #DELETE ALL EXISTING STOPS
+            existing_stops = Stop.query.filter_by(route_id=route_uid)
+            for stop in existing_stops:
+                db.session.delete(stop)
+            
+            #REPLACE WITH NEW STOPS
+            dropoff_times, pickup_times = get_time_and_dist(stops, school.departure_time, school.arrival_time, school.latitude, school.longitude)
+            for f in range(len(stops)):
+                stop_info = stops[f]
+                new_stop = Stop(name=stop_info['name'], route_id=new_route.id, latitude=stop_info['lat'], longitude=stop_info['long'], index=f, pickup_time=pickup_times[f], dropoff_time=dropoff_times[f])
+                db.session.add(new_stop)   
         try:
             db.session.commit()
         except SQLAlchemyError:
             return {"msg": "Database Error"}, 400
         return json.dumps({'success': True})
     return json.dumps({'success': False})
+
+#HELPER METHODS
 
 def get_distance(lat1, long1, lat2, long2):
     coords_1 = (lat1, long1)
@@ -888,7 +810,39 @@ def check_complete(route_id):
     route.complete=True
 
 
+def get_time_and_dist(stops, departure_time, arrival_time, school_lat, school_long):
+    pickup_times = []
+    dropoff_times = []
+    times = []
+    origins = []
+    destinations = []
+    origins.append(str(school_lat) + ' ' + str(school_long))
+    destinations.append(str(stops[0]['lat']) + ' ' +  str(stops[0]['long']))
+    matrix = gmaps_key.distance_matrix(origins, destinations)
+    times.append(matrix['rows'][0]['elements'][0]['duration']['value'])
+    for f in range(len(stops)-1):
+        origins = []
+        destinations = []
+        stop = stops[f]
+        next_stop = stops[f+1]
+        origins.append(str(stop['lat']) + ' ' + str(stop['long']))
+        destinations.append(str(next_stop['lat']) + ' ' +  str(next_stop['long']))
+        matrix = gmaps_key.distance_matrix(origins, destinations)
+        times.append(matrix['rows'][0]['elements'][0]['duration']['value'])
+    #Creates a list of times in seconds that represent travel duration for each pair of locations
+    logging.debug(times)
+    current_time = datetime.combine(date(1,1,1),departure_time)
+    current_pickup = datetime.combine(date(1,1,1),arrival_time)
     
+    for time in times:
+        current_time = current_time + timedelta(seconds=time)
+        current_pickup = current_pickup - timedelta(seconds=time)
+        dropoff_times.append(current_time.time())
+        pickup_times.append(current_pickup.time())
+    logging.debug(dropoff_times)
+    logging.debug(pickup_times)
+    return dropoff_times, pickup_times
+
 
 
 

@@ -34,7 +34,7 @@ class User(db.Model):
         return main
 
     def __repr__(self):
-        return "<User(email='{}', uaddress='{}',full_name='{}', pswd={}, admin_flag={}, latitude='{}', longitude='{})>"\
+        return "<User(email='{}', uaddress='{}',full_name='{}', pswd='{}', admin_flag={}, latitude={}, longitude={})>"\
             .format(self.email, self.uaddress, self.full_name, self.pswd, self.admin_flag, self.latitude, self.longitude)
   
 
@@ -62,7 +62,7 @@ class School(db.Model):
         return main
 
     def __repr__(self):
-        return "<School(name='{}', address='{}',latitude='{}', longitude='{}', 'arrival_time='{}', departure_time='{}')>"\
+        return "<School(name='{}', address='{}',latitude={}, longitude={}, 'arrival_time='{}', departure_time='{}')>"\
             .format(self.name, self.address, self.latitude, self.longitude, self.arrival_time, self.departure_time)
 
 class Route(db.Model):
@@ -90,11 +90,13 @@ class Route(db.Model):
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
         students = [student.id for student in self.students]
+        stops = [stop.id for stop in self.stops]
         main['students'] = students
+        main['stops'] = stops
         return main
 
     def __repr__(self):
-        return "<Route(name='{}', school_id='{}')>"\
+        return "<Route(name='{}', school_id={})>"\
             .format(self.name, self.school_id)
 
 class Student(db.Model):
@@ -123,12 +125,12 @@ class Stop(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
-    location = db.Column(db.String())
     pickup_time = db.Column(db.Time())
     dropoff_time = db.Column(db.Time())
     route_id = db.Column(db.Integer, ForeignKey('routes.id'))
     longitude = db.Column(db.Float())
     latitude = db.Column(db.Float())
+    index = db.Column(db.Integer)
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -138,8 +140,8 @@ class Stop(db.Model):
         return main
 
     def __repr__(self):
-        return "<Stop(name='{}', location='{}', route_id={}, latitude='{}', longitude='{})>"\
-            .format(self.name, self.location, self.route_id, self.latitude, self.longitude)
+        return "<Stop(name='{}', route_id={}, latitude={}, longitude={}, index={}, pickup_time={}, dropoff_time={})>"\
+            .format(self.name, self.route_id, self.latitude, self.longitude, self.index, self.pickup_time, self.dropoff_time)
 
 
 class UserFilter(Filter):

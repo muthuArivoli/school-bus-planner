@@ -7,7 +7,6 @@ import googlemaps
 
 
 cli = FlaskGroup(app)
-#NEED TO ADD THIS KEY
 gmaps_key = googlemaps.Client(key="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o")
 
 @cli.command("create_db")
