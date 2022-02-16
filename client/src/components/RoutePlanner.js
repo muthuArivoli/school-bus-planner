@@ -2,7 +2,7 @@ import React from 'react'
 import { GoogleMap, LoadScript, Marker, useGoogleMap } from '@react-google-maps/api';
 import Stack from '@mui/material/Stack';
 import Geocode from "react-geocode";
-import { DataGrid } from '@mui/x-data-grid';
+import { GridOverlay, DataGrid } from '@mui/x-data-grid';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -12,6 +12,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Box from '@mui/material/Box';
 
 let api_key = "AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o";
 
@@ -42,9 +43,33 @@ const routeColumns = [
 
 const stopColumns = [
   { field: 'id', hide: true, width: 30},
-  { field: 'index', headerName: "Index", editable: true, width: 100},
   { field: 'name', headerName: "Stop Name", editable: true, width: 150},
+  { field: 'index', headerName: "Index", editable: true, width: 100},
 ];
+
+function NoStopsOverlay() {
+  return (
+    <GridOverlay>
+      <Box sx={{ mt: 1 }}>No Stops in Current Route</Box>
+    </GridOverlay>
+  );
+}
+
+function NoStudentsOverlay() {
+  return (
+    <GridOverlay>
+      <Box sx={{ mt: 1 }}>No Students in Current Route</Box>
+    </GridOverlay>
+  );
+}
+
+function NoRoutesOverlay() {
+  return (
+    <GridOverlay>
+      <Box sx={{ mt: 1 }}>No Routes Exist</Box>
+    </GridOverlay>
+  );
+}
 
 export default function RoutePlanner(props) {
   const [studentRows, setStudentRows] = React.useState([]); //rows of data grid: "Students in Current Row"
@@ -63,7 +88,6 @@ export default function RoutePlanner(props) {
 
   const [toggleSelection, setToggleSelection] = React.useState('students');
 
-  const [stops, setStops] = React.useState([]);
   const [stopRows, setStopRows] = React.useState([]);
 
   let { id } = useParams();
@@ -260,7 +284,7 @@ export default function RoutePlanner(props) {
   };
 
   // function when address is clicked (add address to route)
-  const handleAddressClick = (student, index) => {
+  const handleAddressClick = (student) => {
     if (toggleSelection=="students") {
       let addresses = studentRows.map((value)=>{return value.address});
       if(addresses.includes(student.address)){
@@ -293,7 +317,7 @@ export default function RoutePlanner(props) {
   };
 
   // function when stop icon is clicked
-  const handleStopClick = (stop, index) => {
+  const handleStopClick = (stop) => {
     let newStopRows = stopRows.filter(value => value.id != stop.id);
     setStopRows(newStopRows);
   };
@@ -363,6 +387,7 @@ export default function RoutePlanner(props) {
 
     }
     setSelectionModel([]);
+    setToggleSelection("students");
     setResetRoute(!resetRoute);
   }
 
@@ -402,12 +427,16 @@ export default function RoutePlanner(props) {
       </ToggleButtonGroup>
       {toggleSelection=="stops" ? <Stack spacing={0} justifyContent="center">
           <Typography variant="h5" align="left">
-            Current Stops in Route:
+            Current Stops in Route: 
+            (double click on any name or index to edit it)
           </Typography>
           <div style={{ height: 250, width: 800 }}>
             <div style={{ display: 'flex', height: '100%' }}>
               <div style={{ flexGrow: 1 }}>
                 <DataGrid
+                  components={{
+                    NoRowsOverlay: NoStopsOverlay,
+                  }}
                   rows={stopRows}
                   columns={stopColumns}
                   getRowId={(row) => row.id}
@@ -428,17 +457,20 @@ export default function RoutePlanner(props) {
       
     <Stack direction="row" spacing={8} justifyContent="center">
       <Stack spacing={2.5} justifyContent="center">
-        <LoadScript googleMapsApiKey={api_key}>
-          <GoogleMap mapContainerStyle={containerStyle} zoom={7} options={mapOptions} center={schoolLocation} onDblClick={(value) => handleMapClick(value.latLng)}>
-            <Marker title="School" label="School" position={schoolLocation}/>
-            {students.map((student, index) => (
-              <Marker key={index} title={student.address} position={student.location} onClick={() => handleAddressClick(student, index)} label={student.route == null ? "0" : "1"}/> ))
-            }
-            {toggleSelection=="stops" ? stopRows.map((stop, index) => (
-              <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop, index)} label={"s"}/>))
-               : []}
-          </GoogleMap>
-        </LoadScript>
+        <Stack spacing={0} justifyContent="center">
+          {toggleSelection=="stops" ? <Typography variant="subtitle1" align="left">Double click anywhere to add a stop!</Typography>: null}
+          <LoadScript googleMapsApiKey={api_key}>
+            <GoogleMap mapContainerStyle={containerStyle} zoom={7} options={mapOptions} center={schoolLocation} onDblClick={(value) => handleMapClick(value.latLng)}>
+              <Marker title="School" label="School" position={schoolLocation}/>
+              {students.map((student, index) => (
+                <Marker key={index} title={student.address} position={student.location} onClick={() => handleAddressClick(student)} label={student.route == null ? "0" : "1"}/> ))
+              }
+              {toggleSelection=="stops" ? stopRows.map((stop, index) => (
+                <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop)} label={"s"}/>))
+                : []}
+            </GoogleMap>
+          </LoadScript>
+        </Stack>
 
         <Stack spacing={0} justifyContent="center">
           <Typography variant="h5" align="left">
@@ -448,6 +480,9 @@ export default function RoutePlanner(props) {
             <div style={{ display: 'flex', height: '100%' }}>
               <div style={{ flexGrow: 1 }}>
                 <DataGrid
+                  components={{
+                    NoRowsOverlay: NoRoutesOverlay,
+                  }}
                   rows={routeRows}
                   columns={routeColumns}
                   selectionModel={selectionModel}
@@ -490,6 +525,9 @@ export default function RoutePlanner(props) {
             <div style={{ display: 'flex', height: '100%' }}>
               <div style={{ flexGrow: 1 }}>
                 <DataGrid
+                  components={{
+                    NoRowsOverlay: NoStudentsOverlay,
+                  }}
                   rows={studentRows}
                   columns={studentColumns}
                   getRowId={(row) => row.id}
