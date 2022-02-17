@@ -151,14 +151,14 @@ export default function UserUpdate(props) {
     return(
         <>
         <ThemeProvider theme={theme}>
-      <Container component="main">
+      <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
           sx={{
             marginTop: 8,
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'left',
+            alignItems: 'center',
           }}
         >
         <Typography component="h1" variant="h5">
@@ -166,7 +166,20 @@ export default function UserUpdate(props) {
       </Typography>
         <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
         <Grid container spacing={2}>
-            <Grid item md={12}>
+        <Grid item xs={12}>
+              <TextField
+                  autoComplete="name"
+                  name="name"
+                  required
+                  fullWidth
+                  id="name"
+                  value={data.name}
+                  onChange={handleNameChange}
+                  label="Full Name"
+                  autoFocus
+                />
+              </Grid>
+            <Grid item xs={12}>
                 <TextField
                   error={data.email!=oldEmail && emailList.includes(data.email)}
                   helperText={(data.email!=oldEmail && emailList.includes(data.email)) ? "Email already taken" : ""}
@@ -174,29 +187,33 @@ export default function UserUpdate(props) {
                   label="Email"
                   type="email"
                   id="email"
+                  fullWidth
                   value={data.email}
                   onChange={handleEmailChange}
                   autoComplete="email"
                 />
               </Grid>
-              <Grid item md={12}>
+              <Grid item xs={12}>
                 <TextField
                   name="password"
                   label="Password"
                   type="password"
                   id="password"
+                  helperText={data.password == "" ? "Leave blank to keep password the same" : ""} 
+                  fullWidth
                   value={data.password}
                   onChange={handlePasswordChange}
                   autoComplete="new-password"
                 />
               </Grid>
-              <Grid item md={12}>
+              <Grid item xs={12}>
                 <TextField
                   error={data.password != data.con_password}
                   helperText={data.password != data.con_password ? "Passwords don't match" : ""}
                   name="confirm-password"
                   label="Confirm Password"
                   type="password"
+                  fullWidth
                   value={data.con_password}
                   onChange={handleConPasswordChange}
                   id="confirm-password"
@@ -211,7 +228,7 @@ export default function UserUpdate(props) {
               <Grid item md={12} sx={{ height: 450 }} >
                 <GoogleMap address={data.address} setAddress={handleAddressChange} latitude ={latitude} setLatitude ={setLatitude} longitude ={longitude} setLongitude ={setLongitude}/>
               </Grid>
-              <Grid item md={12}>
+              <Grid item xs={12}>
                 <FormControlLabel
                   control={<Checkbox value="admin" color="primary" />}
                   label="Admin"
@@ -221,9 +238,11 @@ export default function UserUpdate(props) {
                   onChange={handleAdminChange}
                 />
               </Grid>
-              <Grid item sm={12}>
+              <Grid item xs={12}>
                 <Button type="submit"
                   variant="contained"
+                  fullWidth
+                  sx={{ mt: 3, mb: 2 }}
                   disabled={data.email == "" || data.address == "" || data.name == "" || data.password != data.con_password || (data.email!=oldEmail && emailList.includes(data.email))}
                   >
                     Submit

@@ -65,10 +65,7 @@ export default function UpdateSchool(props) {
 
     return(
         <>
-        <Typography component="h1" variant="h5">
-            Update School
-        </Typography>
-        <SchoolForm name={name} address={address} handleSubmit={handleSubmit}/>
+        <SchoolForm name={name} address={address} handleSubmit={handleSubmit} title="Update School"/>
         </>
     )
 }

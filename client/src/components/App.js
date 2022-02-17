@@ -156,13 +156,13 @@ export default function App () {
             <AuthRoute setAdmin={setAdmin} admin={admin}>
               {
               admin &&
-              <AdminDashboard>
+              <AdminDashboard titleText="Parent Dashboard">
                 <ParentView/>
               </AdminDashboard>
               }
               {
               !admin &&
-              <ParentDashboard>
+              <ParentDashboard titleText="Parent Dashboard">
                 <ParentView/>
               </ParentDashboard>
               }
@@ -173,13 +173,13 @@ export default function App () {
             <AuthRoute setAdmin={setAdmin} admin={admin}>
               {
               admin &&
-              <AdminDashboard>
+              <AdminDashboard titleText="Parent Student View">
                 <StudentView/>
               </AdminDashboard>
               }
               {
               !admin &&
-              <ParentDashboard>
+              <ParentDashboard titleText="Student View">
                 <StudentView/>
               </ParentDashboard>
               }
@@ -188,7 +188,7 @@ export default function App () {
           />
           <Route exact path="/schools" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="School List">
                 <SchoolList/>
               </AdminDashboard>
             </PrivateRoute>
@@ -196,35 +196,35 @@ export default function App () {
           />
           <Route exact path="/schools/create" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="Create School">
                 <SchoolCreate/>
               </AdminDashboard>
             </PrivateRoute>
           } />
           <Route exact path="/schools/:id/update" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="Update School">
                 <SchoolUpdate/>
               </AdminDashboard>
             </PrivateRoute>
           } />
           <Route exact path="/schools/:id" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="School Detail">
                 <SchoolDetail/>
               </AdminDashboard>
             </PrivateRoute>
           } /> 
           <Route exact path="/schools/:id/routes" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="Route Planner">
                 <RoutePlanner/>
               </AdminDashboard>
             </PrivateRoute>
           } />
           <Route exact path="/users" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="User List">
                 <UserList/>
               </AdminDashboard>
             </PrivateRoute>
@@ -232,28 +232,28 @@ export default function App () {
           />
           <Route exact path="/users/create" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="Create User">
                 <CreateAccount/>
               </AdminDashboard>
             </PrivateRoute>
           } />
           <Route exact path="/users/:id" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="User Detail">
                 <UserDetail/>
               </AdminDashboard>
             </PrivateRoute>
           } />
           <Route exact path="/users/:id/update" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="Update User">
                 <UserUpdate/>
               </AdminDashboard>
             </PrivateRoute>
           } />
           <Route exact path="/students" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="Student List">
                 <StudentList/>
               </AdminDashboard>
             </PrivateRoute>
@@ -261,28 +261,28 @@ export default function App () {
           />
           <Route exact path="/students/create" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="Create Student">
                 <StudentCreate/>
               </AdminDashboard>
             </PrivateRoute>
           } /> 
           <Route exact path="/students/:id" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="Student Detail">
                 <StudentDetail/>
               </AdminDashboard>
             </PrivateRoute>
           } />
           <Route exact path="/students/:id/update" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="Update Student">
                 <StudentUpdate/>
               </AdminDashboard>
             </PrivateRoute>
           } />
           <Route exact path="/routes" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="Route List">
                 <RouteList/>
               </AdminDashboard>
             </PrivateRoute>
@@ -290,7 +290,7 @@ export default function App () {
           />
           <Route exact path="/routes/:id" element={
             <PrivateRoute>
-              <AdminDashboard>
+              <AdminDashboard titleText="Route Detail">
                 <RouteDetail/>
               </AdminDashboard>
             </PrivateRoute>

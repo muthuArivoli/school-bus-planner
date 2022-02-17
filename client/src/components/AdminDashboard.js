@@ -25,6 +25,7 @@ import MuiAlert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
+import HomeIcon from '@mui/icons-material/Home';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -132,17 +133,15 @@ export default function AdminDashboard(props){
             >
               <MenuIcon />
             </IconButton>
-            <ButtonBase component={RouterLink} to="/">
             <Typography
               component="h1"
               variant="h6"
               color="inherit"
               noWrap
-              sx={{ flexGrow: 1 }}
+              sx={{ width: "300%", flexGrow: 1 }}
             >
-              Dashboard
+              {props.titleText}
             </Typography>
-            </ButtonBase>
             <Grid container justifyContent="flex-end">
             <Button variant="contained" onClick={handleLogout}>
               Logout
@@ -167,6 +166,12 @@ export default function AdminDashboard(props){
           <Divider />
           <List>
           <div>
+          <ListItemButton component={RouterLink} to="/">
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary="Home" />
+          </ListItemButton>
           <ListItemButton component={RouterLink} to="/users">
             <ListItemIcon>
               <AccountBoxIcon />

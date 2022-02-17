@@ -4,7 +4,14 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import CssBaseline from '@mui/material/CssBaseline';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 
+const theme = createTheme();
 
 export default function StudentForm(props) {
 
@@ -98,11 +105,27 @@ export default function StudentForm(props) {
       }
 
     return (
-        <>
+      <ThemeProvider theme={theme}>
+      <Container component="main" maxWidth="xs">
+        <CssBaseline />
+        <Box
+          sx={{
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+          >
+      <Typography component="h1" variant="h5">
+      {props.title}
+        </Typography>
+        <Box component="form" noValidate onSubmit={props.handleSubmit} sx={{ mt: 3 }}>  
+        <Grid container spacing={2}>
                     <Grid item xs={12}>
                     <TextField
                         autoFocus
                         required
+                        fullWidth
                         label="Name"
                         id="name"
                         value={props.name}
@@ -112,34 +135,44 @@ export default function StudentForm(props) {
                     </Grid>
                     <Grid item xs={12}>
                     <TextField
-                        autoFocus
-                        type="number"
+                        type="text"
+                        fullWidth
                         label="Student ID"
                         id="student_id"
                         value={props.studentId || ""}
-                        onChange={(e) => props.updateStudentId(e.target.value)}
+                        onChange={(e) => {
+                          let input = e.target.value;
+                          if( !input || input.match('^[0-9]+$')){
+                            props.updateStudentId(input);
+                          }
+                        }}
                         fullWidth
                     />
+                    </Grid>
                     <Grid item xs={12}>
                         <Autocomplete
                             autoFocus
                             required
+                            fullWidth
                             options={users}
                             id="user"
                             autoSelect
+                            required
                             value={props.user}
                             onChange={(e, new_value) => props.updateUser(new_value)}
                             isOptionEqualToValue={(option, value) => option.id === value.id}
-                            renderInput={(params) => <TextField {...params} label="User Name" />}
+                            renderInput={(params) => <TextField {...params} label="Parent Email" />}
                         />
                         </Grid>
                     <Grid item xs={12}>
                     <Autocomplete
                         autoFocus
                         required
+                        fullWidth
                         options={schools}
                         id="school"
                         autoSelect
+                        required
                         value={props.school}
                         onChange={(e, new_val) => {
                             getRoutes(e, new_val);
@@ -156,14 +189,29 @@ export default function StudentForm(props) {
                         id="route"
                         options={routes}
                         autoSelect
+                        fullWidth
                         value={props.route}
                         onChange={(e, new_val) => props.updateRoute(new_val)}
                         isOptionEqualToValue={(option, value) => option.id === value.id}
                         renderInput={(params) => <TextField {...params} label="Route Name" />}
                     />
                     </Grid>
+                    <Grid item xs={12}>
+                    <Button type="submit"
+                  variant="contained"
+                  fullWidth
+                  sx={{ mt: 3, mb: 2 }}
+                  disabled={props.school == null || props.school.id == "" || props.user == null || props.user.id == "" || props.name == ""}
+                  >
+                    Submit
+                    </Button>
+                    </Grid>
                 </Grid>
-                </>
+                </Box>
+          </Box>
+          </Container>
+          </ThemeProvider>
+          
     )
 }
 

@@ -43,18 +43,19 @@ export default function ParentDashboard(props){
         <CssBaseline />
         <AppBar position="absolute">
         <Toolbar>
-            <ButtonBase component={RouterLink} to="/">
             <Typography
               component="h1"
               variant="h6"
               color="inherit"
               noWrap
-              sx={{ flexGrow: 1 }}
+              sx={{ width: "300%", flexGrow: 1 }}
             >
-              Dashboard
+              {props.titleText}
             </Typography>
-            </ButtonBase>
             <Grid container justifyContent="flex-end">
+            <Button variant="contained" component={RouterLink} to="/">
+              Home
+            </Button>
             <Button variant="contained" onClick={handleLogout}>
               Logout
             </Button>

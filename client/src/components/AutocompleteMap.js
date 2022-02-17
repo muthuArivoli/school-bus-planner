@@ -1,143 +1,153 @@
-import React, { Component } from 'react';
-import styled, { ThemeProvider } from 'styled-components';
+import * as React from 'react';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import parse from 'autosuggest-highlight/parse';
+import throttle from 'lodash/throttle';
 
-const Wrapper = styled.div`
-  position: relative;
-  align-items: left;
-  justify-content: center;
-  width: 100%;
-  padding: 12px;
-  text-align:center;
-`;
+const autocompleteService = { current: null };
 
+export default function GoogleMaps(props) {
+  const [value, setValue] = React.useState(null);
+  const [inputValue, setInputValue] = React.useState('');
+  const [options, setOptions] = React.useState([]);
 
-class AutoComplete extends Component {
-    constructor(props) {
-        super(props);
-        this.clearSearchBox = this.clearSearchBox.bind(this);
+  const fetch = React.useMemo(
+    () =>
+      throttle((request, callback) => {
+        autocompleteService.current.getPlacePredictions(request, callback);
+      }, 200),
+    [],
+  );
+
+  const inputChanged = (place) => {
+    if (place == null){
+        props.addplace(null);
+        return;
+    }
+    let placeRequest = {placeId: place.place_id};
+    let placeService = new props.mapApi.places.PlacesService(props.map);
+    placeService.getDetails(placeRequest, (placeResult, placeServiceStatus) => {
+      console.log('placeService :: placeResult = ', placeResult, '\n',
+        'placeServiceStatus = ', placeServiceStatus);
+      
+      onPlaceChanged(placeResult);
+      
+    });
+  }
+
+  const onPlaceChanged = (place)=>{
+    if (!place.geometry) return;
+    if (place.geometry.viewport) {
+        props.map.fitBounds(place.geometry.viewport);
+    } else {
+        props.map.setCenter(place.geometry.location);
+        props.map.setZoom(14);
     }
 
-    componentDidMount({ map, mapApi, address } = this.props) {
-        const options = {
-            // restrict your search to a specific type of result
-            types: ['address'],
-            // restrict your search to a specific country, or an array of countries
-            // componentRestrictions: { country: ['gb', 'us'] },
-        };
-        this.autoComplete = new mapApi.places.Autocomplete(
-            this.searchInput,
-            options,
-        );
-        this.autoComplete.addListener('place_changed', this.onPlaceChanged);
-        this.autoComplete.bindTo('bounds', map);
+    props.addplace(place);
+  }
 
-        console.log(this.props.address);
-        if(address != ""){
-            this.searchInput.value = address;
-            console.log(address);
-            let autocompleteService = new mapApi.places.AutocompleteService();
-      let request = {input: this.props.address};
-      autocompleteService.getPlacePredictions(request, (predictionsArr, placesServiceStatus) => {
-        console.log('getting place predictions :: predictionsArr = ', predictionsArr, '\n',
-          'placesServiceStatus = ', placesServiceStatus);
-          
-        let placeRequest = {placeId: predictionsArr[0].place_id};
-        let placeService = new mapApi.places.PlacesService(map);
-        placeService.getDetails(placeRequest, (placeResult, placeServiceStatus) => {
-          console.log('placeService :: placeResult = ', placeResult, '\n',
-            'placeServiceStatus = ', placeServiceStatus);
-          
-          this._onPlaceChanged(placeResult);
-          
-        });
-      });
-        }
+  React.useEffect(() => {
+    let active = true;
+
+    if (!autocompleteService.current) {
+      autocompleteService.current =
+        new props.mapApi.places.AutocompleteService();
+    }
+    if (!autocompleteService.current) {
+      return undefined;
     }
 
-    componentDidUpdate(prevProps){
-        console.log(this.props.address);
-        if(this.props.address != prevProps.address){
-            this.searchInput.value = this.props.address;
-            if(this.props.address != "") {
-                this.autoComplete.notify('place_changed');
-                let autocompleteService = new this.props.mapApi.places.AutocompleteService();
-      let request = {input: this.props.address};
-      autocompleteService.getPlacePredictions(request, (predictionsArr, placesServiceStatus) => {
-        console.log('getting place predictions :: predictionsArr = ', predictionsArr, '\n',
-          'placesServiceStatus = ', placesServiceStatus);
-          
-        let placeRequest = {placeId: predictionsArr[0].place_id};
-        let placeService = new this.props.mapApi.places.PlacesService(this.props.map);
-        placeService.getDetails(placeRequest, (placeResult, placeServiceStatus) => {
-          console.log('placeService :: placeResult = ', placeResult, '\n',
-            'placeServiceStatus = ', placeServiceStatus);
-          
-          this._onPlaceChanged(placeResult);
-          
-        });
-      });
-            }
-        }
+    if (inputValue === '') {
+      setOptions(value ? [value] : []);
+      return undefined;
     }
 
-    _onPlaceChanged = (place, { map, addplace } = this.props) =>{
-        console.log(place);
+    fetch({ input: inputValue }, (results) => {
+      if (active) {
+        let newOptions = [];
 
-        if (!place.geometry) return;
-        if (place.geometry.viewport) {
-            map.fitBounds(place.geometry.viewport);
-        } else {
-            map.setCenter(place.geometry.location);
-            map.setZoom(14);
+        if (value) {
+          newOptions = [value];
         }
 
-        addplace(place);
-        this.searchInput.blur();
-    }
-
-    componentWillUnmount({ mapApi } = this.props) {
-        mapApi.event.clearInstanceListeners(this.searchInput);
-    }
-
-    onPlaceChanged = ({ map, addplace } = this.props) => {
-        const place = this.autoComplete.getPlace();
-        console.log(place);
-
-        if (!place.geometry) return;
-        if (place.geometry.viewport) {
-            map.fitBounds(place.geometry.viewport);
-        } else {
-            map.setCenter(place.geometry.location);
-            map.setZoom(14);
+        if (results) {
+          newOptions = [...newOptions, ...results];
         }
 
-        addplace(place);
-        this.searchInput.blur();
+        setOptions(newOptions);
+      }
+    });
+
+    return () => {
+      active = false;
     };
+  }, [value, inputValue, fetch]);
 
-    clearSearchBox() {
-        this.searchInput.value = '';
-        this.props.addplace(null);
-    }
-
-    render() {
-        return (
-            <Wrapper>
-                <input
-                    size="50"
-                    className="search-input"
-                    ref={(ref) => {
-                        this.searchInput = ref;
-                    }}
-                    type="text"
-                    onFocus={this.clearSearchBox}
-                    placeholder="Enter Address"
-                />
-
-
-            </Wrapper>
+  return (
+    
+    <Autocomplete
+      id="google-map-demo"
+      sx={{ width: 400, mb: 2 }}
+      getOptionLabel={(option) =>
+        typeof option === 'string' ? option : option.description
+      }
+      filterOptions={(x) => x}
+      options={options}
+      autoComplete
+      includeInputInList
+      filterSelectedOptions
+      value={props.address}
+      onChange={(event, newValue) => {
+        setOptions(newValue ? [newValue, ...options] : options);
+        inputChanged(newValue);
+      }}
+      onInputChange={(event, newInputValue) => {
+        setInputValue(newInputValue);
+      }}
+      renderInput={(params) => (
+        <TextField {...params} label="Address" fullWidth />
+      )}
+      renderOption={(props, option) => {
+        const matches = option.structured_formatting.main_text_matched_substrings;
+        const parts = parse(
+          option.structured_formatting.main_text,
+          matches.map((match) => [match.offset, match.offset + match.length]),
         );
-    }
-}
 
-export default AutoComplete;
+        return (
+          <li {...props}>
+            <Grid container alignItems="center">
+              <Grid item>
+                <Box
+                  component={LocationOnIcon}
+                  sx={{ color: 'text.secondary', mr: 2 }}
+                />
+              </Grid>
+              <Grid item xs>
+                {parts.map((part, index) => (
+                  <span
+                    key={index}
+                    style={{
+                      fontWeight: part.highlight ? 700 : 400,
+                    }}
+                  >
+                    {part.text}
+                  </span>
+                ))}
+
+                <Typography variant="body2" color="text.secondary">
+                  {option.structured_formatting.secondary_text}
+                </Typography>
+              </Grid>
+            </Grid>
+          </li>
+        );
+      }}
+    />
+  );
+}

@@ -256,14 +256,14 @@ export default function RouteDetail(props) {
 
         <Stack direction="row" spacing={3} justifyContent="center">
           <Button component={RouterLink}
-              to={"/schools/" + data.school_id +"/routes"}
+              to={`/schools/${data.school_id}/routes?route=${id}`}
               color="primary"
               variant="outlined"
               size="small"
               style={{ marginLeft: 16 }}>
               Modify
           </Button>
-          <DeleteDialog dialogTitle="Delete Route?" dialogDesc="Please confirm you would like to delete this route" onAccept={handleDelete}/>
+          <DeleteDialog dialogTitle="Delete Route?" dialogDesc={`Please confirm you would like to delete route ${data.name}`} onAccept={handleDelete}/>
         </Stack>
       </Stack>
     </Grid>
