@@ -159,13 +159,13 @@ export default function EmailPage(props) {
                     props.setSnackbarMsg(`Email successfully sent`);
                     props.setShowSnackbar(true);
                     props.setSnackbarSeverity("success");
-                    navigate("/");
+                    navigate("/users");
                 }
                 else{
                     props.setSnackbarMsg(`Email not successfully sent`);
                     props.setShowSnackbar(true);
                     props.setSnackbarSeverity("error");
-                    navigate("/");
+                    navigate("/users");
                 }
               });
         }
@@ -183,13 +183,13 @@ export default function EmailPage(props) {
                     props.setSnackbarMsg(`Email successfully sent`);
                     props.setShowSnackbar(true);
                     props.setSnackbarSeverity("success");
-                    navigate("/");
+                    navigate("/users");
                 }
                 else{
                     props.setSnackbarMsg(`Email not successfully sent`);
                     props.setShowSnackbar(true);
                     props.setSnackbarSeverity("error");
-                    navigate("/");
+                    navigate("/users");
                 }
               });
         }
