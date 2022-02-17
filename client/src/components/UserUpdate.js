@@ -24,6 +24,9 @@ export default function UserUpdate(props) {
   const [data, setData] = React.useState({email:"", password: "", con_password: "", name:"", address: "", admin: false});
   const [emailList, setEmailList] = React.useState([])
   const [oldEmail, setOldEmail] = React.useState("");
+  
+  const [latitude, setLatitude] = React.useState("");
+  const [longitude, setLongitude] = React.useState("");
 
 
   let navigate = useNavigate();
@@ -206,7 +209,7 @@ export default function UserUpdate(props) {
                 </FormControl>
               </Grid>
               <Grid item md={12} sx={{ height: 450 }} >
-                <GoogleMap address={data.address} setAddress={handleAddressChange}/>
+                <GoogleMap address={data.address} setAddress={handleAddressChange} latitude ={latitude} setLatitude ={setLatitude} longitude ={longitude} setLongitude ={setLongitude}/>
               </Grid>
               <Grid item md={12}>
                 <FormControlLabel
