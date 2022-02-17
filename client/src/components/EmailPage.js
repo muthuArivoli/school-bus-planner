@@ -285,6 +285,7 @@ export default function EmailPage(props) {
                         label="Body"
                         id="body"
                         multiline
+                        rows={5}
                         value={body}
                         onChange={(e)=>setBody(e.target.value)}
                         fullWidth
