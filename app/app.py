@@ -745,7 +745,6 @@ def send_email_system():
                     f"{route_txt}"
                     "\n"
                 )
-            logging.info(student_txt)
         r = requests.post(
         f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
         auth=("api", API_KEY),
@@ -774,20 +773,40 @@ def send_email_school(school_uid=None):
     if email_type not in ["general", "route"] or type(subject) is not str or type(body) is not str:
         return {"msg": "Invalid Query Syntax"}, 400
 
-    students = Student.query.filter_by(school_id=school_uid)
-    user_emails = set()
-    for student in students:
-        user = User.query.filter_by(id=student.user_id).first()
-        user_emails.add(user.email)
-    for email in user_emails:
-
+    all_students = Student.query.filter_by(school_id=school_uid)
+    user_ids = set()
+    for student in all_students:
+        user_ids.add(student.user_id)
+    for user_id in user_ids:
+        student_txt = ""
+        user = User.query.filter_by(id=user_id).first()
+        if email_type == 'route':
+            students = Student.query.filter_by(user_id=user.id).all()
+            for student in students:
+                school = School.query.filter_by(id=student.school_id).first()
+                route_txt = "Route: No route - see admin\n"
+                if student.route_id is not None:
+                    route = Route.query.filter_by(id=student.route_id).first()
+                    route_txt = (
+                        f"Route Name: {route.name}\n"
+                        f"Route Description: \n"
+                        f"{route.description} \n"
+                    )
+                student_txt += (
+                    "\n"
+                    f"Student Name: {student.full_name}\n"
+                    f"Student ID: {student.student_id if student.student_id is not None else 'No Student ID'}\n"
+                    f"School Name: {school.name}\n"
+                    f"{route_txt}"
+                    "\n"
+                )
         r = requests.post(
         f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
         auth=("api", API_KEY),
         data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
-            "to": email,
+            "to": user.email,
             "subject": subject,
-            "text": body})
+            "text": body + student_txt})
         if r.status_code != 200:
             logging.info(r.json())
             return {"msg": "Internal Server Error"}, 500
@@ -810,25 +829,44 @@ def send_email_route(route_uid=None):
     if email_type not in ["general", "route"] or type(subject) is not str or type(body) is not str:
         return {"msg": "Invalid Query Syntax"}, 400
 
-    if email_type == "general":
-        students = Student.query.filter_by(route_id=route_uid)
-        user_emails = set()
-        for student in students:
-            user = User.query.filter_by(id=student.user_id).first()
-            user_emails.add(user.email)
-        for email in user_emails:
-            r = requests.post(
-            f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
-            auth=("api", API_KEY),
-            data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
-                "to": email,
-                "subject": subject,
-                "text": body})
-            if r.status_code != 200:
-                logging.info(r.json())
-                return {"msg": "Internal Server Error"}, 500
-        return json.dumps({'success': True})
-    return json.dumps({'success': False})
+    all_students = Student.query.filter_by(route_id=route_uid)
+    user_ids = set()
+    for student in all_students:
+        user_ids.add(student.user_id)
+    for user_id in user_ids:
+        student_txt = ""
+        user = User.query.filter_by(id=user_id).first()
+        if email_type == 'route':
+            students = Student.query.filter_by(user_id=user.id).all()
+            for student in students:
+                school = School.query.filter_by(id=student.school_id).first()
+                route_txt = "Route: No route - see admin\n"
+                if student.route_id is not None:
+                    route = Route.query.filter_by(id=student.route_id).first()
+                    route_txt = (
+                        f"Route Name: {route.name}\n"
+                        f"Route Description: \n"
+                        f"{route.description} \n"
+                    )
+                student_txt += (
+                    "\n"
+                    f"Student Name: {student.full_name}\n"
+                    f"Student ID: {student.student_id if student.student_id is not None else 'No Student ID'}\n"
+                    f"School Name: {school.name}\n"
+                    f"{route_txt}"
+                    "\n"
+                )
+        r = requests.post(
+        f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
+        auth=("api", API_KEY),
+        data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
+            "to": user.email,
+            "subject": subject,
+            "text": body + student_txt})
+        if r.status_code != 200:
+            logging.info(r.json())
+            return {"msg": "Internal Server Error"}, 500
+    return json.dumps({'success': True})
 
 app.register_blueprint(api, url_prefix='/api')
 
