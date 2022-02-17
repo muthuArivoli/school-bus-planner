@@ -86,6 +86,8 @@ export default function RoutePlanner(props) {
 
   const [schoolLocation, setSchoolLocation] = React.useState({lat: 0, lng:0});
 
+  const [stopRows, setStopRows] = React.useState([]);
+
   const [map, setMap] = React.useState(null);
 
 
@@ -94,92 +96,6 @@ export default function RoutePlanner(props) {
 
   const [toggleSelection, setToggleSelection] = React.useState('students');
 
-    // React.useEffect(()=>{
-    // // set route rows
-    // const fetchData = async() => {
-    //     const result = await axios.get(
-    //         process.env.REACT_APP_BASE_URL+`/school/${id}`, {
-    //           headers: {
-    //               Authorization: `Bearer ${localStorage.getItem('token')}`
-    //           }
-    //         }
-    //       );
-    //     if(result.data.success) {
-    //         console.log(result.data.school);
-    //         let newRouteRows = result.data.school.routes.map((value)=>{return {name: value.name, id: value.id, description: value.description}});
-    //         setRouteRows(newRouteRows);
-    //     }
-    //     else{
-    //         props.setSnackbarMsg(`Route could not be loaded`);
-    //         props.setShowSnackbar(true);
-    //         props.setSnackbarSeverity("error");
-    //         navigate("/routes");
-    //     }
-    // };
-    // fetchData();
-    // }, [resetRoute]);
-
-    // React.useEffect(()=>{
-    //     const fetchData = async() => {
-    //         const result = await axios.get(
-    //           process.env.REACT_APP_BASE_URL+`/school/${id}`, {
-    //             headers: {
-    //                 Authorization: `Bearer ${localStorage.getItem('token')}`
-    //             }
-    //           }
-    //         );
-    //         if (result.data.success){
-    //           console.log(result.data)
-    //             let newRows = [];
-    //             for(let i=0; i<result.data.school.students.length; i++){
-    //               const studentRes = await axios.get(
-    //                 process.env.REACT_APP_BASE_URL+`/student/${result.data.school.students[i]}`, {
-    //                   headers: {
-    //                       Authorization: `Bearer ${localStorage.getItem('token')}`
-    //                   }
-    //                 }
-    //               );
-    //               if(studentRes.data.success){
-    //                     const userRes = await axios.get(
-    //                         process.env.REACT_APP_BASE_URL+`/user/${studentRes.data.student.user_id}`, {
-    //                         headers: {
-    //                             Authorization: `Bearer ${localStorage.getItem('token')}`
-    //                         }
-    //                         }
-    //                     );
-    //                     if(userRes.data.success){
-    //                         console.log(userRes.data.user);
-    //                         const g = await Geocode.fromAddress(userRes.data.user.uaddress);
-    //                         const {lat, lng} = g.results[0].geometry.location;
-    //                         console.log(studentRes.data);
-    //                         newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], address: userRes.data.user.uaddress, location: {lat: lat, lng: lng}, route: studentRes.data.student.route_id}]
-    //                     }
-    //                     else{
-    //                         props.setSnackbarMsg(`Route could not be loaded`);
-    //                         props.setShowSnackbar(true);
-    //                         props.setSnackbarSeverity("error");
-    //                         navigate("/routes");
-    //                     }
-    //               }
-    //               else{
-    //                 props.setSnackbarMsg(`School could not be loaded`);
-    //                 props.setShowSnackbar(true);
-    //                 props.setSnackbarSeverity("error");
-    //                 navigate("/schools");
-    //               }
-    //             }
-
-    //             setStudents(newRows);
-    //         }
-    //         else{
-    //           props.setSnackbarMsg(`Route could not be loaded`);
-    //           props.setShowSnackbar(true);
-    //           props.setSnackbarSeverity("error");
-    //           navigate("/routes");
-    //         }
-    //       };
-    //       fetchData();
-    // },[resetRoute])
 
   // load current routes into page
   React.useEffect(()=>{
@@ -489,9 +405,6 @@ export default function RoutePlanner(props) {
     setResetRoute(!resetRoute);
   }
 
-  // // function when things are typed into text fields (name, description)
-  // }
-
   React.useEffect(()=>{
     if(map){
       var bounds = new window.google.maps.LatLngBounds();
@@ -508,7 +421,6 @@ export default function RoutePlanner(props) {
   const onLoad = React.useCallback(function callback(map) {
     setMap(map);
   }, [])
-
 
   //runs when user types in textfield, should add value into correct part of routeInfo
   const handleInfoChange = (fieldindicator, new_value) => {
@@ -547,7 +459,7 @@ export default function RoutePlanner(props) {
       {toggleSelection=="stops" ? <Stack spacing={0} justifyContent="center">
           <Typography variant="h5" align="left">
             Current Stops in Route: 
-            (double click on any name or index to edit it)
+            (double click on any stop name or index to edit it)
           </Typography>
           <div style={{ height: 250, width: 800 }}>
             <div style={{ display: 'flex', height: '100%' }}>
@@ -580,7 +492,7 @@ export default function RoutePlanner(props) {
         <Stack spacing={0} justifyContent="center">
           {toggleSelection=="stops" ? <Typography variant="subtitle1" align="left">Double click anywhere to add a stop!</Typography>: null}
           <LoadScript googleMapsApiKey={api_key}>
-            <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad} options={mapOptions} /*center={schoolLocation}*/ onDblClick={(value) => handleMapClick(value.latLng)}>
+            <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad} options={mapOptions} onDblClick={(value) => handleMapClick(value.latLng)}>
               <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
               {students.map((student, index) => (
                 <Marker key={index} title={student.name} position={student.location} onClick={() => handleAddressClick(student)}
@@ -588,8 +500,8 @@ export default function RoutePlanner(props) {
                 : (student.route == null ? "http://maps.google.com/mapfiles/kml/paddle/red-circle.png"
                 : "http://maps.google.com/mapfiles/kml/paddle/blu-circle.png") }}/> ))}
               {toggleSelection=="stops" ? stopRows.map((stop, index) => (
-                <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop)} label={"s"}/>))
-                : []}
+                <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop)} 
+                icon={{url: "http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"}}/>)) : [] } 
             </GoogleMap>
           </LoadScript>
         </Stack>
