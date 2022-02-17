@@ -26,7 +26,7 @@ export default function DeleteDialog(props) {
     <div>
       <Button variant="outlined" 
               size="small"
-              style={{ marginLeft: 16 }}
+              style={{ }}
               onClick={handleClickOpen}>
         {props.buttonDesc || "Delete"}
       </Button>

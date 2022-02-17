@@ -215,10 +215,18 @@ export default function RouteDetail(props) {
               color="primary"
               variant="outlined"
               size="small"
-              style={{ marginLeft: 16 }}>
+              style={{ }}>
               Modify
           </Button>
           <DeleteDialog dialogTitle="Delete Route?" dialogDesc={`Please confirm you would like to delete route ${data.name}`} onAccept={handleDelete}/>
+          <Button component={RouterLink}
+              to={`/email?route=${id}`}
+              color="primary"
+              variant="outlined"
+              size="small"
+              style={{ }}>
+              Email
+          </Button>
         </Stack>
       </Stack>
     </Grid>

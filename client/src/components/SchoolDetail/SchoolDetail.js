@@ -139,6 +139,14 @@ export default function SchoolDetail(props) {
               Modify
           </Button>
           <SchoolDeleteDialog schoolName={data.name} handleDelete={handleDelete}/>
+          <Button component={RouterLink}
+              to={`/email?school=${id}`}
+              color="primary"
+              variant="outlined"
+              size="small"
+              style={{ }}>
+              Email
+          </Button>
         </Stack>
       </Stack>
     </Grid>

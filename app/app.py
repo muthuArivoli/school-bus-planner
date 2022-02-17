@@ -11,6 +11,7 @@ import sys
 import logging
 import bcrypt
 import math
+import requests
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:bus@db:5432/db'
@@ -30,6 +31,8 @@ db.create_all()
 jwt = JWTManager(app)
 logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
+YOUR_DOMAIN_NAME="mail.hypotheticaltransportfive.email"
+API_KEY = open('email_api.key', 'r').read()
 
 # custom decorator 
 def admin_required():
@@ -694,6 +697,136 @@ def routes(route_uid = None):
             db.session.commit()
         except SQLAlchemyError:
             return {"msg": "Database Error"}, 400
+        return json.dumps({'success': True})
+    return json.dumps({'success': False})
+
+@app.route('/email/route/<uid>', methods = ['OPTIONS'])
+@app.route('/email/school/<uid>', methods = ['OPTIONS'])
+@app.route('/email/system', methods = ['OPTIONS'])
+@cross_origin()
+def email_options(uid=None):
+    return json.dumps({'success':True})
+
+@app.route('/email/system', methods = ['POST'])
+@cross_origin()
+@admin_required()
+def send_email_system():
+    content = request.json
+    email_type = content.get("email_type", None)
+    subject = content.get("subject", None)
+    body = content.get("body", None)
+
+    if not email_type or not subject or not body:
+        return {"msg": "Invalid Query Syntax"}, 400
+
+    if email_type not in ["general", "route"] or type(subject) is not str or type(body) is not str:
+        return {"msg": "Invalid Query Syntax"}, 400
+
+    users = User.query.all()
+    for user in users:
+        student_txt = ""
+        if email_type == 'route':
+            students = Student.query.filter_by(user_id=user.id).all()
+            for student in students:
+                school = School.query.filter_by(id=student.school_id).first()
+                route_txt = "Route: No route - see admin\n"
+                if student.route_id is not None:
+                    route = Route.query.filter_by(id=student.route_id).first()
+                    route_txt = (
+                        f"Route Name: {route.name}\n"
+                        f"Route Description: \n"
+                        f"{route.description} \n"
+                    )
+                student_txt += (
+                    "\n"
+                    f"Student Name: {student.full_name}\n"
+                    f"Student ID: {student.student_id if student.student_id is not None else 'No Student ID'}\n"
+                    f"School Name: {school.name}\n"
+                    f"{route_txt}"
+                    "\n"
+                )
+            logging.info(student_txt)
+        r = requests.post(
+        f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
+        auth=("api", API_KEY),
+        data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
+            "to": user.email,
+            "subject": subject,
+            "text": body + student_txt})
+        if r.status_code != 200:
+            logging.info(r.json())
+            return {"msg": "Internal Server Error"}, 500
+    return json.dumps({'success': True})
+
+
+@app.route('/email/school/<school_uid>', methods = ['POST'])
+@cross_origin()
+@admin_required()
+def send_email_school(school_uid=None):
+    content = request.json
+    email_type = content.get("email_type", None)
+    subject = content.get("subject", None)
+    body = content.get("body", None)
+
+    if not email_type or not subject or not body:
+        return {"msg": "Invalid Query Syntax"}, 400
+
+    if email_type not in ["general", "route"] or type(subject) is not str or type(body) is not str:
+        return {"msg": "Invalid Query Syntax"}, 400
+
+    students = Student.query.filter_by(school_id=school_uid)
+    user_emails = set()
+    for student in students:
+        user = User.query.filter_by(id=student.user_id).first()
+        user_emails.add(user.email)
+    for email in user_emails:
+
+        r = requests.post(
+        f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
+        auth=("api", API_KEY),
+        data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
+            "to": email,
+            "subject": subject,
+            "text": body})
+        if r.status_code != 200:
+            logging.info(r.json())
+            return {"msg": "Internal Server Error"}, 500
+    return json.dumps({'success': True})
+    
+
+
+@app.route('/email/route/<route_uid>', methods = ['POST'])
+@cross_origin()
+@admin_required()
+def send_email_route(route_uid=None):
+    content = request.json
+    email_type = content.get("email_type", None)
+    subject = content.get("subject", None)
+    body = content.get("body", None)
+
+    if not email_type or not subject or not body:
+        return {"msg": "Invalid Query Syntax"}, 400
+
+    if email_type not in ["general", "route"] or type(subject) is not str or type(body) is not str:
+        return {"msg": "Invalid Query Syntax"}, 400
+
+    if email_type == "general":
+        students = Student.query.filter_by(route_id=route_uid)
+        user_emails = set()
+        for student in students:
+            user = User.query.filter_by(id=student.user_id).first()
+            user_emails.add(user.email)
+        for email in user_emails:
+            r = requests.post(
+            f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
+            auth=("api", API_KEY),
+            data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
+                "to": email,
+                "subject": subject,
+                "text": body})
+            if r.status_code != 200:
+                logging.info(r.json())
+                return {"msg": "Internal Server Error"}, 500
         return json.dumps({'success': True})
     return json.dumps({'success': False})
 
