@@ -21,6 +21,7 @@ import ParentDashboard from './ParentDashboard';
 import ParentView from './ParentView';
 import StudentView from './StudentView';
 import RoutePlanner from './RoutePlanner';
+import EmailPage from './EmailPage';
 import axios from 'axios';
 
 function AuthRoute(props) {
@@ -292,6 +293,13 @@ export default function App () {
             <PrivateRoute>
               <AdminDashboard titleText="Route Detail">
                 <RouteDetail/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
+          <Route exact path="/email" element={
+            <PrivateRoute>
+              <AdminDashboard titleText="Email">
+                <EmailPage/>
               </AdminDashboard>
             </PrivateRoute>
           } />

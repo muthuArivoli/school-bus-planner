@@ -169,7 +169,7 @@ export default function StudentDetail(props) {
               color="primary"
               variant="outlined"
               size="small"
-              style={{ marginLeft: 16 }}>
+              style={{ }}>
               Modify
           </Button>
           <DeleteDialog dialogTitle="Delete Student?" dialogDesc={`Please confirm you would like to delete student ${data.name}`} onAccept={handleDelete}/>

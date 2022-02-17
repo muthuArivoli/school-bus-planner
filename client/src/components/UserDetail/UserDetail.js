@@ -123,7 +123,7 @@ export default function UserDetail(props) {
               color="primary"
               variant="outlined"
               size="small"
-              style={{ marginLeft: 16 }}>
+              style={{ }}>
               Modify
           </Button>
           <DeleteDialog dialogTitle="Delete User?" dialogDesc={`Please confirm you would like to delete user ${data.full_name}`} onAccept={handleDelete}/>

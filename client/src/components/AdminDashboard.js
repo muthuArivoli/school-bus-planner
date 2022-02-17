@@ -26,6 +26,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import HomeIcon from '@mui/icons-material/Home';
+import EmailIcon from '@mui/icons-material/Email';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -195,6 +196,12 @@ export default function AdminDashboard(props){
               <DirectionsBusIcon />
             </ListItemIcon>
             <ListItemText primary="Routes" />
+          </ListItemButton>
+          <ListItemButton component={RouterLink} to="/email">
+            <ListItemIcon>
+              <EmailIcon />
+            </ListItemIcon>
+            <ListItemText primary="Email" />
           </ListItemButton>
         </div>
           </List>
