@@ -38,10 +38,7 @@ export default function CreateSchool(props) {
 
     return(
         <>
-          <Typography component="h1" variant="h5">
-            Create School
-          </Typography>
-        <SchoolForm handleSubmit={handleSubmit} name="" address=""/>
+        <SchoolForm handleSubmit={handleSubmit} name="" address="" title="Create School"/>
         </>
     )
 }

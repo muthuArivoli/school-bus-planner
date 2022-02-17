@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -86,12 +86,100 @@ export default function RoutePlanner(props) {
 
   const [schoolLocation, setSchoolLocation] = React.useState({lat: 0, lng:0});
 
-  const [toggleSelection, setToggleSelection] = React.useState('students');
+  const [map, setMap] = React.useState(null);
 
-  const [stopRows, setStopRows] = React.useState([]);
 
   let { id } = useParams();
   let navigate = useNavigate();
+
+  const [toggleSelection, setToggleSelection] = React.useState('students');
+
+    // React.useEffect(()=>{
+    // // set route rows
+    // const fetchData = async() => {
+    //     const result = await axios.get(
+    //         process.env.REACT_APP_BASE_URL+`/school/${id}`, {
+    //           headers: {
+    //               Authorization: `Bearer ${localStorage.getItem('token')}`
+    //           }
+    //         }
+    //       );
+    //     if(result.data.success) {
+    //         console.log(result.data.school);
+    //         let newRouteRows = result.data.school.routes.map((value)=>{return {name: value.name, id: value.id, description: value.description}});
+    //         setRouteRows(newRouteRows);
+    //     }
+    //     else{
+    //         props.setSnackbarMsg(`Route could not be loaded`);
+    //         props.setShowSnackbar(true);
+    //         props.setSnackbarSeverity("error");
+    //         navigate("/routes");
+    //     }
+    // };
+    // fetchData();
+    // }, [resetRoute]);
+
+    // React.useEffect(()=>{
+    //     const fetchData = async() => {
+    //         const result = await axios.get(
+    //           process.env.REACT_APP_BASE_URL+`/school/${id}`, {
+    //             headers: {
+    //                 Authorization: `Bearer ${localStorage.getItem('token')}`
+    //             }
+    //           }
+    //         );
+    //         if (result.data.success){
+    //           console.log(result.data)
+    //             let newRows = [];
+    //             for(let i=0; i<result.data.school.students.length; i++){
+    //               const studentRes = await axios.get(
+    //                 process.env.REACT_APP_BASE_URL+`/student/${result.data.school.students[i]}`, {
+    //                   headers: {
+    //                       Authorization: `Bearer ${localStorage.getItem('token')}`
+    //                   }
+    //                 }
+    //               );
+    //               if(studentRes.data.success){
+    //                     const userRes = await axios.get(
+    //                         process.env.REACT_APP_BASE_URL+`/user/${studentRes.data.student.user_id}`, {
+    //                         headers: {
+    //                             Authorization: `Bearer ${localStorage.getItem('token')}`
+    //                         }
+    //                         }
+    //                     );
+    //                     if(userRes.data.success){
+    //                         console.log(userRes.data.user);
+    //                         const g = await Geocode.fromAddress(userRes.data.user.uaddress);
+    //                         const {lat, lng} = g.results[0].geometry.location;
+    //                         console.log(studentRes.data);
+    //                         newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], address: userRes.data.user.uaddress, location: {lat: lat, lng: lng}, route: studentRes.data.student.route_id}]
+    //                     }
+    //                     else{
+    //                         props.setSnackbarMsg(`Route could not be loaded`);
+    //                         props.setShowSnackbar(true);
+    //                         props.setSnackbarSeverity("error");
+    //                         navigate("/routes");
+    //                     }
+    //               }
+    //               else{
+    //                 props.setSnackbarMsg(`School could not be loaded`);
+    //                 props.setShowSnackbar(true);
+    //                 props.setSnackbarSeverity("error");
+    //                 navigate("/schools");
+    //               }
+    //             }
+
+    //             setStudents(newRows);
+    //         }
+    //         else{
+    //           props.setSnackbarMsg(`Route could not be loaded`);
+    //           props.setShowSnackbar(true);
+    //           props.setSnackbarSeverity("error");
+    //           navigate("/routes");
+    //         }
+    //       };
+    //       fetchData();
+    // },[resetRoute])
 
   // load current routes into page
   React.useEffect(()=>{
@@ -250,7 +338,6 @@ export default function RoutePlanner(props) {
                         newRows = [...newRows, {name: studentRes.data.student.name, id: response.data.route.students[i], address: userRes.data.user.uaddress}]
                     }
                     else{
-                      console.log("c")
                         props.setSnackbarMsg(`Route could not be loaded`);
                         props.setShowSnackbar(true);
                         props.setSnackbarSeverity("error");
@@ -258,7 +345,6 @@ export default function RoutePlanner(props) {
                     }
                 }
                 else{
-                  console.log("b");
                     props.setSnackbarMsg(`Route could not be loaded`);
                     props.setShowSnackbar(true);
                     props.setSnackbarSeverity("error");
@@ -323,6 +409,14 @@ export default function RoutePlanner(props) {
   };
 
   // function when add/update route button is clicked
+  let [query, setQuery] = useSearchParams();
+
+  React.useEffect(()=>{
+    if(query.get("route") != null && query.get("route").match('^[0-9]+$')){
+      setSelectionModel([parseInt(query.get("route"))]);
+    }
+  }, []);
+
   const handleSubmit = (event) => {
     if(selectionModel.length == 0){
         console.log({
@@ -349,6 +443,8 @@ export default function RoutePlanner(props) {
                 setSnackbarOpen(true);
                 setSnackbarSeverity('success');
                 setSnackbarMsg('Route successfully created');
+                setSelectionModel([]);
+                setResetRoute(!resetRoute);
             }
             else {
                 setSnackbarOpen(true);
@@ -376,6 +472,8 @@ export default function RoutePlanner(props) {
                 setSnackbarOpen(true);
                 setSnackbarSeverity('success');
                 setSnackbarMsg('Route successfully updated');
+                setSelectionModel([]);
+                setResetRoute(!resetRoute);
             }
             else{
                 setSnackbarOpen(true);
@@ -391,7 +489,28 @@ export default function RoutePlanner(props) {
     setResetRoute(!resetRoute);
   }
 
-  // function when things are typed into text fields (name, description)
+  // // function when things are typed into text fields (name, description)
+  // }
+
+  React.useEffect(()=>{
+    if(map){
+      var bounds = new window.google.maps.LatLngBounds();
+      console.log(students);
+      console.log(schoolLocation);
+      for (var i = 0; i < students.length; i++) {
+        bounds.extend(students[i].location);
+      }
+      bounds.extend(schoolLocation);
+      map.fitBounds(bounds);
+    }
+  }, [students, schoolLocation]);
+
+  const onLoad = React.useCallback(function callback(map) {
+    setMap(map);
+  }, [])
+
+
+  //runs when user types in textfield, should add value into correct part of routeInfo
   const handleInfoChange = (fieldindicator, new_value) => {
     let newInfo = JSON.parse(JSON.stringify(routeInfo));
     if (fieldindicator == "name") {
@@ -457,14 +576,17 @@ export default function RoutePlanner(props) {
       
     <Stack direction="row" spacing={8} justifyContent="center">
       <Stack spacing={2.5} justifyContent="center">
+
         <Stack spacing={0} justifyContent="center">
           {toggleSelection=="stops" ? <Typography variant="subtitle1" align="left">Double click anywhere to add a stop!</Typography>: null}
           <LoadScript googleMapsApiKey={api_key}>
-            <GoogleMap mapContainerStyle={containerStyle} zoom={7} options={mapOptions} center={schoolLocation} onDblClick={(value) => handleMapClick(value.latLng)}>
-              <Marker title="School" label="School" position={schoolLocation}/>
+            <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad} options={mapOptions} /*center={schoolLocation}*/ onDblClick={(value) => handleMapClick(value.latLng)}>
+              <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
               {students.map((student, index) => (
-                <Marker key={index} title={student.address} position={student.location} onClick={() => handleAddressClick(student)} label={student.route == null ? "0" : "1"}/> ))
-              }
+                <Marker key={index} title={student.name} position={student.location} onClick={() => handleAddressClick(student)}
+                icon={{url: studentRows.find(element => student.id == element.id) ? "http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"
+                : (student.route == null ? "http://maps.google.com/mapfiles/kml/paddle/red-circle.png"
+                : "http://maps.google.com/mapfiles/kml/paddle/blu-circle.png") }}/> ))}
               {toggleSelection=="stops" ? stopRows.map((stop, index) => (
                 <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop)} label={"s"}/>))
                 : []}
