@@ -18,6 +18,20 @@ const columns = [
     filterable: false
   },
   {
+    field: 'arrival_time',
+    headerName: 'Arrival Time',
+    width: 150,
+    //sortable: 
+    //filterable
+  },
+  {
+    field: 'departure_time',
+    headerName: 'Departure Time',
+    width: 150,
+    //sortable,
+    //filterable
+  },
+  {
     field: 'id',
     sortable: false,
     filterable: false,
