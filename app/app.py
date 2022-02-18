@@ -285,12 +285,6 @@ def users(user_id=None):
                 if type(address) is not str:
                     return {"msg": "Invalid Query Syntax"}, 400
                 user.uaddress = address
-            if 'password' in content:
-                pswd = content.get('password', None)
-                if type(pswd) is not str:
-                    return {"msg": "Invalid Query Syntax"}, 400
-                encrypted_pswd = bcrypt.hashpw(pswd.encode('utf-8'), bcrypt.gensalt())
-                user.pswd = encrypted_pswd.decode('utf-8')
             if 'admin_flag' in content:
                 admin_flag = content.get('admin_flag', None)
                 if type(admin_flag) is not bool:

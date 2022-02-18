@@ -21,7 +21,7 @@ const theme = createTheme();
 export default function UserUpdate(props) {
 
   const { id } = useParams();
-  const [data, setData] = React.useState({email:"", password: "", con_password: "", name:"", address: "", admin: false});
+  const [data, setData] = React.useState({email:"", name:"", address: "", admin: false});
   const [emailList, setEmailList] = React.useState([])
   const [oldEmail, setOldEmail] = React.useState("");
 
@@ -38,7 +38,7 @@ export default function UserUpdate(props) {
         }
       );
       if (result.data.success){
-        let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, admin: result.data.user.admin_flag, password: "", con_password: ""}
+        let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, admin: result.data.user.admin_flag}
         setData(newData);
         setOldEmail(result.data.user.email);
       }
@@ -95,18 +95,6 @@ export default function UserUpdate(props) {
       setData(newData);
     }
 
-    const handlePasswordChange = (event) => {
-      let newData = JSON.parse(JSON.stringify(data));
-      newData.password = event.target.value;
-      setData(newData);
-    }
-
-    const handleConPasswordChange = (event) => {
-      let newData = JSON.parse(JSON.stringify(data));
-      newData.con_password = event.target.value;
-      setData(newData);
-    }
-
     const handleAdminChange = (event) => {
       let newData = JSON.parse(JSON.stringify(data));
       newData.admin = event.target.checked;
@@ -120,9 +108,6 @@ export default function UserUpdate(props) {
         email: data.email,
         address: data.address,
         admin_flag: data.admin
-      }
-      if(data.password != null && data.password != ""){
-        req.password = data.password;
       }
       console.log(req);
       axios.patch(process.env.REACT_APP_BASE_URL+`/user/${id}`, req, {
@@ -190,32 +175,6 @@ export default function UserUpdate(props) {
                   autoComplete="email"
                 />
               </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  name="password"
-                  label="Password"
-                  type="password"
-                  id="password"
-                  helperText={data.password == "" ? "Leave blank to keep password the same" : ""} 
-                  fullWidth
-                  value={data.password}
-                  onChange={handlePasswordChange}
-                  autoComplete="new-password"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  error={data.password != data.con_password}
-                  helperText={data.password != data.con_password ? "Passwords don't match" : ""}
-                  name="confirm-password"
-                  label="Confirm Password"
-                  type="password"
-                  fullWidth
-                  value={data.con_password}
-                  onChange={handleConPasswordChange}
-                  id="confirm-password"
-                />
-              </Grid>
               <Grid item xs={12} sx={{ height: 450 }} >
                 <GoogleMap address={data.address} setAddress={handleAddressChange}/>
               </Grid>
@@ -234,7 +193,7 @@ export default function UserUpdate(props) {
                   variant="contained"
                   fullWidth
                   sx={{ mt: 3, mb: 2 }}
-                  disabled={data.email == "" || data.address == "" || data.name == "" || data.password != data.con_password || (data.email!=oldEmail && emailList.includes(data.email))}
+                  disabled={data.email == "" || data.address == "" || data.name == "" || (data.email!=oldEmail && emailList.includes(data.email))}
                   >
                     Submit
                 </Button>
