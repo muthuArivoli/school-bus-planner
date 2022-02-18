@@ -33,9 +33,11 @@ def seed_db():
     schools_table = pd.read_csv('data/schools.csv')
     school_names = schools_table['name']
     addresses = schools_table['address']
+    arrival_time = schools_table['arrival_time']
+    departure_time = schools_table['departure_time']
     for f in range(0,len(school_names)):
         lat,lng = geocode_address(addresses[f])
-        new_school = School(name=school_names[f], address=addresses[f], latitude=lat, longitude=lng)
+        new_school = School(name=school_names[f], address=addresses[f], latitude=lat, longitude=lng, arrival_time = arrival_time[f], departure_time = departure_time[f])
         db.session.add(new_school)
         db.session.flush()
         db.session.refresh(new_school)

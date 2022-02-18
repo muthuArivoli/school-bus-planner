@@ -73,7 +73,6 @@ class Route(db.Model):
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     description = db.Column(db.String())
     students = relationship("Student")
-    complete = db.Column(db.Boolean())
     stops = relationship("Stop")
 
     @hybrid_property

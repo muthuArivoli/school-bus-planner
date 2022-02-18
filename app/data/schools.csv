@@ -1,16 +1,16 @@
-name,address
-Gurney Preparatory,"11256 Palos Verdes Court, Cupertino, CA 95014"
-Tainter Preparatory,"14524 Lodestar Drive, Grass Valley, CA 95949"
-Gist Preparatory,"4329 Howe Street, Oakland, CA 94611"
-Mills Preparatory,"11 Eclipse Court, Alameda, CA 94501"
-Lee School,"6420 Via Baron, Rancho Palos Verdes, CA 90275"
-Pyle Elementary,"5472 Sunstar Common, Fremont, CA 94555"
-Henry Elementary,"5397 Wentworth Avenue, Oakland, CA 94601"
-Johnson High,"2640 8th Avenue, Oakland, CA 94606"
-Miyoshi Elementary,"1870 A Street, Oroville, CA 95966"
-Kimmerle High,"775 47th Street, Oakland, CA 94609"
-Rasco Elementary,"51035 Conifer Drive, Soda Springs, CA 95728"
-Martinez Preparatory,"450 C Street, Hayward, CA 94541"
-Guy Preparatory,"3827 West Chapman Avenue, Orange, CA 92868"
-Hollingsworth High,"37600 Sycamore Street, Newark, CA 94560"
-Evans High,"4920 Quonset Drive, Sacramento, CA 95820"
+name,address,arrival_time,departure_time
+Gurney Preparatory,"11256 Palos Verdes Court, Cupertino, CA 95014",9:00,15:00
+Tainter Preparatory,"14524 Lodestar Drive, Grass Valley, CA 95949",9:00,15:00
+Gist Preparatory,"4329 Howe Street, Oakland, CA 94611",9:00,15:00
+Mills Preparatory,"11 Eclipse Court, Alameda, CA 94501",9:00,15:00
+Lee School,"6420 Via Baron, Rancho Palos Verdes, CA 90275",9:00,15:00
+Pyle Elementary,"5472 Sunstar Common, Fremont, CA 94555",9:00,15:00
+Henry Elementary,"5397 Wentworth Avenue, Oakland, CA 94601",9:00,15:00
+Johnson High,"2640 8th Avenue, Oakland, CA 94606",9:00,15:00
+Miyoshi Elementary,"1870 A Street, Oroville, CA 95966",9:00,15:00
+Kimmerle High,"775 47th Street, Oakland, CA 94609",9:00,15:00
+Rasco Elementary,"51035 Conifer Drive, Soda Springs, CA 95728",9:00,15:00
+Martinez Preparatory,"450 C Street, Hayward, CA 94541",9:00,15:00
+Guy Preparatory,"3827 West Chapman Avenue, Orange, CA 92868",9:00,15:00
+Hollingsworth High,"37600 Sycamore Street, Newark, CA 94560",9:00,15:00
+Evans High,"4920 Quonset Drive, Sacramento, CA 95820",9:00,15:00
