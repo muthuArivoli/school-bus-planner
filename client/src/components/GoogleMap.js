@@ -68,48 +68,9 @@ class GoogleMap extends Component {
             address: place.formatted_address
         });
         this.props.setAddress(place.formatted_address);
+        this.props.setLatitude(place.geometry.location.lat());
+        this.props.setLongitude(place.geometry.location.lng());
     };
-
-    _generateAddress() {
-        const {
-            mapApi
-        } = this.state;
-
-        const geocoder = new mapApi.Geocoder;
-
-        geocoder.geocode({ 'location': { lat: this.state.lat, lng: this.state.lng } }, (results, status) => {
-            console.log(results);
-            console.log(status);
-            if (status === 'OK') {
-                if (results[0]) {
-                    this.zoom = 12;
-                    this.setState({ address: results[0].formatted_address });
-                    this.props.setAddress(results[0].formatted_address);
-                    this.props.setLatitude(this.state.lat);
-                    this.props.setLongitude(this.state.lng);
-                } else {
-                    window.alert('No results found');
-                    this.props.setAddress("");
-                    this.props.setLatitude("");
-                    this.props.setLongitude("");
-                }
-            } else {
-                window.alert('Geocoder failed due to: ' + status);
-            }
-
-        });
-    }
-
-    // Get Current Location Coordinates
-    setCurrentLocation() {
-        if ('geolocation' in navigator) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                this.setState({
-                    center: [position.coords.latitude, position.coords.longitude],
-                });
-            });
-        }
-    }
 
     render() {
         const {

@@ -27,6 +27,21 @@ const columns = [
     filterable: false
   },
   {
+    field: 'complete',
+    headerName: 'Route Complete',
+    width: 150,
+    filterable: false
+    //renderCell: (params) => (
+    //  <>
+    //  {
+    //    params.value ? 
+    //    <CheckIcon/> : 
+    //    <CloseIcon/>
+    //  }
+    //  </>
+    //)
+  },
+  {
     field: 'students',
     headerName: 'Number of Students',
     width: 250,
