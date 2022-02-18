@@ -11,13 +11,26 @@ export default function UpdateSchool(props) {
 
     const [name, setName] = React.useState("");
     const [address, setAddress] = React.useState("");
+    
+    const [latitude, setLatitude] = React.useState("");
+    const [longitude, setLongitude] = React.useState("");
 
-    const handleSubmit = (event, na, ad) => {
+    const handleSubmit = (event, na, ad, latitude, longitude) => { //
         event.preventDefault();
     
+        console.log({
+          name: na,
+          address: ad,
+          latitude: latitude, //
+          longitude: longitude //
+        });
+
+
         axios.patch(process.env.REACT_APP_BASE_URL+`/school/${id}`, {
           name: na,
-          address: ad
+          address: ad,
+          latitude:latitude,
+          longitude: longitude
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -65,7 +78,7 @@ export default function UpdateSchool(props) {
 
     return(
         <>
-        <SchoolForm name={name} address={address} handleSubmit={handleSubmit} title="Update School"/>
+        <SchoolForm name={name} address={address} latitude={latitude} setLatitude = {setLatitude} longitude={longitude} setLongitude = {setLongitude} handleSubmit={handleSubmit} title="Update School"/>
         </>
     )
 }
