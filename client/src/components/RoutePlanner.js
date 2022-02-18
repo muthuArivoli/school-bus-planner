@@ -1,5 +1,5 @@
 import React from 'react'
-import { GoogleMap, LoadScript, Marker, useGoogleMap } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, Marker, Circle } from '@react-google-maps/api';
 import Stack from '@mui/material/Stack';
 import Geocode from "react-geocode";
 import { GridOverlay, DataGrid } from '@mui/x-data-grid';
@@ -22,8 +22,22 @@ Geocode.setLocationType("ROOFTOP");
 
 const containerStyle = {
     height: "400px",
-    width: "500px"
+    width: "500px",
 };
+
+const CircleOptions = {
+  strokeColor: '#d9db58',
+  strokeOpacity: 0.55,
+  strokeWeight: 1.5,
+  fillColor: '#ebed72',
+  fillOpacity: 0.35,
+  clickable: false,
+  draggable: false,
+  editable: false,
+  visible: true,
+  radius: 482.304,
+  zIndex: 1
+}
 
 const mapOptions = {
   disableDoubleClickZoom: true
@@ -502,6 +516,8 @@ export default function RoutePlanner(props) {
               {toggleSelection=="stops" ? stopRows.map((stop, index) => (
                 <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop)} 
                 icon={{url: "http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"}}/>)) : [] } 
+              {toggleSelection=="stops" ? students.map((student, index) => (
+                <Circle center={student.location} options={CircleOptions} />)) : [] } 
             </GoogleMap>
           </LoadScript>
         </Stack>
