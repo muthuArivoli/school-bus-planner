@@ -24,6 +24,9 @@ export default function UserUpdate(props) {
   const [data, setData] = React.useState({email:"", password: "", con_password: "", name:"", address: "", admin: false});
   const [emailList, setEmailList] = React.useState([])
   const [oldEmail, setOldEmail] = React.useState("");
+  
+  const [latitude, setLatitude] = React.useState("");
+  const [longitude, setLongitude] = React.useState("");
 
 
   let navigate = useNavigate();
@@ -38,7 +41,7 @@ export default function UserUpdate(props) {
         }
       );
       if (result.data.success){
-        let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, admin: result.data.user.admin_flag, password: "", con_password: ""}
+        let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, admin: result.data.user.admin_flag, password: "", con_password: "",}
         setData(newData);
         setOldEmail(result.data.user.email);
       }
@@ -113,14 +116,27 @@ export default function UserUpdate(props) {
       setData(newData);
     }
 
+
+
     const handleSubmit = (event) => {
       event.preventDefault();
       let req = {
         name: data.name,
         email: data.email,
         address: data.address,
-        admin_flag: data.admin
+        admin_flag: data.admin,
+        latitude: latitude,
+        longitude: longitude
       }
+      console.log({
+        email: data.email,
+        //password: data.get('password'),
+        name: data.name,
+        address: data.address,
+        admin_flag: data.admin,
+        latitude: latitude,
+        longitude: longitude
+      });
       if(data.password != null && data.password != ""){
         req.password = data.password;
       }
@@ -216,8 +232,14 @@ export default function UserUpdate(props) {
                   id="confirm-password"
                 />
               </Grid>
-              <Grid item xs={12} sx={{ height: 450 }} >
-                <GoogleMap address={data.address} setAddress={handleAddressChange}/>
+              <Grid item md={12}>
+                <FormControl>
+                  <InputLabel htmlFor="name">Name</InputLabel>
+                  <Input id="name" value={data.name} onChange={handleNameChange} />
+                </FormControl>
+              </Grid>
+              <Grid item md={12} sx={{ height: 450 }} >
+                <GoogleMap address={data.address} setAddress={handleAddressChange} latitude ={latitude} setLatitude ={setLatitude} longitude ={longitude} setLongitude ={setLongitude}/>
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
