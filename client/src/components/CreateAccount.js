@@ -315,7 +315,7 @@ export default function SignUp(props) {
                 />
               </Grid>
               <Grid item md={12} sx={{ height: 450 }} >
-                <GoogleMap address={address} setAddress={setAddress} latitude = {latitude} setLatitude = {setLatitude} longitude = {longitude} setLongitude = {setLongitude}/>   {/*TTTTTT */}
+                <GoogleMap address={address} setAddress={setAddress} latitude ={latitude} setLatitude ={setLatitude} longitude ={longitude} setLongitude ={setLongitude}/>   {/*TTTTTT */}
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel

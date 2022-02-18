@@ -54,7 +54,7 @@ export default function SchoolForm(props) {
           <Typography component="h1" variant="h5">
             {props.title}
           </Typography>
-        <Box component="form" noValidate onSubmit={(event) => props.handleSubmit(event, name, address)} sx={{ mt: 3 }}>
+        <Box component="form" noValidate onSubmit={(event) => props.handleSubmit(event, name, address, latitude, longitude)} sx={{ mt: 3 }}>  
           <Grid container spacing={2}>
               <Grid item xs={12}>
               <TextField

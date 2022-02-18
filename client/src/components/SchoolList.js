@@ -41,7 +41,7 @@ const columns = [
     //sortable,
     //filterable
   },
-  {
+/*   {
     field: 'id',
     sortable: false,
     filterable: false,
@@ -60,7 +60,7 @@ const columns = [
         </Button>
       </>
     ),
-  }
+  } */
 ];
 
 

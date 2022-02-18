@@ -21,7 +21,7 @@ const columns = [
     </>
   )
   },
-  { field: 'student_id', headerName: 'Student ID', width: 250, type: 'number', filterable: false},
+  { field: 'student_id', headerName: 'Student ID', width: 150, type: 'number', filterable: false},
   { 
     field: 'school',
     headerName: 'School',
@@ -45,7 +45,7 @@ const columns = [
     //)
   },
   
-  {
+/*   {
     field: 'id',
     headerName: 'Detailed View',
     sortable: false,
@@ -64,7 +64,7 @@ const columns = [
         </Button>
       </>
     ),
-  },
+  }, */
 ];
 
 export default function DataTable(props) {
