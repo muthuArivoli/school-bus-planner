@@ -18,10 +18,14 @@ import { useNavigate, Link as RouterLink} from 'react-router-dom';
 import Autocomplete from '@mui/material/Autocomplete';
 import axios from 'axios';
 import GoogleMap from './GoogleMap'
+import Geocode from "react-geocode";
+Geocode.setApiKey('AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o');
 
 const theme = createTheme();
 
 export default function SignUp(props) {
+
+
 
   const [students, setStudents] = React.useState([]);
   let navigate = useNavigate();
@@ -34,6 +38,8 @@ export default function SignUp(props) {
   const [con_password, setConPassword] = React.useState("");
   const [name, setName] = React.useState("");
   const [address, setAddress] = React.useState("");
+  const [latitude, setLatitude] = React.useState("");
+  const [longitude, setLongitude] = React.useState("");
   const [email, setEmail] = React.useState("");
   let [adminChecked, setAdminChecked] = React.useState(false);
 
@@ -102,7 +108,6 @@ export default function SignUp(props) {
   }, []);
 
 
-
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -111,7 +116,9 @@ export default function SignUp(props) {
       password: data.get('password'),
       name: data.get('name'),
       address: address,
-      admin_flag: adminChecked
+      admin_flag: adminChecked,
+      latitude: latitude,
+      longitude: longitude
     });
     console.log(process.env.REACT_APP_BASE_URL);
     axios.post(process.env.REACT_APP_BASE_URL+"/user", {
@@ -119,6 +126,8 @@ export default function SignUp(props) {
       password: data.get('password'),
       name: data.get('name'),
       address: address,
+      latitude: latitude ,
+      longitude: longitude,
       admin_flag: adminChecked
     }, {
       headers: {
@@ -250,9 +259,6 @@ export default function SignUp(props) {
             alignItems: 'center',
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-            <LockOutlinedIcon />
-          </Avatar>
           <Typography component="h1" variant="h5">
             Create User
           </Typography>
@@ -309,7 +315,7 @@ export default function SignUp(props) {
                 />
               </Grid>
               <Grid item md={12} sx={{ height: 450 }} >
-                <GoogleMap address={address} setAddress={setAddress}/>
+                <GoogleMap address={address} setAddress={setAddress} latitude = {latitude} setLatitude = {setLatitude} longitude = {longitude} setLongitude = {setLongitude}/>   {/*TTTTTT */}
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
@@ -334,6 +340,7 @@ export default function SignUp(props) {
                         Student {index + 1}
                     </Typography>
                 </Box>
+                <Grid container spacing={2}>
                     <Grid item xs={12}>
                     <TextField
                         autoFocus
@@ -353,6 +360,7 @@ export default function SignUp(props) {
                         onChange={(e) => handleStudentChange(index, "id", e.target.value)}
                         fullWidth
                     />
+                    </Grid>
                     <Grid item xs={12}>
                     <Autocomplete
                         autoFocus
@@ -376,7 +384,6 @@ export default function SignUp(props) {
                         renderInput={(params) => <TextField {...params} label="Route Name" />}
                     />
                     </Grid>
-                </Grid>
                 <Grid container justifyContent="center">
                 <Grid item xs={1}>
                   <div
@@ -387,6 +394,7 @@ export default function SignUp(props) {
                       Delete
                     </Button>
                   </div>
+                </Grid>
                 </Grid>
                 </Grid>
                 </React.Fragment>

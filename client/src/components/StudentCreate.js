@@ -31,6 +31,7 @@ export default function CreateSchool(props) {
       }
       if(route != null && route.id != "") {
         req.route_id = route.id;
+
       }
       console.log(req);
       axios.post(process.env.REACT_APP_BASE_URL+'/student', req, {
@@ -59,10 +60,7 @@ export default function CreateSchool(props) {
 
     return(
         <>
-          <Typography component="h1" variant="h5">
-            Create Student
-          </Typography>
-        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>  
+
         <StudentForm 
           name={name} 
           updateName={setName}
@@ -74,14 +72,10 @@ export default function CreateSchool(props) {
           updateSchool={setSchool}
           route={route}
           updateRoute={setRoute}
+          handleSubmit={handleSubmit}
+          title="Create Student"
           />
-        <Button type="submit"
-                  variant="contained"
-                  disabled={school == null || school.id == "" || user == null || user.id == "" || name == ""}
-                  >
-                    Submit
-        </Button>
-        </Box>
+
         </>
     )
 }

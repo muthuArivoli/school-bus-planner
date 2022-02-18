@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
@@ -32,29 +32,6 @@ const routeColumns = [
   { field: 'description', headerName: "Description", width: 100},
 ];
 
-function getCenter(students) {
-  let lattotal = 0;
-  let lngtotal = 0;
-
-  if(students.length == 0){
-      return {lat: 0, lng: 0}
-  }
-
-  for (var j = 0; j < students.length; j++) {
-    lattotal += students[j].location.lat;
-    lngtotal += students[j].location.lng;
-  }
-
-  let avglat = lattotal / (students.length);
-  let avglng = lngtotal / (students.length);
-
-  const center = {
-    lat: avglat,
-    lng: avglng
-  };
-  return center;
-}
-
 export default function RoutePlanner(props) {
   const [studentRows, setStudentRows] = React.useState([]); //rows of data grid: "Students in Current Row"
   const [routeRows, setRouteRows] = React.useState([]); //rows of data grid: "Current Rows"
@@ -69,6 +46,10 @@ export default function RoutePlanner(props) {
     const [resetRoute, setResetRoute] = React.useState(false);
 
   const [schoolLocation, setSchoolLocation] = React.useState({lat: 0, lng:0});
+
+  const [map, setMap] = React.useState(null);
+
+
     let { id } = useParams();
     let navigate = useNavigate();
 
@@ -96,7 +77,6 @@ export default function RoutePlanner(props) {
             setRouteRows(newRouteRows);
         }
         else{
-            console.log("a");
             props.setSnackbarMsg(`Route could not be loaded`);
             props.setShowSnackbar(true);
             props.setSnackbarSeverity("error");
@@ -159,7 +139,6 @@ export default function RoutePlanner(props) {
                 setStudents(newRows);
             }
             else{
-              console.log("d");
               props.setSnackbarMsg(`Route could not be loaded`);
               props.setShowSnackbar(true);
               props.setSnackbarSeverity("error");
@@ -247,7 +226,6 @@ export default function RoutePlanner(props) {
                         newRows = [...newRows, {name: studentRes.data.student.name, id: response.data.route.students[i], address: userRes.data.user.uaddress}]
                     }
                     else{
-                      console.log("c")
                         props.setSnackbarMsg(`Route could not be loaded`);
                         props.setShowSnackbar(true);
                         props.setSnackbarSeverity("error");
@@ -255,7 +233,6 @@ export default function RoutePlanner(props) {
                     }
                 }
                 else{
-                  console.log("b");
                     props.setSnackbarMsg(`Route could not be loaded`);
                     props.setShowSnackbar(true);
                     props.setSnackbarSeverity("error");
@@ -272,6 +249,14 @@ export default function RoutePlanner(props) {
     fetchStudents();
   }, [selectionModel])
 
+  let [query, setQuery] = useSearchParams();
+
+  React.useEffect(()=>{
+    if(query.get("route") != null && query.get("route").match('^[0-9]+$')){
+      setSelectionModel([parseInt(query.get("route"))]);
+    }
+  }, []);
+
   const handleSubmit = (event) => {
     if(selectionModel.length == 0){
         console.log({
@@ -279,12 +264,14 @@ export default function RoutePlanner(props) {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id})
+            //stops: 
         })
         axios.post(process.env.REACT_APP_BASE_URL+`/route`, {
             school_id: parseInt(id),
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id})
+            
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -296,6 +283,8 @@ export default function RoutePlanner(props) {
                 setSnackbarOpen(true);
                 setSnackbarSeverity('success');
                 setSnackbarMsg('Route successfully created');
+                setSelectionModel([]);
+                setResetRoute(!resetRoute);
             }
             else{
                 setSnackbarOpen(true);
@@ -321,6 +310,8 @@ export default function RoutePlanner(props) {
                 setSnackbarOpen(true);
                 setSnackbarSeverity('success');
                 setSnackbarMsg('Route successfully updated');
+                setSelectionModel([]);
+                setResetRoute(!resetRoute);
             }
             else{
                 setSnackbarOpen(true);
@@ -331,9 +322,24 @@ export default function RoutePlanner(props) {
         );
 
     }
-    setSelectionModel([]);
-    setResetRoute(!resetRoute);
   }
+
+  React.useEffect(()=>{
+    if(map){
+      var bounds = new window.google.maps.LatLngBounds();
+      console.log(students);
+      console.log(schoolLocation);
+      for (var i = 0; i < students.length; i++) {
+        bounds.extend(students[i].location);
+      }
+      bounds.extend(schoolLocation);
+      map.fitBounds(bounds);
+    }
+  }, [students, schoolLocation]);
+
+  const onLoad = React.useCallback(function callback(map) {
+    setMap(map);
+  }, [])
 
 
   //runs when user types in textfield, should add value into correct part of routeInfo
@@ -362,10 +368,13 @@ export default function RoutePlanner(props) {
         <LoadScript
           googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
         >
-          <GoogleMap mapContainerStyle={containerStyle} zoom={3} center={schoolLocation}>
-            <Marker title="School" position={schoolLocation}/>
+          <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad}>
+            <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
             {students.map((student, index) => (
-                <Marker key={index} title={student.address} position={student.location} onClick={() => handleClick(student, index)} label={student.route == null ? "0" : "1"}/> ))}
+                <Marker key={index} title={student.name} position={student.location} onClick={() => handleClick(student, index)}
+                 icon={{url: studentRows.find(element => student.id == element.id) ? "http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"
+                        : (student.route == null ? "http://maps.google.com/mapfiles/kml/paddle/red-circle.png"
+                        : "http://maps.google.com/mapfiles/kml/paddle/blu-circle.png") }}/> ))}
           </GoogleMap>
         </LoadScript>
 

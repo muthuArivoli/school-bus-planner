@@ -1,16 +1,27 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import { DataGrid, getGridStringOperators, getGridNumericColumnOperators} from '@mui/x-data-grid';
+import CheckBoxOutlineBlankTwoToneIcon from '@mui/icons-material/CheckBoxOutlineBlankTwoTone';
+import { DataGrid, getGridStringOperators, getGridNumericColumnOperators, getGridBooleanOperators} from '@mui/x-data-grid';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import axios from 'axios';
+import SearchIcon from '@mui/icons-material/Search';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import Link from '@mui/material/Link';
+import Autocomplete from '@mui/material/Autocomplete';
+import Grid from '@mui/material/Grid';
 
 const columns = [
-  { field: 'name', headerName: 'Full Name', width: 250, filterOperators: getGridStringOperators().filter(
-    (operator) => operator.value === 'contains',
-  )},
-  { field: 'student_id', headerName: 'Student ID', width: 250, type: 'number',  filterOperators: getGridNumericColumnOperators().filter(
-    (operator) => operator.value === '=',
-  )},
+  { field: 'name', headerName: 'Full Name', width: 250, filterable: false,
+  renderCell: (params) => (
+    <>
+    <Link component={RouterLink} to={"/students/" + params.value.id}>
+      {params.value.name}
+    </Link>
+    </>
+  )
+  },
+  { field: 'student_id', headerName: 'Student ID', width: 250, type: 'number', filterable: false},
   { 
     field: 'school',
     headerName: 'School',
@@ -24,6 +35,16 @@ const columns = [
     sortable: false,
     filterable: false
   },
+  
+  {
+    field: 'in_range',
+    headerName: 'In-Range',
+    width: 100,
+    sortable: false,
+    //filterOperators: getGridBooleanOperators().filter((operator) => operator.value === "=",
+    //)
+  },
+  
   {
     field: 'id',
     headerName: 'Detailed View',
@@ -54,25 +75,16 @@ export default function DataTable(props) {
   const [totalRows, setTotalRows] = React.useState(0);
   const [page, setPage] = React.useState(0);
   const [sortModel, setSortModel] = React.useState([]);
-  const [filterModel, setFilterModel] = React.useState({items: []});
-  const [buttonStr, setButtonStr] = React.useState("Show all students");
+  const [filterStr, setFilterStr] = React.useState("");
 
-  const mappings = {"name": "name", "student_id": "student_id", "school": "school_id"}
+  const [filterType, setFilterType] = React.useState(null);
+  const filterValues = ['name', 'id'];
+
+  const mappings = {"name": "name", "student_id": "student_id", "school": "school_id"} 
+  //const mappings = {"name": "name", "student_id": "student_id", "school": "school_id", "in_range": "in_range"} 
 
   const [showAll, setShowAll] = React.useState(false);
 
-  const handleShowAll = () => {
-    if (!showAll){
-      setButtonStr("Show less students");
-      setShowAll(true);
-      setPage(0);
-    }
-    else{
-      setButtonStr("Show all students");
-      setShowAll(false);
-      setPage(0);
-    }
-  }
 
   React.useEffect(()=> {
     const fetchData = async() => {
@@ -85,14 +97,15 @@ export default function DataTable(props) {
         params.dir = sortModel[0].sort;
       }
 
-      console.log(filterModel);
-      for(let i=0; i<filterModel.items.length; i++){
-        if (filterModel.items[i].columnField == 'name'){
-          params.name = filterModel.items[i].value;
-        }
-        if (filterModel.items[i].columnField == 'student_id'){
-          params.id = filterModel.items[i].value;
-        }
+
+      if(filterType == 'name'){
+        params.name = filterStr;
+      }
+      else if(filterType == 'id'){
+        params.id = parseInt(filterStr);
+      }
+      else if(filterStr != "") {
+        setFilterStr("");
       }
 
       const result = await axios.get(
@@ -123,7 +136,9 @@ export default function DataTable(props) {
             }
           );
           if (getRes.data.success){
-            arr = [...arr, {name: data[i].name, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id}]
+            //arr = [...arr, {name: data[i].name, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id}]
+            //arr = [...arr, {name: data[i].name, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id, in_range: data[i].inrange}]
+            arr = [...arr, {name: {name: data[i].name, id: data[i].id}, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id}]
           }
           else{
             props.setSnackbarMsg(`Students could not be loaded`);
@@ -161,10 +176,38 @@ export default function DataTable(props) {
       }
     };
     fetchData();
-  }, [page, sortModel, filterModel, showAll])
+  }, [page, sortModel, filterType, filterStr, showAll])
 
   return (
     <>
+    <Grid container>
+      <Grid item md={3} lg={3}>
+    <Autocomplete
+      options={filterValues}
+      value={filterType}
+      autoSelect
+      onChange={(e, new_value) => setFilterType(new_value)}
+      renderInput={(params) => (
+        <TextField {...params} label="Filter Type" />
+      )}
+    />
+    </Grid>
+    <Grid item md={9} lg={9}>
+    <TextField
+          label="Search"
+          name="Search"
+          type="search"
+          fullWidth
+          id="outlined-start-adornment"
+          disabled={filterType == null}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><SearchIcon/></InputAdornment>,
+          }}
+          value={filterStr}
+          onChange={(e)=>setFilterStr(e.target.value)}
+        />
+        </Grid>
+        </Grid>
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         rows={rows}
@@ -176,28 +219,20 @@ export default function DataTable(props) {
         page={page}
         onPageChange={(page) => setPage(page)}
         pageSize={pageSize}
+        onPageSizeChange={(pageSize) => {setShowAll(pageSize != 10);
+                                          setPage(0);}}
+        rowsPerPageOptions={[10, totalRows]}
         sortingMode="server"
         sortModel={sortModel}
-        filterMode="server"
-        onFilterModelChange={(filterModel) => setFilterModel(filterModel)}
         onSortModelChange={(sortModel) => setSortModel(sortModel)}
         disableSelectionOnClick
       />
     </div>
     <Button
-      onClick={handleShowAll}
-      variant="outlined"
-      color="primary"
-      size="small"
-      style={{ marginLeft: 16 }}
-      >
-        {buttonStr}
-      </Button>
-    <Button
       component={RouterLink}
       to={"/students/create"}
       color="primary"
-      variant="outlined"
+      variant="contained"
       size="small"
       style={{ marginLeft: 16 }}
       >

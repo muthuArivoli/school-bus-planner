@@ -131,6 +131,7 @@ export default function StudentDetail(props) {
           <Typography variant="h5" align="center">
             Student ID: {data.student_id}
           </Typography>
+
         </Stack>
 
         <Stack direction="row" spacing={20} justifyContent="center">
@@ -160,6 +161,13 @@ export default function StudentDetail(props) {
               style={{ marginLeft: 16 }}>
               View Route
             </Button>
+ 
+            <Typography variant="h5" align="center">
+              In Route Range:  {/* {in_range} */}
+             
+            </Typography> 
+
+
           </Stack>
         </Stack>
 
@@ -172,7 +180,7 @@ export default function StudentDetail(props) {
               style={{ marginLeft: 16 }}>
               Modify
           </Button>
-          <DeleteDialog dialogTitle="Delete Student?" dialogDesc="Please confirm you would like to delete this student" onAccept={handleDelete}/>
+          <DeleteDialog dialogTitle="Delete Student?" dialogDesc={`Please confirm you would like to delete student ${data.name}`} onAccept={handleDelete}/>
         </Stack>
       </Stack>
     </Grid>

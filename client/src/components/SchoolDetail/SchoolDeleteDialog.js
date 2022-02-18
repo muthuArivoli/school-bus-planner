@@ -37,16 +37,17 @@ export default function SchoolDeleteDialog(props) {
         Delete School
       </Button>
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Delete School {props.schoolName}</DialogTitle>
+        <DialogTitle>Delete School?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Please confirm school name.
+            Please enter <b>{props.schoolName}</b> to confirm.
           </DialogContentText>
           <TextField
             autoFocus
             margin="dense"
             id="school"
             label="School"
+            placeholder={props.schoolName}
             fullWidth
             variant="standard"
             onChange={checkDialog}

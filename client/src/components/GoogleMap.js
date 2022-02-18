@@ -10,8 +10,7 @@ import Marker from './Markers';
 
 
 const Wrapper = styled.main`
-  width: 400px;
-  height: 400px;
+  height: 380px;
 `;
 
 class GoogleMap extends Component {
@@ -23,27 +22,12 @@ class GoogleMap extends Component {
         mapApi: null,
         geoCoder: null,
         places: [],
-        center: [],
+        center: [35.9998, -78.938],
         zoom: 9,
         address: '',
         lat: null,
         lng: null
     };
-
-    componentWillMount() {
-        this.setCurrentLocation();
-    }
-
-
-    onMarkerInteraction = ( mouse) => {
-        this.setState({
-            lat: mouse.lat,
-            lng: mouse.lng
-        });
-    }
-    onMarkerInteractionMouseUp = () => {
-        this._generateAddress();
-    }
 
     _onChange = ({ center, zoom }) => {
         this.setState({
@@ -72,15 +56,18 @@ class GoogleMap extends Component {
                 address: ""
             });
             this.props.setAddress("");
+            this.props.setLatitude("");
+            this.props.setLongitude("");
             return;
         }
 
         this.setState({
             places: [place],
             lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng()
+            lng: place.geometry.location.lng(),
+            address: place.formatted_address
         });
-        this._generateAddress()
+        this.props.setAddress(place.formatted_address);
     };
 
     _generateAddress() {
@@ -98,9 +85,13 @@ class GoogleMap extends Component {
                     this.zoom = 12;
                     this.setState({ address: results[0].formatted_address });
                     this.props.setAddress(results[0].formatted_address);
+                    this.props.setLatitude(this.state.lat);
+                    this.props.setLongitude(this.state.lng);
                 } else {
                     window.alert('No results found');
                     this.props.setAddress("");
+                    this.props.setLatitude("");
+                    this.props.setLongitude("");
                 }
             } else {
                 window.alert('Geocoder failed due to: ' + status);
@@ -137,9 +128,6 @@ class GoogleMap extends Component {
                     center={this.state.center}
                     zoom={this.state.zoom}
                     onChange={this._onChange}
-                    onChildMouseDown={this.onMarkerInteraction}
-                    onChildMouseUp={this.onMarkerInteractionMouseUp}
-                    onChildMouseMove={this.onMarkerInteraction}
                     bootstrapURLKeys={{
                         key: 'AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o',
                         libraries: ['places', 'geometry'],

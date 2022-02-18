@@ -9,6 +9,8 @@ import Button from '@mui/material/Button';
 import Input from '@mui/material/Input';
 import InputLabel from '@mui/material/InputLabel';
 import GoogleMap from './GoogleMap';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
 const theme = createTheme();
 
@@ -16,6 +18,9 @@ export default function SchoolForm(props) {
 
   const [name, setName] = React.useState(props.name || "");
   const [address, setAddress] = React.useState(props.address || "");
+  
+  const [latitude, setLatitude] = React.useState("");
+  const [longitude, setLongitude] = React.useState("");
 
   React.useEffect(() => {
     setName(props.name);
@@ -36,32 +41,42 @@ export default function SchoolForm(props) {
 
     return (
       <ThemeProvider theme={theme}>
-      <Container component="main">
+      <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
           sx={{
             marginTop: 8,
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'left',
+            alignItems: 'center',
           }}
         >
-        <Box component="form" noValidate onSubmit={(event) => props.handleSubmit(event, name, address)}>
+          <Typography component="h1" variant="h5">
+            {props.title}
+          </Typography>
+        <Box component="form" noValidate onSubmit={(event) => props.handleSubmit(event, name, address)} sx={{ mt: 3 }}>
           <Grid container spacing={2}>
-              <Grid item md={12}>
-                <FormControl>
-                  <InputLabel htmlFor="name">School Name</InputLabel>
-                  <Input id="name" label="name" value={name} onChange={handleNameChange} />
-                </FormControl>
+              <Grid item xs={12}>
+              <TextField
+                        autoFocus
+                        required
+                        label="Name"
+                        id="name"
+                        value={name}
+                        onChange={handleNameChange}
+                        fullWidth
+                    />
               </Grid>
               <Grid item md={12} sx={{ height: 450 }} >
-                <GoogleMap address={address} setAddress={setAddress}/>
+                <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude ={longitude} setLongitude ={setLongitude}/>
               </Grid>
 
-              <Grid item sm={12}>
+              <Grid item xs={12}>
                 <Button type="submit"
                   variant="contained"
+                  fullWidth
                   disabled={name=="" || address == ""}
+                  sx={{ mt: 3, mb: 2 }}
                   >
                     Submit
                 </Button>

@@ -3,19 +3,43 @@ import Button from '@mui/material/Button';
 import { DataGrid , getGridStringOperators} from '@mui/x-data-grid';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import axios from 'axios';
+import SearchIcon from '@mui/icons-material/Search';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import Link from '@mui/material/Link';
+import Autocomplete from '@mui/material/Autocomplete';
+import Grid from '@mui/material/Grid';
 
 const columns = [
-  { field: 'name', headerName: 'School Name', width: 250,
-  filterOperators: getGridStringOperators().filter(
-    (operator) => operator.value === 'contains',
+  { field: 'name', headerName: 'School Name', width: 500, filterable: false, 
+  renderCell: (params) => (
+    <>
+    <Link component={RouterLink} to={"/schools/" + params.value.id}>
+      {params.value.name}
+    </Link>
+    </>
   )
   },
   {
     field: 'address',
     headerName: 'Address',
-    width: 250,
+    width: 500,
     sortable: false,
     filterable: false
+  },
+  {
+    field: 'arrival_time',
+    headerName: 'Arrival Time',
+    width: 150,
+    //sortable: 
+    //filterable
+  },
+  {
+    field: 'departure_time',
+    headerName: 'Departure Time',
+    width: 150,
+    //sortable,
+    //filterable
   },
   {
     field: 'id',
@@ -47,24 +71,13 @@ export default function DataTable(props) {
   const [totalRows, setTotalRows] = React.useState(0);
   const [page, setPage] = React.useState(0);
   const [sortModel, setSortModel] = React.useState([]);
-  const [filterModel, setFilterModel] = React.useState({items: []});
-  const [buttonStr, setButtonStr] = React.useState("Show all schools");
+  const [filterStr, setFilterStr] = React.useState("");
+
+  const [filterType, setFilterType] = React.useState(null);
+  const filterValues = ['name'];
 
   const [showAll, setShowAll] = React.useState(false);
   let navigate = useNavigate();
-
-  const handleShowAll = () => {
-    if (!showAll){
-      setButtonStr("Show less schools");
-      setShowAll(true);
-      setPage(0);
-    }
-    else{
-      setButtonStr("Show all schools");
-      setShowAll(false);
-      setPage(0);
-    }
-  }
 
   React.useEffect(()=> {
     const fetchData = async() => {
@@ -77,13 +90,12 @@ export default function DataTable(props) {
         params.dir = sortModel[0].sort;
       }
 
-      console.log(filterModel)
-      for(let i=0; i<filterModel.items.length; i++){
-        if (filterModel.items[i].columnField == 'name'){
-          params.name = filterModel.items[i].value;
-        }
+      if(filterType == 'name'){
+        params.name = filterStr;
       }
-
+      else if(filterStr != "") {
+        setFilterStr("");
+      }
 
       console.log(params);
       const result = await axios.get(
@@ -105,7 +117,7 @@ export default function DataTable(props) {
         }
         let arr = result.data.schools.map((value) => {
           console.log({name: value.name, id: value.id, address: value.address});
-          return {name: value.name, id: value.id, address: value.address};
+          return {name: {name: value.name, id: value.id}, address: value.address, id: value.id};
         });
         setRows(arr);
       }
@@ -117,9 +129,38 @@ export default function DataTable(props) {
       }
     };
     fetchData();
-  }, [page, sortModel, filterModel, showAll])
+  }, [page, sortModel, filterStr, filterType, showAll])
 
   return (
+    <>
+ <Grid container>
+      <Grid item md={3} lg={3}>
+    <Autocomplete
+      options={filterValues}
+      value={filterType}
+      autoSelect
+      onChange={(e, new_value) => setFilterType(new_value)}
+      renderInput={(params) => (
+        <TextField {...params} label="Filter Type" />
+      )}
+    />
+    </Grid>
+    <Grid item md={9} lg={9}>
+    <TextField
+          label="Search"
+          name="Search"
+          type="search"
+          fullWidth
+          id="outlined-start-adornment"
+          disabled={filterType == null}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><SearchIcon/></InputAdornment>,
+          }}
+          value={filterStr}
+          onChange={(e)=>setFilterStr(e.target.value)}
+        />
+        </Grid>
+        </Grid>
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         rows={rows}
@@ -131,26 +172,18 @@ export default function DataTable(props) {
         page={page}
         onPageChange={(page) => setPage(page)}
         pageSize={pageSize}
+        onPageSizeChange={(pageSize) => {setShowAll(pageSize != 10);
+          setPage(0);}}
+        rowsPerPageOptions={[10, totalRows]}
         sortingMode="server"
         sortModel={sortModel}
-        filterMode="server"
-        onFilterModelChange={(filterModel) => setFilterModel(filterModel)}
         onSortModelChange={(sortModel) => setSortModel(sortModel)}
         disableSelectionOnClick
       />
       <Button
-      onClick={handleShowAll}
-      variant="outlined"
-      color="primary"
-      size="small"
-      style={{ marginLeft: 16 }}
-      >
-        {buttonStr}
-      </Button>
-      <Button
       component={RouterLink}
       to={"/schools/create"}
-      variant="outlined"
+      variant="contained"
       color="primary"
       size="small"
       style={{ marginLeft: 16 }}
@@ -158,5 +191,6 @@ export default function DataTable(props) {
         Create School
       </Button>
     </div>
+    </>
   );
 }
