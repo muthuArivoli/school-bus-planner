@@ -548,6 +548,7 @@ export default function RoutePlanner(props) {
         </Stack>
       </Stack>
       <Stack spacing={2.5} justifyContent="center">
+        <Button variant="contained" color="primary" onClick={handleCheckCompleteness}>Check Route Completeness</Button>
         <Typography variant="h5" align="left">
           Current Route: {routeInfo["name"].length==0 ? "None" : routeInfo["name"]}
         </Typography>
