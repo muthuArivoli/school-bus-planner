@@ -391,14 +391,42 @@ def students_get(student_uid=None):
             base_query = student_filt.apply()
             record_num = base_query.count()
 
-        students = base_query
+        students = []
+        for student in base_query:
+            user = User.query.filter_by(id=student.user_id).first()
+            if user is None:
+                return json.dumps({'error': 'Student doesn\'t have valid User'})
+            in_range=False
+            route = Route.query.filter_by(id=student.route_id).first()
+            if route is not None:
+                stops = route.stops
+                for stop in stops:
+                    if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
+                        in_range = True
+                        break
+            student_dict = student.as_dict()
+            student_dict['in_range'] = in_range
+            students.append(student_dict)
 
 
         if student_uid is not None:
             student = Student.query.filter_by(id=student_uid).first()
+            student_dict = student.as_dict()
             if student is None:
                 return json.dumps({'error': 'Invalid Student Id'})
-            return json.dumps({'success': True, 'student': student.as_dict()})
+            user = User.query.filter_by(id=student.user_id).first()
+            if user is None:
+                return json.dumps({'error': 'Student doesn\'t have valid User'})
+            in_range=False
+            route = Route.query.filter_by(id=student.route_id).first()
+            if route is not None:
+                stops = route.stops
+                for stop in stops:
+                    if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
+                        in_range = True
+                        break
+            student_dict['in_range'] = in_range
+            return json.dumps({'success': True, 'student': student_dict})
         
         all_students = []
         for student in students:
