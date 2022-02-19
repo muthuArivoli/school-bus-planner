@@ -1,7 +1,6 @@
 import React from 'react'
 import { GoogleMap, LoadScript, Marker, Circle } from '@react-google-maps/api';
 import Stack from '@mui/material/Stack';
-import Geocode from "react-geocode";
 import { GridOverlay, DataGrid } from '@mui/x-data-grid';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -15,10 +14,6 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Box from '@mui/material/Box';
 
 let api_key = "AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o";
-
-
-Geocode.setApiKey(api_key);
-Geocode.setLocationType("ROOFTOP");
 
 const containerStyle = {
     height: "400px",
@@ -53,6 +48,7 @@ const routeColumns = [
   { field: 'id', hide: true, width: 30},
   { field: 'name', headerName: "Name", width: 150},
   { field: 'description', headerName: "Description", width: 100},
+  { field: 'completeness', headerName: "?", width: 40},
 ];
 
 const stopColumns = [
@@ -123,7 +119,7 @@ export default function RoutePlanner(props) {
         );
       if(result.data.success) {
           console.log(result.data.school);
-          let newRouteRows = result.data.school.routes.map((value)=>{return {name: value.name, id: value.id, description: value.description}});
+          let newRouteRows = result.data.school.routes.map((value)=>{return {name: value.name, id: value.id, description: value.description, completeness: value.complete}});
           setRouteRows(newRouteRows);
       }
       else{
@@ -168,10 +164,9 @@ export default function RoutePlanner(props) {
                       );
                       if(userRes.data.success){
                           console.log(userRes.data.user);
-                          const g = await Geocode.fromAddress(userRes.data.user.uaddress);
-                          const {lat, lng} = g.results[0].geometry.location;
                           console.log(studentRes.data);
-                          newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], address: userRes.data.user.uaddress, location: {lat: lat, lng: lng}, route: studentRes.data.student.route_id}]
+                          newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], address: userRes.data.user.uaddress, 
+                            location: {lat: userRes.data.user.latitude, lng: userRes.data.user.longitude}, route: studentRes.data.student.route_id}]
                       }
                       else{
                           props.setSnackbarMsg(`Route could not be loaded`);
@@ -211,10 +206,7 @@ export default function RoutePlanner(props) {
         }
       );
       if(result.data.success){
-        const g = await Geocode.fromAddress(result.data.school.address);
-        const {lat, lng} = g.results[0].geometry.location;
-        console.log({lat: lat, lng: lng})
-        setSchoolLocation({lat: lat, lng: lng})
+        setSchoolLocation({lat: result.data.school.latitude, lng: result.data.school.longitude})
       }
       else{
         props.setSnackbarMsg(`Route could not be loaded`);
@@ -245,7 +237,8 @@ export default function RoutePlanner(props) {
           );
           if(response.data.success){
             setRouteInfo({"name": response.data.route.name, "description": response.data.route.description});
-            let newRows = [];
+            let newStudentRows = [];
+            let newStopRows = [];
             for(let i=0; i<response.data.route.students.length; i++){
                 const studentRes = await axios.get(
                     process.env.REACT_APP_BASE_URL+`/student/${response.data.route.students[i]}`, {
@@ -265,7 +258,7 @@ export default function RoutePlanner(props) {
                     );
                     if(userRes.data.success){
                         console.log(userRes.data);
-                        newRows = [...newRows, {name: studentRes.data.student.name, id: response.data.route.students[i], address: userRes.data.user.uaddress}]
+                        newStudentRows = [...newStudentRows, {name: studentRes.data.student.name, id: response.data.route.students[i], address: userRes.data.user.uaddress}]
                     }
                     else{
                         props.setSnackbarMsg(`Route could not be loaded`);
@@ -280,12 +273,29 @@ export default function RoutePlanner(props) {
                     props.setSnackbarSeverity("error");
                     navigate("/routes");
                 }
-          }
-          console.log(newRows);
-          setStudentRows(newRows);
+            }
+            for(let i=0; i<response.data.route.stops.length; i++){
+              const stopRes = await axios.get(
+                  process.env.REACT_APP_BASE_URL+`/stop/${response.data.route.stops[i]}`, {
+                  headers: {
+                      Authorization: `Bearer ${localStorage.getItem('token')}`
+                  }
+                  }
+              );
+              if(stopRes.data.success){
+                  console.log(stopRes.data);
+                  newStopRows = [...newStopRows, {name: stopRes.data.stop.name, id: stopRes.data.stop.latitude+stopRes.data.longitude, index: stopRes.data.stop.index, location: {lat: stopRes.data.stop.latitude, lng: stopRes.data.stop.longitude}}]
+              }
+              else{
+                  props.setSnackbarMsg(`Route could not be loaded`);
+                  props.setShowSnackbar(true);
+                  props.setSnackbarSeverity("error");
+                  navigate("/routes");
+              }
+            }
+          setStudentRows(newStudentRows);
+          setStopRows(newStopRows);
         }
-        
-
     }
 
     fetchStudents();
@@ -318,6 +328,7 @@ export default function RoutePlanner(props) {
   // function when map is clicked (add stop to map)
   const handleMapClick = (value) => {
     if (toggleSelection=="stops") {
+      
 
       let loc = {
         lat: value.lat(),
@@ -353,19 +364,15 @@ export default function RoutePlanner(props) {
             school_id: id,
             name: routeInfo["name"],
             description: routeInfo["description"],
-            students: studentRows.map((value)=>{return value.id})
-            //stops: 
+            students: studentRows.map((value)=>{return value.id}),
+            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
         })
         axios.post(process.env.REACT_APP_BASE_URL+`/route`, {
             school_id: parseInt(id),
             name: routeInfo["name"],
             description: routeInfo["description"],
-            students: studentRows.map((value)=>{return value.id})
-<<<<<<< HEAD
-            // ADD STOPS HERE 
-=======
-            
->>>>>>> origin/claudia-stop-edits
+            students: studentRows.map((value)=>{return value.id}),
+            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -393,8 +400,8 @@ export default function RoutePlanner(props) {
         axios.patch(process.env.REACT_APP_BASE_URL+`/route/${selectionModel[0]}`, {
             name: routeInfo["name"],
             description: routeInfo["description"],
-            students: studentRows.map((value)=>{return value.id})
-            // ADD STOPS HERE
+            students: studentRows.map((value)=>{return value.id}),
+            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -462,6 +469,29 @@ export default function RoutePlanner(props) {
 
   const handleStopCellEdit = (row, allRows) => {
     console.log(row);
+  };
+
+  const handleCheckCompleteness = () => {
+    const fetchData = async() => {
+      const result = await axios.post(process.env.REACT_APP_BASE_URL+`/check_complete`, {
+        students: studentRows.map((value)=>{return value.id}),
+        stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
+        }, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+      if(result.data.success){
+        let isComplete = result.data.completion;
+        alert(isComplete);
+      }
+      else{
+        console.log("Completeness failed");
+        console.log();
+      }
+    }
+    fetchData(); 
+
   };
 
   return (
@@ -553,7 +583,7 @@ export default function RoutePlanner(props) {
         </Stack>
       </Stack>
       <Stack spacing={2.5} justifyContent="center">
-        <Button variant="contained" color="primary" onClick={handleCheckCompleteness}>Check Route Completeness</Button>
+        <Button variant="contained" color="primary" onClick={handleCheckCompleteness} disabled={routeInfo["name"].length == 0}>Check Route Completeness</Button>
         <Typography variant="h5" align="left">
           Current Route: {routeInfo["name"].length==0 ? "None" : routeInfo["name"]}
         </Typography>

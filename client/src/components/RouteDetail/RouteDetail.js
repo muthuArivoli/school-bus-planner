@@ -99,10 +99,10 @@ export default function RouteDetail(props) {
         );
         if (schoolRes.data.success){
           setSchool(schoolRes.data.school.name);
-          const g = await Geocode.fromAddress(schoolRes.data.school.address);
-          const {lat, lng} = g.results[0].geometry.location;
-          console.log({lat: lat, lng: lng})
-          setSchoolLocation({lat: lat, lng: lng})
+          // const g = await Geocode.fromAddress(schoolRes.data.school.address);
+          // const {lat, lng} = g.results[0].geometry.location;
+          // console.log({lat: lat, lng: lng})
+          setSchoolLocation({lat: schoolRes.data.school.latitude, lng: schoolRes.data.school.longitude})
         }
         else{
           props.setSnackbarMsg(`Route could not be loaded`);

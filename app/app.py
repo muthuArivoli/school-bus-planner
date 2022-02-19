@@ -182,12 +182,9 @@ def check_comp_options():
 @cross_origin()
 def check_comp():
     content = request.json
+    logging.debug(content)
     stops = content.get('stops', [])
     students = content.get('students', [])
-
-    if not stops or not students:
-        logging.debug('no stops or students')
-        return {"msg": "Invalid Query Syntax"}, 400
 
     if type(stops) is not list or type(students) is not list:
         logging.debug('not list')
@@ -685,7 +682,7 @@ def routes_get(route_uid=None):
             for stop in stops:
                 stop_dicts.append(stop.as_dict())
             try:
-                complete = check_complete(route.students, stop_dicts)
+                complete = check_complete(route_dict['students'], stop_dicts)
             except Exception:
                 return json.dumps({'error': 'Error in Completion Calculation'})
             route_dict['complete'] = complete  
@@ -711,7 +708,7 @@ def routes_get(route_uid=None):
                 stop_dicts.append(stop.as_dict())
             route_dict = route.as_dict()
             try:
-                complete = check_complete(route.students, stop_dicts)
+                complete = check_complete(route_dict['students'], stop_dicts)
             except Exception:
                 return json.dumps({'error': 'Error in Completion Calculation'})
             route_dict['complete'] = complete  
@@ -783,7 +780,7 @@ def routes(route_uid = None):
         dropoff_times, pickup_times = get_time_and_dist(sorted_stops, school.departure_time, school.arrival_time, school.latitude, school.longitude)
         for f in range(len(stops)):
             stop_info = sorted_stops[f]
-            stop = Stop(name=stop_info['name'], route_id=new_route.id, latitude=stop_info['lat'], longitude=stop_info['long'], index=f, pickup_time=pickup_times[f], dropoff_time=dropoff_times[f])
+            stop = Stop(name=stop_info['name'], route_id=new_route.id, latitude=stop_info['latitude'], longitude=stop_info['longitude'], index=f, pickup_time=pickup_times[f], dropoff_time=dropoff_times[f])
             db.session.add(stop)
         try:
             db.session.commit()
@@ -822,7 +819,7 @@ def routes(route_uid = None):
             stops = content.get('stops', [])
             if type(stops) is not list:
                 return {"msg": "Invalid Query Syntax"}, 400
-            school = School.query.filter_by(id=route.school_id)
+            school = School.query.filter_by(id=route.school_id).first()
             if school is None:
                 return {"msg": "Invalid Query"}, 400
             
@@ -836,7 +833,7 @@ def routes(route_uid = None):
             dropoff_times, pickup_times = get_time_and_dist(sorted_stops, school.departure_time, school.arrival_time, school.latitude, school.longitude)
             for f in range(len(stops)):
                 stop_info = sorted_stops[f]
-                new_stop = Stop(name=stop_info['name'], route_id=new_route.id, latitude=stop_info['lat'], longitude=stop_info['long'], index=f, pickup_time=pickup_times[f], dropoff_time=dropoff_times[f])
+                new_stop = Stop(name=stop_info['name'], route_id=route_uid, latitude=stop_info['latitude'], longitude=stop_info['longitude'], index=f, pickup_time=pickup_times[f], dropoff_time=dropoff_times[f])
                 db.session.add(new_stop)   
         try:
             db.session.commit()
@@ -844,6 +841,27 @@ def routes(route_uid = None):
             return {"msg": "Database Error"}, 400
         return json.dumps({'success': True})
     return json.dumps({'success': False})
+
+
+#STOP CRUD
+@app.route('/stop/<stop_uid>', methods=['OPTIONS'])
+@app.route('/stop', methods=['OPTIONS'])
+@cross_origin()
+def stop_options(stop_uid=None):
+    return json.dumps({'success':True})
+
+@app.route('/stop/<stop_uid>', methods=['GET'])
+@cross_origin()
+@jwt_required()
+def stop_get(stop_uid=None):
+    if request.method == 'GET':
+        if stop_uid is not None:
+            stop = Stop.query.filter_by(id=stop_uid).first()
+            if stop is None:
+                return json.dumps({'error': 'Invalid Stop Id'})
+            return json.dumps({'success': True, 'stop': stop.as_dict()})
+        else:
+            return {"msg": "Invalid Query Syntax"}, 400
 
 #HELPER METHODS
 
@@ -855,12 +873,13 @@ def get_distance(lat1, long1, lat2, long2):
 def check_complete(students, stops):
     incomplete = students.copy()
     logging.debug(incomplete)
+    logging.debug(stops)
     for stop in stops:
-        if 'lat' not in stop or 'long' not in stop:
-            logging.debug('no lat or long')
+        if 'latitude' not in stop or 'longitude' not in stop:
+            logging.debug('no latitude or longitude')
             raise Exception("invalid query")
-        stop_lat = stop['lat']
-        stop_long = stop['long']
+        stop_lat = stop['latitude']
+        stop_long = stop['longitude']
         for stud_id in incomplete:
             student = Student.query.filter_by(id=stud_id).first()
             if student is None:
@@ -887,7 +906,7 @@ def get_time_and_dist(stops, departure_time, arrival_time, school_lat, school_lo
     destinations = []
     if len(stops)>0:
         origins.append(str(school_lat) + ' ' + str(school_long))
-        destinations.append(str(stops[0]['lat']) + ' ' +  str(stops[0]['long']))
+        destinations.append(str(stops[0]['latitude']) + ' ' +  str(stops[0]['longitude']))
         matrix = gmaps_key.distance_matrix(origins, destinations)
         times.append(matrix['rows'][0]['elements'][0]['duration']['value'])
         for f in range(len(stops)-1):
@@ -895,8 +914,8 @@ def get_time_and_dist(stops, departure_time, arrival_time, school_lat, school_lo
             destinations = []
             stop = stops[f]
             next_stop = stops[f+1]
-            origins.append(str(stop['lat']) + ' ' + str(stop['long']))
-            destinations.append(str(next_stop['lat']) + ' ' +  str(next_stop['long']))
+            origins.append(str(stop['latitude']) + ' ' + str(stop['longitude']))
+            destinations.append(str(next_stop['latitude']) + ' ' +  str(next_stop['longitude']))
             matrix = gmaps_key.distance_matrix(origins, destinations)
             times.append(matrix['rows'][0]['elements'][0]['duration']['value'])
         #Creates a list of times in seconds that represent travel duration for each pair of locations
