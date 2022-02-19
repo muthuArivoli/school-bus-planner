@@ -430,7 +430,7 @@ def students_get(student_uid=None):
         
         all_students = []
         for student in students:
-            all_students.append(student.as_dict())
+            all_students.append(student)
         return json.dumps({'success':True, "students": all_students, "records": record_num})
 
 @app.route('/student/<student_uid>', methods = ['PATCH', 'DELETE'])

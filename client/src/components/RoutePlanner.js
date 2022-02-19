@@ -361,7 +361,7 @@ export default function RoutePlanner(props) {
   const handleSubmit = (event) => {
     if(selectionModel.length == 0){
         console.log({
-            school_id: id,
+            // school_id: id,
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id}),
