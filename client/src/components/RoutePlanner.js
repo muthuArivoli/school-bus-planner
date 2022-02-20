@@ -106,6 +106,13 @@ export default function RoutePlanner(props) {
 
   const [toggleSelection, setToggleSelection] = React.useState('students');
 
+  let [query, setQuery] = useSearchParams();
+
+  React.useEffect(()=>{
+    if(query.get("route") != null && query.get("route").match('^[0-9]+$')){
+      setSelectionModel([parseInt(query.get("route"))]);
+    }
+  }, []);
 
   // load current routes into page
   React.useEffect(()=>{
@@ -301,6 +308,20 @@ export default function RoutePlanner(props) {
     fetchStudents();
   }, [selectionModel])
 
+  // update map view/zoom when students/school is changed
+  React.useEffect(()=>{
+    if(map){
+      var bounds = new window.google.maps.LatLngBounds();
+      console.log(students);
+      console.log(schoolLocation);
+      for (var i = 0; i < students.length; i++) {
+        bounds.extend(students[i].location);
+      }
+      bounds.extend(schoolLocation);
+      map.fitBounds(bounds);
+    }
+  }, [students, schoolLocation]);
+
   // function when snackbar is closed
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
@@ -349,116 +370,100 @@ export default function RoutePlanner(props) {
     setStopRows(newStopRows);
   };
 
-  let [query, setQuery] = useSearchParams();
-
-  React.useEffect(()=>{
-    if(query.get("route") != null && query.get("route").match('^[0-9]+$')){
-      setSelectionModel([parseInt(query.get("route"))]);
+  const validateStops = (allRows) => {
+    const errors = [];
+    console.log(allRows)
+    let rowsWithIndex = [];
+    for (let i=0;i<allRows.length;i++) {
+      let cur_row = allRows[i];
+      rowsWithIndex.push(cur_row["index"]);
+      if ((cur_row["index"]>(allRows.length-1))) {
+        errors.push("Stop indexes must not be skipped. Index: \""+cur_row["index"]+"\" is too large.");
+        return errors;
+      }
     }
-  }, []);
+    console.log(rowsWithIndex)
+    var set = new Set(rowsWithIndex)
+    if (set.size !== rowsWithIndex.length) {
+      errors.push("Multiple stops cannot have the same index!");
+    } 
+    return errors;
+  };
 
   // function when add/update route button is clicked
   const handleSubmit = (event) => {
-    if(selectionModel.length == 0){
-        console.log({
-          school_id: parseInt(id),
-          name: routeInfo["name"],
-          description: routeInfo["description"],
-          students: studentRows.map((value)=>{return value.id}),
-          stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
-      })
-      axios.post(process.env.REACT_APP_BASE_URL+`/route`, {
-          school_id: parseInt(id),
-          name: routeInfo["name"],
-          description: routeInfo["description"],
-          students: studentRows.map((value)=>{return value.id}),
-          stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
-      }, {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      }).then((res)=>{
-          if(res.data.success){
-              setRouteInfo({"name": "", "description": ""});
-              setStudentRows([]);
-              setStopRows([]);
-              setSnackbarOpen(true);
-              setSnackbarSeverity('success');
-              setSnackbarMsg('Route successfully created');
-              setSelectionModel([]);
-              setResetRoute(!resetRoute);
-          }
-          else {
-              setSnackbarOpen(true);
-              setSnackbarSeverity('error');
-              setSnackbarMsg('Failed to create route');
-          }
-        }
-      );
+    const errors = validateStops(stopRows);
+    if (errors.length > 0) {
+      console.log('ERROR')
+      setSnackbarOpen(true);
+      setSnackbarSeverity('error');
+      setSnackbarMsg(errors[0]);
     }
-    else{
-      const errors = validate(stopRows);
-      console.log(errors)
-      if (errors.length > 0) {
-        console.log('ERROR')
-        setSnackbarOpen(true);
-        setSnackbarSeverity('error');
-        setSnackbarMsg(errors[0]);
-        return;
+    else {
+      if(selectionModel.length == 0){
+        axios.post(process.env.REACT_APP_BASE_URL+`/route`, {
+            school_id: parseInt(id),
+            name: routeInfo["name"],
+            description: routeInfo["description"],
+            students: studentRows.map((value)=>{return value.id}),
+            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
+        }, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }).then((res)=>{
+            if(res.data.success){
+                setRouteInfo({"name": "", "description": ""});
+                setStudentRows([]);
+                setStopRows([]);
+                setSnackbarOpen(true);
+                setSnackbarSeverity('success');
+                setSnackbarMsg('Route successfully created');
+                setSelectionModel([]);
+                setResetRoute(!resetRoute);
+            }
+            else {
+                setSnackbarOpen(true);
+                setSnackbarSeverity('error');
+                setSnackbarMsg('Failed to create route');
+            }
+          }
+        );
       }
       else{
-        axios.patch(process.env.REACT_APP_BASE_URL+`/route/${selectionModel[0]}`, {
-          name: routeInfo["name"],
-          description: routeInfo["description"],
-          students: studentRows.map((value)=>{return value.id}),
-          stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
-      }, {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      }).then((res)=>{
-          if(res.data.success){
-              setRouteInfo({"name": "", "description": ""});
-              setStudentRows([]);
-              setStopRows([]);
-              setSnackbarOpen(true);
-              setSnackbarSeverity('success');
-              setSnackbarMsg('Route successfully updated');
-              setSelectionModel([]);
-              setResetRoute(!resetRoute);
+          axios.patch(process.env.REACT_APP_BASE_URL+`/route/${selectionModel[0]}`, {
+            name: routeInfo["name"],
+            description: routeInfo["description"],
+            students: studentRows.map((value)=>{return value.id}),
+            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
+        }, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
           }
-          else{
-              setSnackbarOpen(true);
-              setSnackbarSeverity('error');
-              setSnackbarMsg('Failed to update route');
+        }).then((res)=>{
+            if(res.data.success){
+                setRouteInfo({"name": "", "description": ""});
+                setStudentRows([]);
+                setStopRows([]);
+                setSnackbarOpen(true);
+                setSnackbarSeverity('success');
+                setSnackbarMsg('Route successfully updated');
+                setSelectionModel([]);
+                setResetRoute(!resetRoute);
+            }
+            else{
+                setSnackbarOpen(true);
+                setSnackbarSeverity('error');
+                setSnackbarMsg('Failed to update route');
+            }
           }
+        );
       }
-      );
-      }
-
+      setSelectionModel([]);
+      setToggleSelection("students");
+      setResetRoute(!resetRoute);
     }
-    setSelectionModel([]);
-    setToggleSelection("students");
-    setResetRoute(!resetRoute);
   }
-
-  // update map view/zoom when students/school is changed
-  React.useEffect(()=>{
-    if(map){
-      var bounds = new window.google.maps.LatLngBounds();
-      console.log(students);
-      console.log(schoolLocation);
-      for (var i = 0; i < students.length; i++) {
-        bounds.extend(students[i].location);
-      }
-      bounds.extend(schoolLocation);
-      map.fitBounds(bounds);
-    }
-  }, [students, schoolLocation]);
-
-  const onLoad = React.useCallback(function callback(map) {
-    setMap(map);
-  }, [])
 
   //runs when user types in textfield, should add value into correct part of routeInfo
   const handleInfoChange = (fieldindicator, new_value) => {
@@ -491,7 +496,13 @@ export default function RoutePlanner(props) {
       if (typeof(row.value) != "number") {
         setSnackbarOpen(true);
         setSnackbarSeverity('error');
-        setSnackbarMsg('Index must be a number');
+        setSnackbarMsg('Index must be a number!');
+        setStopRows(oldStopRows);
+      }
+      else if ((parseInt(row.value) < 0)) {
+        setSnackbarOpen(true);
+        setSnackbarSeverity('error');
+        setSnackbarMsg('Stops cannot have negative indexes!');
         setStopRows(oldStopRows);
       }
       else {
@@ -499,25 +510,6 @@ export default function RoutePlanner(props) {
         const newRows = [...allRows];
         newRows[rowIndex]["index"] = parseInt(row.value);
         setStopRows(newRows);
-        // let rowsWithIndex = [];
-        // for (let i=0;i<allRows.length;i++) {
-        //   let cur_row = allRows[i];
-        //   if (cur_row["index"] === parseInt(row.value)) {
-        //     rowsWithIndex.push(cur_row);
-        //   }
-        // }
-        // if (rowsWithIndex.length >= 1) {
-        //   setSnackbarOpen(true);
-        //   setSnackbarSeverity('error');
-        //   setSnackbarMsg('Multiple stops cannot have the same index!');
-        //   setStopRows(oldStopRows);
-        // } 
-        // else {
-        //   const rowIndex = allRows.findIndex(row_to_edit => row_to_edit.id === row.id);
-        //   const newRows = [...allRows];
-        //   newRows[rowIndex]["index"] = parseInt(row.value);
-        //   setStopRows(newRows);
-        // }
       }
     }
   };
@@ -552,27 +544,9 @@ export default function RoutePlanner(props) {
     fetchData(); 
   };
 
-  function validate(allRows) {
-    const errors = [];
-    console.log(allRows)
-    let rowsWithIndex = [];
-    for (let i=0;i<allRows.length;i++) {
-      let cur_row = allRows[i];
-      rowsWithIndex.push(cur_row["index"]);
-      if ((cur_row["index"] < 0) || (cur_row["index"]>(allRows.length-1))){
-        errors.push("You cannot have negative indices or skip indices, must be ordered from 0 onwards");
-        return errors;
-      }
-    }
-    console.log(rowsWithIndex)
-    var set = new Set(rowsWithIndex)
-    if (set.size !== rowsWithIndex.length) {
-      errors.push("Multiple stops cannot have the same index!");
-    } 
-    
-    return errors;
-  }
-
+  const onLoad = React.useCallback(function callback(map) {
+    setMap(map);
+  }, [])
 
   return (
     <Stack spacing={2} justifyContent="center">
