@@ -291,7 +291,7 @@ export default function RoutePlanner(props) {
               );
               if(stopRes.data.success){
                   console.log(stopRes.data);
-                  newStopRows = [...newStopRows, {name: stopRes.data.stop.name, id: stopRes.data.stop.pickup_time, index: stopRes.data.stop.index, location: {lat: stopRes.data.stop.latitude, lng: stopRes.data.stop.longitude}}]
+                  newStopRows = [...newStopRows, {name: stopRes.data.stop.name, id: stopRes.data.stop.pickup_time, index: stopRes.data.stop.index+1, location: {lat: stopRes.data.stop.latitude, lng: stopRes.data.stop.longitude}}]
               }
               else{
                   props.setSnackbarMsg(`Route could not be loaded`);
@@ -357,7 +357,7 @@ export default function RoutePlanner(props) {
       };
 
       // update stopRows
-      let stopindex = stopRows.length;
+      let stopindex = stopRows.length+1;
       let newStopRow = {id: value.lat() + value.lng(), index: stopindex, name: "Stop "+stopindex, location: loc};
       let newStopRows = [...stopRows, newStopRow];
       setStopRows(newStopRows);
@@ -377,7 +377,7 @@ export default function RoutePlanner(props) {
     for (let i=0;i<allRows.length;i++) {
       let cur_row = allRows[i];
       rowsWithIndex.push(cur_row["index"]);
-      if ((cur_row["index"]>(allRows.length-1))) {
+      if ((cur_row["index"]>(allRows.length))) {
         errors.push("Stop indexes must not be skipped. Index: \""+cur_row["index"]+"\" is too large.");
         return errors;
       }
@@ -406,7 +406,7 @@ export default function RoutePlanner(props) {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id}),
-            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
+            stops: stopRows.map((value)=>{return { name: value.name, index: value.index-1, latitude: value.location.lat, longitude: value.location.lng}})
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -435,7 +435,7 @@ export default function RoutePlanner(props) {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id}),
-            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
+            stops: stopRows.map((value)=>{return { name: value.name, index: value.index-1, latitude: value.location.lat, longitude: value.location.lng}})
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -499,10 +499,10 @@ export default function RoutePlanner(props) {
         setSnackbarMsg('Index must be a number!');
         setStopRows(oldStopRows);
       }
-      else if ((parseInt(row.value) < 0)) {
+      else if ((parseInt(row.value) < 1)) {
         setSnackbarOpen(true);
         setSnackbarSeverity('error');
-        setSnackbarMsg('Stops cannot have negative indexes!');
+        setSnackbarMsg('Stops indexes must be 1 or greater!');
         setStopRows(oldStopRows);
       }
       else {
