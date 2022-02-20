@@ -12,6 +12,7 @@ import logging
 import bcrypt
 import math
 import requests
+import os
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:bus@db:5432/db'
@@ -24,7 +25,7 @@ db = SQLAlchemy(app)
 cors = CORS(app)
 api = Blueprint('api', __name__)
 
-from models import User, Student, School, Route, UserFilter, StudentFilter, SchoolFilter, RouteFilter
+from models import User, Student, School, Route, UserFilter, StudentFilter, SchoolFilter, RouteFilter, TokenBlocklist
 
 db.create_all()
 
@@ -33,6 +34,14 @@ logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(ascti
 
 YOUR_DOMAIN_NAME="mail.hypotheticaltransportfive.email"
 API_KEY = open('email_api.key', 'r').read()
+
+DOMAIN = os.getenv("DOMAIN", "https://hypotheticaltransportfive.colab.duke.edu")
+
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    jti = jwt_payload["jti"]
+    token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
+    return token is not None
 
 # custom decorator 
 def admin_required():
@@ -123,6 +132,17 @@ def patch_current_user():
             db.session.commit()
         except SQLAlchemyError:
             return {"msg": "Database Error"}, 400
+    if 'revoke' in content:
+        revoke = content.get('revoke', False)
+        if type(revoke) is not bool:
+            return {"msg": "Invalid Query Syntax"}, 400
+        if revoke:
+            jti = get_jwt()["jti"]
+            try:
+                db.session.add(TokenBlocklist(jti=jti))
+                db.session.commit()
+            except SQLAlchemyError:
+                return {"msg": "Database Error"}, 400
     return json.dumps({'success': True})
 
 
@@ -137,6 +157,8 @@ def login():
     user = User.query.filter_by(email=email).first()
     if not user:
         return {"success": False, "error": "There is no account associated with that email"}
+    if user.pswd is None:
+        return {"success": False, "error": "Password has not been set"} 
     if not bcrypt.checkpw(password.encode('utf-8'), user.pswd.encode('utf-8')):
         return {"success": False, "error": "Invalid password"}
     access_token = create_access_token(identity=email)
@@ -149,6 +171,33 @@ def login():
 def logout():
     response = jsonify({"msg":"logout successful"})
     unset_jwt_cookies(response)
+    return response
+
+@app.route('/forgot_password', methods = ['POST'])
+@cross_origin()
+def forgot_password():
+    email = request.json.get('email', None)
+    if email is None:
+        return {"msg": "Invalid Query Syntax"}, 400
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return {"success": False, "error": "There is no account associated with that email"}
+    access_token = create_access_token(identity=email)
+
+    link = f"{DOMAIN}/resetpassword?token={access_token}"
+
+    logging.info(link)
+    r = requests.post(
+    f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
+    auth=("api", API_KEY),
+    data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
+        "to": email,
+        "subject": "Reset Password Link for Hypothetical Transportation",
+        "html": f"Please use the following link to reset the password for your account: \n <a href={link}>{link}</a>"})
+    if r.status_code != 200:
+        return {'success': False}
+
+    response = {"success": True}
     return response
 
 #USER CRUD
@@ -225,23 +274,20 @@ def users(user_id=None):
     if request.method == 'POST':
         content = request.json
         email = content.get('email', None)
-        password = content.get('password', None)
         name = content.get('name', None)
         admin_flag = content.get('admin_flag', None)
 
-        if not email or not password or not name or admin_flag is None:
+        if not email or not name or admin_flag is None:
             return {"msg": "Invalid Query Syntax"}, 400
         
-        if type(email) is not str or type(password) is not str or type(name) is not str or type(admin_flag) is not bool:
+        if type(email) is not str or type(name) is not str or type(admin_flag) is not bool:
             return {"msg": "Invalid Query Syntax"}, 400
         
         user = User.query.filter_by(email=email).first()
         if user:
             return json.dumps({'error': 'User with this email exists'})
 
-        encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-
-        new_user = User(email=email, full_name=name, admin_flag=admin_flag, pswd=encrypted_pswd.decode('utf-8'))
+        new_user = User(email=email, full_name=name, admin_flag=admin_flag)
         try:
             db.session.add(new_user)
             db.session.flush()
@@ -257,6 +303,21 @@ def users(user_id=None):
             db.session.commit()
         except SQLAlchemyError:
             return {"msg": "Database Error"}, 400
+        
+
+        access_token = create_access_token(identity=email)
+        link = f"{DOMAIN}/resetpassword?token={access_token}"
+ 
+        r = requests.post(
+        f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
+        auth=("api", API_KEY),
+        data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
+            "to": email,
+            "subject": "Account Creation for Hypothetical Transportation",
+            "html": f"Please use the following link to set the password for your new account: \n <a href={link}>{link}</a>"})
+        if r.status_code != 200:
+            return json.dumps({'success': False})
+
         return json.dumps({'success': True, 'id': new_user.id})
 
     if request.method == 'PATCH':
@@ -803,7 +864,7 @@ def send_email_school(school_uid=None):
             "text": body + student_txt})
         if r.status_code != 200:
             logging.info(r.json())
-            return {"msg": "Internal Server Error"}, 500
+            return json.dumps({"success": False})
     return json.dumps({'success': True})
     
 
@@ -859,7 +920,7 @@ def send_email_route(route_uid=None):
             "text": body + student_txt})
         if r.status_code != 200:
             logging.info(r.json())
-            return {"msg": "Internal Server Error"}, 500
+            return json.dumps({"success": False})
     return json.dumps({'success': True})
 
 app.register_blueprint(api, url_prefix='/api')

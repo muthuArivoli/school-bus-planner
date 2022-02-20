@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Alert from '@mui/material/Alert';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useNavigate, Link as RouterLink, BrowserRouter as Router} from 'react-router-dom';
+import { useNavigate, Link as RouterLink, BrowserRouter as Router, useSearchParams} from 'react-router-dom';
 import axios from 'axios';
 
 const theme = createTheme();
@@ -22,20 +22,23 @@ export default function SignIn() {
     let navigate = useNavigate();
 
     const [alert, setAlert] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [email, setEmail] = useState("");
+
 
     const handleSubmit = (event) => {
       event.preventDefault();
       const data = new FormData(event.currentTarget);
       // eslint-disable-next-line no-console
-      axios.post(process.env.REACT_APP_BASE_URL+'/login', {
-        email: data.get('email'),
-        password: data.get('password'),
+      axios.post(process.env.REACT_APP_BASE_URL+'/forgot_password', {
+        email: email
       }).then((res) => {
         if (res.data.success){
-          localStorage.setItem('token', res.data.access_token);
-          navigate("/");
+          setAlert(false);
+          setSuccess(true);
         }
         else {
+          setSuccess(true);
           setAlert(true);
         }
       }).catch((error) => {
@@ -59,7 +62,7 @@ export default function SignIn() {
           >
             <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }} src="/HTLogo128.png"/>
             <Typography component="h1" variant="h5">
-              Sign in to 
+              Send Password Link for
             </Typography>
             <Typography component="h1" variant="h5">
               Hypothetical Transportation
@@ -67,27 +70,22 @@ export default function SignIn() {
             <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
               {
                 alert &&
-                <Alert severity="error">Incorrect email or password</Alert>
+                <Alert severity="error">No user found with that email.</Alert>
+              }
+              {
+                success &&
+                <Alert severity="success">Email with password reset link has been sent.</Alert>
               }
               <TextField
                 margin="normal"
                 required
                 fullWidth
-                id="email"
-                label="Email Address"
+                value={email}
+                onChange={(e)=>setEmail(e.target.value)}
                 name="email"
-                autoComplete="email"
+                label="Email"
+                id="email"
                 autoFocus
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                autoComplete="current-password"
               />
               <Button
                 type="submit"
@@ -95,15 +93,8 @@ export default function SignIn() {
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
               >
-                Sign In
+                Send reset link
               </Button>
-              <Grid container>
-              <Grid item xs>
-                <Link href="/forgotpassword" variant="body2">
-                  Forgot password?
-                </Link>
-              </Grid>
-              </Grid>
             </Box>
           </Box>
         </Container>

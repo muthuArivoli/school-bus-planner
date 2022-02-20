@@ -29,9 +29,6 @@ export default function SignUp(props) {
   const [schools, setSchools] = React.useState([]);
   const [routes, setRoutes] = React.useState([]);
 
-
-  const [password, setPassword] = React.useState("");
-  const [con_password, setConPassword] = React.useState("");
   const [name, setName] = React.useState("");
   const [address, setAddress] = React.useState("");
   const [email, setEmail] = React.useState("");
@@ -108,7 +105,6 @@ export default function SignUp(props) {
     const data = new FormData(event.currentTarget);
     console.log({
       email: data.get('email'),
-      password: data.get('password'),
       name: data.get('name'),
       address: address,
       admin_flag: adminChecked
@@ -116,7 +112,6 @@ export default function SignUp(props) {
     console.log(process.env.REACT_APP_BASE_URL);
     axios.post(process.env.REACT_APP_BASE_URL+"/user", {
       email: data.get('email'),
-      password: data.get('password'),
       name: data.get('name'),
       address: address,
       admin_flag: adminChecked
@@ -230,13 +225,13 @@ export default function SignUp(props) {
   }
 
   React.useEffect(() => {
-    let disabled = email == ""  || password == "" || con_password != password || name == "" || address == "";
+    let disabled = email == "" || name == "" || address == "";
     for (let i=0; i<students.length; i++){
       disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "";
     }
     disabled = disabled || emailList.includes(email);
     setDisable(disabled);
-  }, [email, password, con_password, name, address, students])
+  }, [email, name, address, students])
 
   return (
     <ThemeProvider theme={theme}>
@@ -278,31 +273,6 @@ export default function SignUp(props) {
                   label="Email Address"
                   name="email"
                   autoComplete="email"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  onChange={(e) => setPassword(e.target.value)}
-                  name="password"
-                  label="Password"
-                  type="password"
-                  id="password"
-                  autoComplete="new-password"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  onChange={(e) => setConPassword(e.target.value)}
-                  error={password != con_password}
-                  helperText={password != con_password ? "Passwords do not match" : ""}
-                  fullWidth
-                  name="confirm-password"
-                  label="Confirm Password"
-                  type="password"
-                  id="confirm-password"
                 />
               </Grid>
               <Grid item xs={12} sx={{ height: 450 }} >

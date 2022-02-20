@@ -22,6 +22,8 @@ import ParentView from './ParentView';
 import StudentView from './StudentView';
 import RoutePlanner from './RoutePlanner';
 import EmailPage from './EmailPage';
+import ForgotPassword from './ForgotPassword';
+import ResetPassword from './ResetPassword';
 import axios from 'axios';
 
 function AuthRoute(props) {
@@ -307,8 +309,13 @@ export default function App () {
             <LoginRoute>
               <Login/>
             </LoginRoute>
-          }
-           />
+          }/>
+          <Route exact path="/forgotpassword" element={
+              <ForgotPassword/>
+          }/>
+          <Route exact path="/resetpassword" element={
+              <ResetPassword/>
+          }/>
         </Routes>
       </BrowserRouter>
     );
