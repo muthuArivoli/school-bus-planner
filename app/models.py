@@ -100,7 +100,9 @@ class Student(db.Model):
         return "<Student(full_name='{}', school_id={}, user_id={})>"\
             .format(self.full_name, self.school_id, self.user_id)
 
-
+class TokenBlocklist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String(36), nullable=False)
 
 class UserFilter(Filter):
     email = StringField(lookup_operator=ContainsOperator)

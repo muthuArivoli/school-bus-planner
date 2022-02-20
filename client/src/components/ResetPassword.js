@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Alert from '@mui/material/Alert';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useNavigate, Link as RouterLink, BrowserRouter as Router} from 'react-router-dom';
+import { useNavigate, Link as RouterLink, BrowserRouter as Router, useSearchParams} from 'react-router-dom';
 import axios from 'axios';
 
 const theme = createTheme();
@@ -22,18 +22,25 @@ export default function SignIn() {
     let navigate = useNavigate();
 
     const [alert, setAlert] = useState(false);
+    const [password, setPassword] = useState("");
+    const [conPassword, setConPassword] = useState("");
+
+    let [query, setQuery] = useSearchParams();
 
     const handleSubmit = (event) => {
       event.preventDefault();
       const data = new FormData(event.currentTarget);
       // eslint-disable-next-line no-console
-      axios.post(process.env.REACT_APP_BASE_URL+'/login', {
-        email: data.get('email'),
-        password: data.get('password'),
+      axios.patch(process.env.REACT_APP_BASE_URL+'/current_user', {
+        password: password,
+        revoke: true
+      }, {
+        headers: {
+            Authorization: `Bearer ${query.get("token")}`
+        }
       }).then((res) => {
         if (res.data.success){
-          localStorage.setItem('token', res.data.access_token);
-          navigate("/");
+          navigate("/login");
         }
         else {
           setAlert(true);
@@ -42,9 +49,25 @@ export default function SignIn() {
         console.log(error.response)
         console.log(error.response.status)
         console.log(error.response.headers)
+        setAlert(true);
       });
     };
   
+    React.useEffect(()=>{
+        axios.get(process.env.REACT_APP_BASE_URL+'/current_user', {
+            headers: {
+                Authorization: `Bearer ${query.get("token")}`
+            }
+          }).then((res)=> {
+              if(!res.data.success){
+                  navigate("/login");
+              }
+          }).catch((error)=>{
+              navigate("/login");
+          });
+
+    }, [query])
+
     return (
       <ThemeProvider theme={theme}>
         <Container component="main" maxWidth="xs">
@@ -59,7 +82,7 @@ export default function SignIn() {
           >
             <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }} src="/HTLogo128.png"/>
             <Typography component="h1" variant="h5">
-              Sign in to 
+              Reset Password for
             </Typography>
             <Typography component="h1" variant="h5">
               Hypothetical Transportation
@@ -67,43 +90,40 @@ export default function SignIn() {
             <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
               {
                 alert &&
-                <Alert severity="error">Incorrect email or password</Alert>
+                <Alert severity="error">Invalid Link</Alert>
               }
               <TextField
                 margin="normal"
                 required
                 fullWidth
-                id="email"
-                label="Email Address"
-                name="email"
-                autoComplete="email"
-                autoFocus
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
+                value={password}
+                onChange={(e)=>setPassword(e.target.value)}
                 name="password"
                 label="Password"
                 type="password"
                 id="password"
-                autoComplete="current-password"
+                autoFocus
+              />
+            <TextField
+                margin="normal"
+                required
+                fullWidth
+                value={conPassword}
+                onChange={(e)=>setConPassword(e.target.value)}
+                name="con_password"
+                label="Confirm Password"
+                type="password"
+                id="con_password"
               />
               <Button
                 type="submit"
                 fullWidth
+                disabled={password == "" || password != conPassword}
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
               >
-                Sign In
+                Reset Password
               </Button>
-              <Grid container>
-              <Grid item xs>
-                <Link href="/forgotpassword" variant="body2">
-                  Forgot password?
-                </Link>
-              </Grid>
-              </Grid>
             </Box>
           </Box>
         </Container>

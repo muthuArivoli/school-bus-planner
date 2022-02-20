@@ -34,7 +34,7 @@ services:
     environment:
       - SQL_HOST=db
       - SQL_PORT=5432
-      
+      - DOMAIN=http://localhost:3000
 
   client: 
     build: 
