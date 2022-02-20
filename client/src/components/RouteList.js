@@ -27,6 +27,21 @@ const columns = [
     filterable: false
   },
   {
+    field: 'complete',
+    headerName: 'Route Complete',
+    width: 150,
+    filterable: false
+    //renderCell: (params) => (
+    //  <>
+    //  {
+    //    params.value ? 
+    //    <CheckIcon/> : 
+    //    <CloseIcon/>
+    //  }
+    //  </>
+    //)
+  },
+  {
     field: 'students',
     headerName: 'Number of Students',
     width: 250,
@@ -102,7 +117,7 @@ export default function DataTable(props) {
             arr = [...arr, {name: {name: data[i].name, id: data[i].id}, id: data[i].id, school: getRes.data.school.name, students: data[i].students.length}]
           }
           else{
-            props.setSnackbarMsg(`Routes could not be loaded`);
+            props.setSnackbarMsg(`Routes could not be loaded - school`);
             props.setShowSnackbar(true);
             props.setSnackbarSeverity("error");
             navigate("/routes");
@@ -111,7 +126,8 @@ export default function DataTable(props) {
         setRows(arr);
       }
       else{
-        props.setSnackbarMsg(`Routes could not be loaded`);
+        // console.log(result.data)
+        props.setSnackbarMsg(`Routes could not be loaded - route`);
         props.setShowSnackbar(true);
         props.setSnackbarSeverity("error");
         navigate("/routes");

@@ -24,6 +24,9 @@ export default function UserUpdate(props) {
   const [data, setData] = React.useState({email:"", name:"", address: "", admin: false});
   const [emailList, setEmailList] = React.useState([])
   const [oldEmail, setOldEmail] = React.useState("");
+  
+  const [latitude, setLatitude] = React.useState("");
+  const [longitude, setLongitude] = React.useState("");
 
 
   let navigate = useNavigate();
@@ -101,13 +104,17 @@ export default function UserUpdate(props) {
       setData(newData);
     }
 
+
+
     const handleSubmit = (event) => {
       event.preventDefault();
       let req = {
         name: data.name,
         email: data.email,
         address: data.address,
-        admin_flag: data.admin
+        admin_flag: data.admin,
+        latitude: latitude,
+        longitude: longitude
       }
       console.log(req);
       axios.patch(process.env.REACT_APP_BASE_URL+`/user/${id}`, req, {
@@ -175,8 +182,8 @@ export default function UserUpdate(props) {
                   autoComplete="email"
                 />
               </Grid>
-              <Grid item xs={12} sx={{ height: 450 }} >
-                <GoogleMap address={data.address} setAddress={handleAddressChange}/>
+              <Grid item md={12} sx={{ height: 450 }} >
+                <GoogleMap address={data.address} setAddress={handleAddressChange} latitude ={latitude} setLatitude ={setLatitude} longitude ={longitude} setLongitude ={setLongitude}/>
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel

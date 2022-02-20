@@ -104,13 +104,13 @@ export default function UserDetail(props) {
     <Grid container alignItems="center" justifyContent="center" pt={5}>
         <Stack spacing={4} sx={{ width: '100%'}}>
           <Stack direction="row" spacing={25} justifyContent="center">
-          <Typography variant="h5" align="center">
+          <Typography variant="h6" align="center">
             Name: {data.full_name}
           </Typography>
-          <Typography variant="h5" align="center">
+          <Typography variant="h6" align="center">
             Email: {data.email}
           </Typography>
-          <Typography variant="h5" align="center">
+          <Typography variant="h6" align="center">
             Address: {data.uaddress}
           </Typography>
         </Stack>

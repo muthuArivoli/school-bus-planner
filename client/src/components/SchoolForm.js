@@ -18,6 +18,9 @@ export default function SchoolForm(props) {
 
   const [name, setName] = React.useState(props.name || "");
   const [address, setAddress] = React.useState(props.address || "");
+  
+  const [latitude, setLatitude] = React.useState("");
+  const [longitude, setLongitude] = React.useState("");
 
   React.useEffect(() => {
     setName(props.name);
@@ -51,7 +54,7 @@ export default function SchoolForm(props) {
           <Typography component="h1" variant="h5">
             {props.title}
           </Typography>
-        <Box component="form" noValidate onSubmit={(event) => props.handleSubmit(event, name, address)} sx={{ mt: 3 }}>
+        <Box component="form" noValidate onSubmit={(event) => props.handleSubmit(event, name, address, latitude, longitude)} sx={{ mt: 3 }}>  
           <Grid container spacing={2}>
               <Grid item xs={12}>
               <TextField
@@ -64,8 +67,8 @@ export default function SchoolForm(props) {
                         fullWidth
                     />
               </Grid>
-              <Grid item xs={12} sx={{ height: 450 }} >
-                <GoogleMap address={address} setAddress={setAddress}/>
+              <Grid item md={12} sx={{ height: 450 }} >
+                <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude ={longitude} setLongitude ={setLongitude}/>
               </Grid>
 
               <Grid item xs={12}>

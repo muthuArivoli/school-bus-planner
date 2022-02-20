@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import { DataGrid, getGridStringOperators, getGridNumericColumnOperators} from '@mui/x-data-grid';
+import CheckBoxOutlineBlankTwoToneIcon from '@mui/icons-material/CheckBoxOutlineBlankTwoTone';
+import { DataGrid, getGridStringOperators, getGridNumericColumnOperators, getGridBooleanOperators} from '@mui/x-data-grid';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import SearchIcon from '@mui/icons-material/Search';
@@ -20,7 +21,7 @@ const columns = [
     </>
   )
   },
-  { field: 'student_id', headerName: 'Student ID', width: 250, type: 'number', filterable: false},
+  { field: 'student_id', headerName: 'Student ID', width: 150, type: 'number', filterable: false},
   { 
     field: 'school',
     headerName: 'School',
@@ -33,7 +34,37 @@ const columns = [
     width: 250,
     sortable: false,
     filterable: false
-  }
+  },
+  
+  {
+    field: 'in_range',
+    headerName: 'In-Range',
+    width: 100,
+    sortable: false,
+    //filterOperators: getGridBooleanOperators().filter((operator) => operator.value === "=",
+    //)
+  },
+  
+/*   {
+    field: 'id',
+    headerName: 'Detailed View',
+    sortable: false,
+    filterable: false,
+    width: 250,
+    renderCell: (params) => (
+      <>
+        <Button
+          component={RouterLink}
+          to={"/students/" + params.value}
+          color="primary"
+          size="small"
+          style={{ marginLeft: 16 }}
+        >
+          View Student
+        </Button>
+      </>
+    ),
+  }, */
 ];
 
 export default function DataTable(props) {
@@ -49,7 +80,8 @@ export default function DataTable(props) {
   const [filterType, setFilterType] = React.useState(null);
   const filterValues = ['name', 'id'];
 
-  const mappings = {"name": "full_name", "student_id": "student_id", "school": "school_id"}
+  const mappings = {"name": "name", "student_id": "student_id", "school": "school_id"} 
+  //const mappings = {"name": "name", "student_id": "student_id", "school": "school_id", "in_range": "in_range"} 
 
   const [showAll, setShowAll] = React.useState(false);
 
@@ -104,6 +136,8 @@ export default function DataTable(props) {
             }
           );
           if (getRes.data.success){
+            //arr = [...arr, {name: data[i].name, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id}]
+            //arr = [...arr, {name: data[i].name, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id, in_range: data[i].inrange}]
             arr = [...arr, {name: {name: data[i].name, id: data[i].id}, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id}]
           }
           else{

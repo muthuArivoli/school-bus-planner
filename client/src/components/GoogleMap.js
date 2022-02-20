@@ -56,6 +56,8 @@ class GoogleMap extends Component {
                 address: ""
             });
             this.props.setAddress("");
+            this.props.setLatitude("");
+            this.props.setLongitude("");
             return;
         }
 
@@ -66,6 +68,8 @@ class GoogleMap extends Component {
             address: place.formatted_address
         });
         this.props.setAddress(place.formatted_address);
+        this.props.setLatitude(place.geometry.location.lat());
+        this.props.setLongitude(place.geometry.location.lng());
     };
 
     render() {

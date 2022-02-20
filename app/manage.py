@@ -3,10 +3,11 @@ import bcrypt
 from app import app, db
 from models import User, School, Student
 import pandas as pd
+import googlemaps
 
 
 cli = FlaskGroup(app)
-
+gmaps_key = googlemaps.Client(key="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o")
 
 @cli.command("create_db")
 def create_db():
@@ -14,12 +15,13 @@ def create_db():
     db.create_all()
     db.session.commit()
 
-
 @cli.command("seed_db_admin")
 def seed_db_admin():
     password = 'AdminPassword'
+    addr = '401 Chapel Dr, Durham, NC 27705'
+    lat,lng = geocode_address(addr)
     encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-    new_user = User(email='admin@example.com', full_name='Admin', pswd=encrypted_pswd.decode('utf-8'), admin_flag=1)
+    new_user = User(email='admin@example.com', full_name='Admin', uaddress = addr, pswd=encrypted_pswd.decode('utf-8'), admin_flag=1, latitude=lat, longitude=lng)
     db.session.add(new_user)
     db.session.commit()
 
@@ -31,8 +33,11 @@ def seed_db():
     schools_table = pd.read_csv('data/schools.csv')
     school_names = schools_table['name']
     addresses = schools_table['address']
+    arrival_time = schools_table['arrival_time']
+    departure_time = schools_table['departure_time']
     for f in range(0,len(school_names)):
-        new_school = School(name=school_names[f], address=addresses[f])
+        lat,lng = geocode_address(addresses[f])
+        new_school = School(name=school_names[f], address=addresses[f], latitude=lat, longitude=lng, arrival_time = arrival_time[f], departure_time = departure_time[f])
         db.session.add(new_school)
         db.session.flush()
         db.session.refresh(new_school)
@@ -47,19 +52,22 @@ def seed_db():
     student_schools = students_table['school'].to_list()
 
     for f in range(0,len(names)):
-        new_user = User(email=emails[f], full_name=names[f], pswd=encrypted_pswd.decode('utf-8'), admin_flag=0)
-        new_user.uaddress = addresses[f]
+        lat,lng = geocode_address(addresses[f])
+        new_user = User(email=emails[f], full_name=names[f], uaddress = addresses[f], pswd=encrypted_pswd.decode('utf-8'), admin_flag=0, latitude=lat, longitude=lng)
         db.session.add(new_user)
         db.session.flush()
         db.session.refresh(new_user)
         associated_school = School.query.filter_by(name = student_schools[f]).first()
-        new_student = Student(full_name=student_names[f], school_id=associated_school.id, user_id=new_user.id)
+        new_student = Student(name=student_names[f], school_id=associated_school.id, user_id=new_user.id)
         db.session.add(new_student)
     
     db.session.commit()
 
-    
-
+def geocode_address(addr):
+    g = gmaps_key.geocode(addr)
+    lat = g[0]["geometry"]["location"]["lat"]
+    lng = g[0]["geometry"]["location"]["lng"]
+    return lat, lng
 
 if __name__ == "__main__":
     cli()

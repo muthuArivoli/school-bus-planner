@@ -25,6 +25,8 @@ import EmailPage from './EmailPage';
 import ForgotPassword from './ForgotPassword';
 import ResetPassword from './ResetPassword';
 import axios from 'axios';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 
 function AuthRoute(props) {
   const [loading, setLoading] = useState(true);
@@ -63,7 +65,7 @@ function AuthRoute(props) {
 }, []);
 
   if (loading)
-    return <div>Loading...</div>;
+    return <Box alignItems="center" justifyContent="center" sx={{ display: 'flex' }}><CircularProgress /></Box>;
   return auth ? props.children : <Navigate to="/login" />;
 }
 
@@ -144,7 +146,7 @@ function PrivateRoute({ children }) {
   }, []);
 
   if (loading)
-    return <div>Loading...</div>;
+    return <Box sx={{ display: 'flex' }}><CircularProgress /></Box>;
   return auth ? (admin ? children : <Navigate to='/'/>) : <Navigate to="/login" />;
 }
 
