@@ -54,7 +54,7 @@ const routeColumns = [
 const stopColumns = [
   { field: 'id', hide: true, width: 30},
   { field: 'name', headerName: "Stop Name", editable: true, width: 150},
-  { field: 'index', headerName: "Index", type: 'number', editable: true, width: 100},
+  { field: 'index', headerName: "Order", type: 'number', editable: true, width: 100},
 ];
 
 function NoStopsOverlay() {
@@ -593,7 +593,7 @@ export default function RoutePlanner(props) {
       <Stack spacing={2.5} justifyContent="center">
 
         <Stack spacing={0} justifyContent="center">
-          {toggleSelection=="stops" ? <Typography variant="subtitle1" align="left">Double click anywhere to add a stop!</Typography>: null}
+          {toggleSelection=="stops" ? <Typography variant="subtitle2" align="left">Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>: null}
           <LoadScript googleMapsApiKey={api_key}>
             <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad} options={mapOptions} onDblClick={(value) => handleMapClick(value.latLng)}>
               <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
