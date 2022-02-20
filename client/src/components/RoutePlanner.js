@@ -12,6 +12,7 @@ import Alert from '@mui/material/Alert';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Box from '@mui/material/Box';
+import Backdrop from '@mui/material/Backdrop';
 
 let api_key = "AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o";
 
@@ -104,6 +105,8 @@ export default function RoutePlanner(props) {
   let { id } = useParams();
   let navigate = useNavigate();
 
+  var isRouteComplete;
+
   const [toggleSelection, setToggleSelection] = React.useState('students');
 
 
@@ -195,7 +198,7 @@ export default function RoutePlanner(props) {
         fetchData();
   }, [resetRoute])
 
-  // load school data into page
+  // load school address into page
   React.useEffect(()=>{
     const fetchData = async() => {
       const result = await axios.get(
@@ -349,7 +352,6 @@ export default function RoutePlanner(props) {
     setStopRows(newStopRows);
   };
 
-  // function when add/update route button is clicked
   let [query, setQuery] = useSearchParams();
 
   React.useEffect(()=>{
@@ -358,6 +360,7 @@ export default function RoutePlanner(props) {
     }
   }, []);
 
+  // function when add/update route button is clicked
   const handleSubmit = (event) => {
     if(selectionModel.length == 0){
         console.log({
@@ -431,6 +434,7 @@ export default function RoutePlanner(props) {
     setResetRoute(!resetRoute);
   }
 
+  // update map view/zoom when students/school is changed
   React.useEffect(()=>{
     if(map){
       var bounds = new window.google.maps.LatLngBounds();
@@ -483,7 +487,6 @@ export default function RoutePlanner(props) {
       console.log(newRows)
       setStopRows(newRows)
     }
-    
   };
 
   const handleCheckCompleteness = () => {
@@ -498,15 +501,22 @@ export default function RoutePlanner(props) {
         });
       if(result.data.success){
         let isComplete = result.data.completion;
-        alert(isComplete);
+        if (isComplete) {
+          setSnackbarOpen(true);
+          setSnackbarSeverity('success');
+          setSnackbarMsg('Route is complete!');
+        }
+        else {
+          setSnackbarOpen(true);
+          setSnackbarSeverity('error');
+          setSnackbarMsg('Route is incomplete!');
+        }
       }
       else{
-        console.log("Completeness failed");
-        console.log();
+        console.log("Completeness check failed.")
       }
     }
     fetchData(); 
-
   };
 
 
@@ -545,7 +555,7 @@ export default function RoutePlanner(props) {
             </div>
           </div>
         </Stack> : null}
-    <Snackbar open={snackbarOpen} onClose={handleClose}>
+    <Snackbar open={snackbarOpen} onClose={handleClose} anchorOrigin={{vertical: 'bottom', horizontal: 'center'}} sx={{ width: 600 }}>
       <Alert onClose={handleClose} severity={snackbarSeverity}>
         {snackbarMsg}
       </Alert>
