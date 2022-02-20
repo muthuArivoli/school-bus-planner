@@ -12,7 +12,6 @@ import Alert from '@mui/material/Alert';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Box from '@mui/material/Box';
-import Backdrop from '@mui/material/Backdrop';
 
 let api_key = "AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o";
 
@@ -55,7 +54,7 @@ const routeColumns = [
 const stopColumns = [
   { field: 'id', hide: true, width: 30},
   { field: 'name', headerName: "Stop Name", editable: true, width: 150},
-  { field: 'index', headerName: "Index", editable: true, width: 100},
+  { field: 'index', headerName: "Index", type: 'number', editable: true, width: 100},
 ];
 
 function NoStopsOverlay() {
@@ -104,8 +103,6 @@ export default function RoutePlanner(props) {
 
   let { id } = useParams();
   let navigate = useNavigate();
-
-  var isRouteComplete;
 
   const [toggleSelection, setToggleSelection] = React.useState('students');
 
@@ -472,20 +469,41 @@ export default function RoutePlanner(props) {
   };
 
   const handleStopCellEdit = (row, allRows) => {
-    console.log(row);
+    let oldStopRows = JSON.parse(JSON.stringify(allRows));
     if (row.field === "name") {
       const rowIndex = allRows.findIndex(row_to_edit => row_to_edit.id === row.id);
       const newRows = [...allRows];
       newRows[rowIndex]["name"] = row.value;
-      console.log(newRows)
-      setStopRows(newRows)
+      setStopRows(newRows);
     }
     if (row.field === "index") {
-      const rowIndex = allRows.findIndex(row_to_edit => row_to_edit.id === row.id);
-      const newRows = [...allRows];
-      newRows[rowIndex]["index"] = parseInt(row.value);
-      console.log(newRows)
-      setStopRows(newRows)
+      if (typeof(row.value) != "number") {
+        setSnackbarOpen(true);
+        setSnackbarSeverity('error');
+        setSnackbarMsg('Index must be a number');
+        setStopRows(oldStopRows);
+      }
+      else {
+        let rowsWithIndex = [];
+        for (let i=0;i<allRows.length;i++) {
+          let cur_row = allRows[i];
+          if (cur_row["index"] === parseInt(row.value)) {
+            rowsWithIndex.push(cur_row);
+          }
+        }
+        if (rowsWithIndex.length >= 1) {
+          setSnackbarOpen(true);
+          setSnackbarSeverity('error');
+          setSnackbarMsg('Multiple stops cannot have the same index!');
+          setStopRows(oldStopRows);
+        } 
+        else {
+          const rowIndex = allRows.findIndex(row_to_edit => row_to_edit.id === row.id);
+          const newRows = [...allRows];
+          newRows[rowIndex]["index"] = parseInt(row.value);
+          setStopRows(newRows);
+        }
+      }
     }
   };
 
