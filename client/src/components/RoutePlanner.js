@@ -284,7 +284,7 @@ export default function RoutePlanner(props) {
               );
               if(stopRes.data.success){
                   console.log(stopRes.data);
-                  newStopRows = [...newStopRows, {name: stopRes.data.stop.name, id: stopRes.data.stop.latitude+stopRes.data.longitude, index: stopRes.data.stop.index, location: {lat: stopRes.data.stop.latitude, lng: stopRes.data.stop.longitude}}]
+                  newStopRows = [...newStopRows, {name: stopRes.data.stop.name, id: stopRes.data.stop.pickup_time, index: stopRes.data.stop.index, location: {lat: stopRes.data.stop.latitude, lng: stopRes.data.stop.longitude}}]
               }
               else{
                   props.setSnackbarMsg(`Route could not be loaded`);
@@ -361,7 +361,7 @@ export default function RoutePlanner(props) {
   const handleSubmit = (event) => {
     if(selectionModel.length == 0){
         console.log({
-            // school_id: id,
+            school_id: parseInt(id),
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id}),
@@ -469,6 +469,21 @@ export default function RoutePlanner(props) {
 
   const handleStopCellEdit = (row, allRows) => {
     console.log(row);
+    if (row.field === "name") {
+      const rowIndex = allRows.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...allRows];
+      newRows[rowIndex]["name"] = row.value;
+      console.log(newRows)
+      setStopRows(newRows)
+    }
+    if (row.field === "index") {
+      const rowIndex = allRows.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...allRows];
+      newRows[rowIndex]["index"] = parseInt(row.value);
+      console.log(newRows)
+      setStopRows(newRows)
+    }
+    
   };
 
   const handleCheckCompleteness = () => {
@@ -493,6 +508,7 @@ export default function RoutePlanner(props) {
     fetchData(); 
 
   };
+
 
   return (
     <Stack spacing={2} justifyContent="center">
@@ -523,7 +539,7 @@ export default function RoutePlanner(props) {
                   pageSize={5}
                   rowsPerPageOptions={[5]}
                   density="compact"
-                  onCellEditStop={(row) => handleStopCellEdit(row, stopRows)}
+                  onCellEditCommit = {(row) => handleStopCellEdit(row, stopRows)}
                 />
               </div>
             </div>
