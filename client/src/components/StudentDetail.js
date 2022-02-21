@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import axios from 'axios';
+import Link from '@mui/material/Link';
 
 export default function StudentDetail(props) {
 
@@ -145,36 +146,33 @@ export default function StudentDetail(props) {
         <Stack direction="row" spacing={20} justifyContent="center">
           <Stack spacing={1} justifyContent="center">
             <Typography variant="h5" align="center">
-              School: {school}
+              {"School: "} 
+              <Link component={RouterLink} to={"/schools/" + data.school_id}>
+                {school}
+            </Link>
             </Typography>
-            <Button component={RouterLink}
-              to={"/schools/" + data.school_id}
-              color="primary"
-              variant="outlined"
-              size="small"
-              style={{ marginLeft: 16 }}>
-              View School
-            </Button>
           </Stack>
           <Stack spacing={1} justifyContent="center">
+            {
+            route == "No Route" &&
             <Typography variant="h5" align="center">
               Route: {route}
             </Typography>
+            }
             {
             route != "No Route" &&
+            <>
+            <Typography variant="h5" align="center">
+            {"Route: "} 
+            <Link component={RouterLink} to={"/routes/" + data.route_id}>
+              {route}
+            </Link>
+            </Typography>
             <Typography variant="h5" align="center">
               In Route Range: {inRange}
             </Typography> 
+            </>
             }
-            <Button component={RouterLink}
-              disabled={route == "No Route"}
-              to={"/routes/" + data.route_id}
-              color="primary"
-              variant="outlined"
-              size="small"
-              style={{ marginLeft: 16 }}>
-              View Route
-            </Button>
 
           </Stack>
         </Stack>
