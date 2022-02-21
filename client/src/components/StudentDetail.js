@@ -161,7 +161,6 @@ export default function StudentDetail(props) {
               style={{ marginLeft: 16 }}>
               View Route
             </Button>
- 
             <Typography variant="h5" align="center">
               In Route Range:  {/* {in_range} */}
              

@@ -35,36 +35,12 @@ const columns = [
     sortable: false,
     filterable: false
   },
-  
   {
     field: 'in_range',
     headerName: 'In-Range',
     width: 100,
     sortable: false,
-    //filterOperators: getGridBooleanOperators().filter((operator) => operator.value === "=",
-    //)
   },
-  
-/*   {
-    field: 'id',
-    headerName: 'Detailed View',
-    sortable: false,
-    filterable: false,
-    width: 250,
-    renderCell: (params) => (
-      <>
-        <Button
-          component={RouterLink}
-          to={"/students/" + params.value}
-          color="primary"
-          size="small"
-          style={{ marginLeft: 16 }}
-        >
-          View Student
-        </Button>
-      </>
-    ),
-  }, */
 ];
 
 export default function DataTable(props) {
@@ -81,7 +57,6 @@ export default function DataTable(props) {
   const filterValues = ['name', 'id'];
 
   const mappings = {"name": "name", "student_id": "student_id", "school": "school_id"} 
-  //const mappings = {"name": "name", "student_id": "student_id", "school": "school_id", "in_range": "in_range"} 
 
   const [showAll, setShowAll] = React.useState(false);
 
@@ -136,8 +111,6 @@ export default function DataTable(props) {
             }
           );
           if (getRes.data.success){
-            //arr = [...arr, {name: data[i].name, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id}]
-            //arr = [...arr, {name: data[i].name, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id, in_range: data[i].inrange}]
             arr = [...arr, {name: {name: data[i].name, id: data[i].id}, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id}]
           }
           else{

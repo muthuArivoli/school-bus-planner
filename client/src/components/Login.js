@@ -38,6 +38,7 @@ export default function SignIn() {
         }
         else {
           setAlert(true);
+          console.log(res.data);
         }
       }).catch((error) => {
         console.log(error.response)
@@ -58,15 +59,13 @@ export default function SignIn() {
               alignItems: 'center',
             }}
           >
+            <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }} src="/HTLogo128.png"/>
+            <Typography component="h1" variant="h5">
+              Sign in to 
+            </Typography>
             <Typography component="h1" variant="h5">
               Hypothetical Transportation
             </Typography>
-            <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }} src="/HTLogo128.png"/>
-
-            <Typography component="h1" variant="h5">
-              Sign in 
-            </Typography>
-
             <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
               {
                 alert &&

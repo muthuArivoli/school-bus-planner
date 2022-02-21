@@ -40,27 +40,7 @@ const columns = [
     width: 150,
     //sortable,
     //filterable
-  },
-/*   {
-    field: 'id',
-    sortable: false,
-    filterable: false,
-    headerName: 'Detailed View',
-    width: 250,
-    renderCell: (params) => (
-      <>
-        <Button
-          component={RouterLink}
-          to={"/schools/" + params.value}
-          color="primary"
-          size="small"
-          style={{ marginLeft: 16 }}
-        >
-          View School
-        </Button>
-      </>
-    ),
-  } */
+  }
 ];
 
 

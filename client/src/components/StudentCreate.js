@@ -31,7 +31,6 @@ export default function CreateSchool(props) {
       }
       if(route != null && route.id != "") {
         req.route_id = route.id;
-
       }
       console.log(req);
       axios.post(process.env.REACT_APP_BASE_URL+'/student', req, {

@@ -1104,7 +1104,7 @@ def stop_options(stop_uid=None):
 
 @app.route('/stop/<stop_uid>', methods=['GET'])
 @cross_origin()
-@jwt_required()
+@admin_required()
 def stop_get(stop_uid=None):
     if request.method == 'GET':
         if stop_uid is not None:

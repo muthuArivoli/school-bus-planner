@@ -214,38 +214,3 @@ export default function StudentForm(props) {
           
     )
 }
-
-
-
-        /*
-        
-        in_range = inrangecheck(route)
-
-
-
-        func inrangecheck(route){
-          for (let i=0; i<route.stops.length; i++ ){
-            var dist =  distance(route.stops[i], student);
-            var inrange = dist <= 0.3;
-        
-          }
-
-          //return distance(route.stops[], student)
-        }
-
-        func distance(stop, student){
-          let stoploc = stop.address
-          let studentloc = student.address
-
-          var R = 3958.8; // Radius of the Earth in miles
-          var rlat1 = stoploc.lat * (Math.PI/180); // Convert degrees to radians
-          var rlat2 = studentloc.lat * (Math.PI/180); // Convert degrees to radians
-          var difflat = rlat2-rlat1; // Radian difference (latitudes)
-          var difflon = (studentloc.lng()-stoploc.lng()) * (Math.PI/180); // Radian difference (longitudes)
-
-          var d = 2 * R * Math.asin(Math.sqrt(Math.sin(difflat/2)*Math.sin(difflat/2)+Math.cos(rlat1)*Math.cos(rlat2)*Math.sin(difflon/2)*Math.sin(difflon/2)));
-          return d;
-
-        }
-        
-        */
