@@ -9,7 +9,7 @@ const columns = [
   { field: 'name', headerName: 'Full Name', width: 200},
   {
     field: 'in_range',
-    headerName: 'In Range of Stop',
+    headerName: 'In Route Range',
     width: 150,
     renderCell: (params) => (
       <>

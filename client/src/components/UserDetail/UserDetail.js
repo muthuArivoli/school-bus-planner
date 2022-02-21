@@ -70,7 +70,7 @@ export default function UserDetail(props) {
             }
           );
           if(studentRes.data.success){
-            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.user.children[i], route_id: studentRes.data.student.route_id}]
+            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.user.children[i], route_id: studentRes.data.student.route_id, in_range: studentRes.data.student.in_range}]
           }
           else{
             props.setSnackbarMsg(`User could not be loaded`);
