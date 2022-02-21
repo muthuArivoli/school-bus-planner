@@ -10,12 +10,14 @@ export default function CreateSchool(props) {
 
     let navigate = useNavigate();
 
-    const handleSubmit = (event, name, address) => {
+    const handleSubmit = (event, name, address, latitude, longitude) => {
       event.preventDefault();
 
       axios.post(process.env.REACT_APP_BASE_URL+"/school", {
         name: name,
-        address: address
+        address: address,
+        latitude: latitude,
+        longitude: longitude
       }, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -38,7 +40,7 @@ export default function CreateSchool(props) {
 
     return(
         <>
-        <SchoolForm handleSubmit={handleSubmit} name="" address="" title="Create School"/>
+        <SchoolForm handleSubmit={handleSubmit} name="" address="" title="Create School" latitude={null} longitude={null}/>
         </>
     )
 }

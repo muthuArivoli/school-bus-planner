@@ -35,8 +35,8 @@ export default function SignUp(props) {
 
   const [name, setName] = React.useState("");
   const [address, setAddress] = React.useState("");
-  const [latitude, setLatitude] = React.useState("");
-  const [longitude, setLongitude] = React.useState("");
+  const [latitude, setLatitude] = React.useState(null);
+  const [longitude, setLongitude] = React.useState(null);
   const [email, setEmail] = React.useState("");
   let [adminChecked, setAdminChecked] = React.useState(false);
 
@@ -284,8 +284,8 @@ export default function SignUp(props) {
                   autoComplete="email"
                 />
               </Grid>
-              <Grid item md={12} sx={{ height: 450 }} >
-                <GoogleMap address={address} setAddress={setAddress} latitude ={latitude} setLatitude ={setLatitude} longitude ={longitude} setLongitude ={setLongitude}/>   {/*TTTTTT */}
+              <Grid item xs={12} sx={{ height: 450 }} >
+                <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel

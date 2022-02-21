@@ -19,12 +19,20 @@ export default function SchoolForm(props) {
   const [name, setName] = React.useState(props.name || "");
   const [address, setAddress] = React.useState(props.address || "");
   
-  const [latitude, setLatitude] = React.useState("");
-  const [longitude, setLongitude] = React.useState("");
+  const [latitude, setLatitude] = React.useState(props.latitude);
+  const [longitude, setLongitude] = React.useState(props.longitude);
 
   React.useEffect(() => {
     setName(props.name);
   }, [props.name])
+
+  React.useEffect(() => {
+    setLatitude(props.latitude);
+  }, [props.latitude])
+
+  React.useEffect(() => {
+    setLongitude(props.longitude);
+  }, [props.longitude])
 
   React.useEffect(() => {
     setAddress(props.address);
@@ -68,7 +76,7 @@ export default function SchoolForm(props) {
                     />
               </Grid>
               <Grid item md={12} sx={{ height: 450 }} >
-                <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude ={longitude} setLongitude ={setLongitude}/>
+                <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
               </Grid>
 
               <Grid item xs={12}>

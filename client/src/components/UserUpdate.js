@@ -25,8 +25,8 @@ export default function UserUpdate(props) {
   const [emailList, setEmailList] = React.useState([])
   const [oldEmail, setOldEmail] = React.useState("");
   
-  const [latitude, setLatitude] = React.useState("");
-  const [longitude, setLongitude] = React.useState("");
+  const [latitude, setLatitude] = React.useState(null);
+  const [longitude, setLongitude] = React.useState(null);
 
 
   let navigate = useNavigate();
@@ -43,6 +43,8 @@ export default function UserUpdate(props) {
       if (result.data.success){
         let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, admin: result.data.user.admin_flag}
         setData(newData);
+        setLatitude(result.data.user.latitude);
+        setLongitude(result.data.user.longitude);
         setOldEmail(result.data.user.email);
       }
       else{
@@ -103,8 +105,6 @@ export default function UserUpdate(props) {
       newData.admin = event.target.checked;
       setData(newData);
     }
-
-
 
     const handleSubmit = (event) => {
       event.preventDefault();
@@ -182,8 +182,8 @@ export default function UserUpdate(props) {
                   autoComplete="email"
                 />
               </Grid>
-              <Grid item md={12} sx={{ height: 450 }} >
-                <GoogleMap address={data.address} setAddress={handleAddressChange} latitude ={latitude} setLatitude ={setLatitude} longitude ={longitude} setLongitude ={setLongitude}/>
+              <Grid item xs={12} sx={{ height: 450 }} >
+                <GoogleMap address={data.address} setAddress={handleAddressChange} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel

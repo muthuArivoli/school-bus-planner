@@ -37,6 +37,18 @@ class GoogleMap extends Component {
 
     }
 
+    componentDidUpdate = (prevProps) =>{
+        if(this.props.latitude != this.state.lat || this.props.longitude != this.state.lng){
+            this.setState({
+                center: [this.props.latitude, this.props.longitude],
+                lat: this.props.latitude,
+                lng: this.props.longitude,
+                address: this.props.address,
+                zoom: 14
+            })
+        }
+    }
+
     apiHasLoaded = (map, maps) => {
         this.setState({
             mapApiLoaded: true,
@@ -98,9 +110,9 @@ class GoogleMap extends Component {
                 >
 
                     <Marker
-                        text={this.state.address}
-                        lat={this.state.lat}
-                        lng={this.state.lng}
+                        text={this.props.address}
+                        lat={this.props.latitude}
+                        lng={this.props.longitude}
                     />
 
 
