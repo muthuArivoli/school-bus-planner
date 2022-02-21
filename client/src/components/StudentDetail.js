@@ -20,6 +20,7 @@ export default function StudentDetail(props) {
   const [school, setSchool] = React.useState("");
 
   const [route, setRoute] = React.useState("No Route");
+  const [inRange, setInRange] = React.useState("No");
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
@@ -83,6 +84,13 @@ export default function StudentDetail(props) {
         }
         else {
           setRoute("No Route");
+        }
+
+        if (result.data.student.in_range == true){
+          setInRange("Yes");
+        }
+        else{
+          setInRange("No");
         }
 
         const schoolRes = await axios.get(
@@ -152,6 +160,12 @@ export default function StudentDetail(props) {
             <Typography variant="h5" align="center">
               Route: {route}
             </Typography>
+            {
+            route != "No Route" &&
+            <Typography variant="h5" align="center">
+              In Route Range: {inRange}
+            </Typography> 
+            }
             <Button component={RouterLink}
               disabled={route == "No Route"}
               to={"/routes/" + data.route_id}
@@ -161,11 +175,6 @@ export default function StudentDetail(props) {
               style={{ marginLeft: 16 }}>
               View Route
             </Button>
-            <Typography variant="h5" align="center">
-              In Route Range:  {/* {in_range} */}
-             
-            </Typography> 
-
 
           </Stack>
         </Stack>

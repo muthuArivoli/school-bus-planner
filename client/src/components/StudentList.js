@@ -37,9 +37,10 @@ const columns = [
   },
   {
     field: 'in_range',
-    headerName: 'In-Range',
+    headerName: 'In Route Range',
     width: 100,
     sortable: false,
+    filterable: false
   },
 ];
 
@@ -111,7 +112,7 @@ export default function DataTable(props) {
             }
           );
           if (getRes.data.success){
-            arr = [...arr, {name: {name: data[i].name, id: data[i].id}, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id}]
+            arr = [...arr, {name: {name: data[i].name, id: data[i].id}, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id, in_range: data[i].in_range}]
           }
           else{
             props.setSnackbarMsg(`Students could not be loaded`);
