@@ -9,6 +9,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 const columns = [
   { field: 'name', headerName: 'Route Name', width: 450, filterable: false,
@@ -27,25 +29,26 @@ const columns = [
     filterable: false
   },
   {
-    field: 'complete',
-    headerName: 'Route Complete',
-    width: 150,
-    filterable: false
-    //renderCell: (params) => (
-    //  <>
-    //  {
-    //    params.value ? 
-    //    <CheckIcon/> : 
-    //    <CloseIcon/>
-    //  }
-    //  </>
-    //)
-  },
-  {
     field: 'students',
     headerName: 'Number of Students',
     width: 250,
     filterable: false
+  },
+  {
+    field: 'complete',
+    headerName: 'Route Complete',
+    width: 150,
+    filterable: false,
+    sortable: false,
+    renderCell: (params) => (
+      <>
+      {
+        params.value ? 
+        <CheckIcon/> : 
+        <CloseIcon/>
+      }
+      </>
+    )
   }
 ];
 
@@ -114,7 +117,7 @@ export default function DataTable(props) {
             }
           );
           if (getRes.data.success){
-            arr = [...arr, {name: {name: data[i].name, id: data[i].id}, id: data[i].id, school: getRes.data.school.name, students: data[i].students.length}]
+            arr = [...arr, {name: {name: data[i].name, id: data[i].id}, id: data[i].id, school: getRes.data.school.name, students: data[i].students.length, complete: data[i].complete}]
           }
           else{
             props.setSnackbarMsg(`Routes could not be loaded - school`);

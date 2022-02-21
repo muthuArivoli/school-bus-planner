@@ -6,8 +6,8 @@ import {Link as RouterLink} from 'react-router-dom';
 
 const columns = [
   {field: 'name', headerName: 'Stop', width: 200},
-  {field: 'pickup',headerName: 'Pick-up Time',width: 200},
-  {field: 'dropoff',headerName: 'Drop-off Time',width: 200},
+  {field: 'pickup_time',headerName: 'Pick-up Time',width: 200},
+  {field: 'dropoff_time',headerName: 'Drop-off Time',width: 200},
 ];
 
 export default function DataTable(props) {

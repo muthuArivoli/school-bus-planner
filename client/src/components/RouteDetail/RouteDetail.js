@@ -13,10 +13,6 @@ import axios from 'axios';
 import MuiAlert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import Geocode from "react-geocode";
-
-Geocode.setApiKey("AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o");
-Geocode.setLocationType("ROOFTOP");
 
 const containerStyle = {
   height: "400px",
@@ -39,10 +35,7 @@ export default function RouteDetail(props) {
   const [school, setSchool] = useState("");
   const [rows, setRows] = useState([]);
 
-//const [stopLocation, setStopLocation] = useState({})
-//const [stopTime,setStopTime] = useState({pickup:, dropoff: })  //pickup_time, dropoff_time
-//const [inRangeStudents, setInRangeStudents] = React.useState([])
-//const [routeComplete, setRouteComplete] = React.useState();
+  const [stopRows, setStopRows] = useState([]);
 
   let navigate = useNavigate();
 
@@ -90,6 +83,28 @@ export default function RouteDetail(props) {
       if (result.data.success){
         setData(result.data.route);
 
+        let newStopRows = []; 
+        for (let i=0; i < result.data.route.stops.length; i++){
+          const stopRes = await axios.get(
+            process.env.REACT_APP_BASE_URL+`/stop/${result.data.route.stops[i]}`, {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          if (stopRes.data.success){
+            console.log(stopRes.data.stop)
+            newStopRows = [...newStopRows, {name: stopRes.data.stop.name, id: stopRes.data.stop.id, pickup_time: stopRes.data.stop.pickup_time, dropoff_time: stopRes.data.stop.dropoff_time}]
+          }
+          else{
+            props.setSnackbarMsg(`Route could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/routes");
+          }
+        }
+        setStopRows(newStopRows);
+
         const schoolRes = await axios.get(
           process.env.REACT_APP_BASE_URL+`/school/${result.data.route.school_id}`, {
             headers: {
@@ -99,9 +114,6 @@ export default function RouteDetail(props) {
         );
         if (schoolRes.data.success){
           setSchool(schoolRes.data.school.name);
-          // const g = await Geocode.fromAddress(schoolRes.data.school.address);
-          // const {lat, lng} = g.results[0].geometry.location;
-          // console.log({lat: lat, lng: lng})
           setSchoolLocation({lat: schoolRes.data.school.latitude, lng: schoolRes.data.school.longitude})
         }
         else{
@@ -124,7 +136,7 @@ export default function RouteDetail(props) {
             }
           );
           if(studentRes.data.success){
-            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.route.students[i]}]
+            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.route.students[i], in_range: studentRes.data.student.in_range}]
             const userRes = await axios.get(
               process.env.REACT_APP_BASE_URL+`/user/${studentRes.data.student.user_id}`, {
               headers: {
@@ -134,10 +146,8 @@ export default function RouteDetail(props) {
             );
             if(userRes.data.success){
                 console.log(userRes.data.user);
-                const g = await Geocode.fromAddress(userRes.data.user.uaddress);
-                const {lat, lng} = g.results[0].geometry.location;
                 console.log(studentRes.data);
-                newStudents = [...newStudents, {name: studentRes.data.student.name, address: userRes.data.user.uaddress, location: {lat: lat, lng: lng}}]
+                newStudents = [...newStudents, {name: studentRes.data.student.name, address: userRes.data.user.uaddress, location: {lat: userRes.data.user.latitude, lng: userRes.data.user.longitude}, in_range: studentRes.data.student.in_range}]
             }
             else{
                 props.setSnackbarMsg(`Route could not be loaded`);
@@ -184,14 +194,6 @@ export default function RouteDetail(props) {
               Route Name: {data.name}
             </Typography>
 
-
-            {/*route complete: 
-              route start time:
-              route end time: 
-              stop locations:
-              stop times (?): 
-            */}
-
             <Typography variant="h5" align="center">
               School: {school}
 
@@ -210,9 +212,8 @@ export default function RouteDetail(props) {
           </Stack>
 
           <Typography variant="h5" align="center">
-              Route Complete: {/*  */}
+              Route Complete: {data.complete === true ? "Yes" : "No"}  
           </Typography>
-
 
 
           <TextField
@@ -227,14 +228,12 @@ export default function RouteDetail(props) {
 
         </Stack>
 
-        {/* ||||| */}
-
         <Typography variant="h5" align="center">
               Route Stop Information
           </Typography>
 
 
-        <RouteDetailStopList rows = {rows}/>
+        <RouteDetailStopList rows = {stopRows}/>
 
 
         

@@ -2,9 +2,25 @@ import * as React from 'react';
 import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
 import {Link as RouterLink} from 'react-router-dom';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 const columns = [
   { field: 'name', headerName: 'Full Name', width: 200},
+  {
+    field: 'in_range',
+    headerName: 'In Route Range',
+    width: 150,
+    renderCell: (params) => (
+      <>
+      {
+        params.value ? 
+        <CheckIcon/> : 
+        <CloseIcon/>
+      }
+      </>
+    )
+  },
   {
     field: 'id',
     headerName: 'Detailed View',
