@@ -44,7 +44,7 @@ export default function SchoolDetail(props) {
             }
           );
           if(studentRes.data.success){
-            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], route_id: studentRes.data.student.route_id}]
+            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], route_id: studentRes.data.student.route_id, in_range: studentRes.data.student.in_range}]
           }
           else{
             props.setSnackbarMsg(`School could not be loaded`);
@@ -55,7 +55,7 @@ export default function SchoolDetail(props) {
         }
         setStudents(newRows);
 
-        let newRoutes = result.data.school.routes.map((value)=>{return {name: value.name, id: value.id}});
+        let newRoutes = result.data.school.routes.map((value)=>{return {name: value.name, id: value.id, complete: value.complete}});
         setRoutes(newRoutes);
 
       }

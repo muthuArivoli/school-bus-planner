@@ -11,7 +11,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
 
 const columns = [
-  { field: 'name', headerName: 'School Name', width: 500, filterable: false, 
+  { field: 'name', headerName: 'School Name', width: 250, filterable: false, 
   renderCell: (params) => (
     <>
     <Link component={RouterLink} to={"/schools/" + params.value.id}>
