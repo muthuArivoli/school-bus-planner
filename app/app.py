@@ -99,10 +99,15 @@ def get_current_user_student(student_id=None):
     school = School.query.filter_by(id=student.school_id).first()
     school_dict = {"id": school.id, "name": school.name, "address": school.address}
     route_dict = None
+    in_range_stops = []
     if student.route_id is not None:
         route = Route.query.filter_by(id=student.route_id).first()
+        stops = route.stops
+        for stop in stops:
+            if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
+                in_range_stops.append(stop.as_dict())
         route_dict = {"id": route.id, "name": route.name, "description": route.description}
-    return json.dumps({'success': True, 'student': student.as_dict(), 'school': school_dict, 'route': route_dict})
+    return json.dumps({'success': True, 'student': student.as_dict(), 'school': school_dict, 'route': route_dict, 'in_range_stops': in_range_stops})
 
 @app.route("/current_user", methods = ['PATCH'])
 @jwt_required()
