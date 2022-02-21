@@ -401,6 +401,8 @@ export default function RoutePlanner(props) {
     }
     else {
       if(selectionModel.length == 0){
+        console.log("new stops: ");
+        console.log(stopRows);
         axios.post(process.env.REACT_APP_BASE_URL+`/route`, {
             school_id: parseInt(id),
             name: routeInfo["name"],
@@ -431,6 +433,8 @@ export default function RoutePlanner(props) {
         );
       }
       else{
+          console.log("patch stops: ");
+          console.log(stopRows);
           axios.patch(process.env.REACT_APP_BASE_URL+`/route/${selectionModel[0]}`, {
             name: routeInfo["name"],
             description: routeInfo["description"],
@@ -606,7 +610,7 @@ export default function RoutePlanner(props) {
                 <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop)} 
                 icon={{url: "http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"}}/>)) : [] } 
               {toggleSelection=="stops" ? students.map((student, index) => (
-                <Circle center={student.location} options={CircleOptions} />)) : [] } 
+                <Circle key={index} center={student.location} options={CircleOptions} />)) : [] } 
             </GoogleMap>
           </LoadScript>
         </Stack>
