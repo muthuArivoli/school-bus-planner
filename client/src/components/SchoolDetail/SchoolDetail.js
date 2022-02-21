@@ -16,12 +16,10 @@ export default function SchoolDetail(props) {
   let { id } = useParams();
   let navigate = useNavigate();
 
-  const [data, setData] = React.useState({name: "", address: ""});
+  const [data, setData] = React.useState({name: "", address: "", arrival_time: "", departure_time: ""});
 
   const [students, setStudents] = React.useState([]);
   const [routes, setRoutes] = React.useState([]);
-  const [arrivaltime, setArrivalTime] = React.useState();
-  const [departuretime, setDepartureTime] = React.useState();
 
   React.useEffect(() => {
     const fetchData = async() => {
@@ -127,11 +125,11 @@ export default function SchoolDetail(props) {
 
         <Stack direction = 'row' spacing = {30} justifyContent='center'>
         <Typography variant="h5" align="center">
-          Arrival Time:
+          Arrival Time: {data.arrival_time}
         </Typography>
 
         <Typography variant="h5" align="center">
-          Departure Time:
+          Departure Time: {data.departure_time}
         </Typography>
 
         </Stack>   
