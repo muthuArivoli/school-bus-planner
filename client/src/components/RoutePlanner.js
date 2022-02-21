@@ -54,7 +54,7 @@ const routeColumns = [
 const stopColumns = [
   { field: 'id', hide: true, width: 30},
   { field: 'name', headerName: "Stop Name", editable: true, width: 150},
-  { field: 'index', headerName: "Index", type: 'number', editable: true, width: 100},
+  { field: 'index', headerName: "Order", type: 'number', editable: true, width: 100},
 ];
 
 function NoStopsOverlay() {
@@ -106,6 +106,13 @@ export default function RoutePlanner(props) {
 
   const [toggleSelection, setToggleSelection] = React.useState('students');
 
+  let [query, setQuery] = useSearchParams();
+
+  React.useEffect(()=>{
+    if(query.get("route") != null && query.get("route").match('^[0-9]+$')){
+      setSelectionModel([parseInt(query.get("route"))]);
+    }
+  }, []);
 
   // load current routes into page
   React.useEffect(()=>{
@@ -284,7 +291,7 @@ export default function RoutePlanner(props) {
               );
               if(stopRes.data.success){
                   console.log(stopRes.data);
-                  newStopRows = [...newStopRows, {name: stopRes.data.stop.name, id: stopRes.data.stop.pickup_time, index: stopRes.data.stop.index, location: {lat: stopRes.data.stop.latitude, lng: stopRes.data.stop.longitude}}]
+                  newStopRows = [...newStopRows, {name: stopRes.data.stop.name, id: stopRes.data.stop.pickup_time, index: stopRes.data.stop.index+1, location: {lat: stopRes.data.stop.latitude, lng: stopRes.data.stop.longitude}}]
               }
               else{
                   props.setSnackbarMsg(`Route could not be loaded`);
@@ -300,6 +307,20 @@ export default function RoutePlanner(props) {
 
     fetchStudents();
   }, [selectionModel])
+
+  // update map view/zoom when students/school is changed
+  React.useEffect(()=>{
+    if(map){
+      var bounds = new window.google.maps.LatLngBounds();
+      console.log(students);
+      console.log(schoolLocation);
+      for (var i = 0; i < students.length; i++) {
+        bounds.extend(students[i].location);
+      }
+      bounds.extend(schoolLocation);
+      map.fitBounds(bounds);
+    }
+  }, [students, schoolLocation]);
 
   // function when snackbar is closed
   const handleClose = (event, reason) => {
@@ -336,7 +357,7 @@ export default function RoutePlanner(props) {
       };
 
       // update stopRows
-      let stopindex = stopRows.length;
+      let stopindex = stopRows.length+1;
       let newStopRow = {id: value.lat() + value.lng(), index: stopindex, name: "Stop "+stopindex, location: loc};
       let newStopRows = [...stopRows, newStopRow];
       setStopRows(newStopRows);
@@ -349,30 +370,45 @@ export default function RoutePlanner(props) {
     setStopRows(newStopRows);
   };
 
-  let [query, setQuery] = useSearchParams();
-
-  React.useEffect(()=>{
-    if(query.get("route") != null && query.get("route").match('^[0-9]+$')){
-      setSelectionModel([parseInt(query.get("route"))]);
+  const validateStops = (allRows) => {
+    const errors = [];
+    console.log(allRows)
+    let rowsWithIndex = [];
+    for (let i=0;i<allRows.length;i++) {
+      let cur_row = allRows[i];
+      rowsWithIndex.push(cur_row["index"]);
+      if ((cur_row["index"]>(allRows.length))) {
+        errors.push("Stop indexes must not be skipped. Index: \""+cur_row["index"]+"\" is too large.");
+        return errors;
+      }
     }
-  }, []);
+    console.log(rowsWithIndex)
+    var set = new Set(rowsWithIndex)
+    if (set.size !== rowsWithIndex.length) {
+      errors.push("Multiple stops cannot have the same index!");
+    } 
+    return errors;
+  };
 
   // function when add/update route button is clicked
   const handleSubmit = (event) => {
-    if(selectionModel.length == 0){
-        console.log({
-            school_id: parseInt(id),
-            name: routeInfo["name"],
-            description: routeInfo["description"],
-            students: studentRows.map((value)=>{return value.id}),
-            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
-        })
+    const errors = validateStops(stopRows);
+    if (errors.length > 0) {
+      console.log('ERROR')
+      setSnackbarOpen(true);
+      setSnackbarSeverity('error');
+      setSnackbarMsg(errors[0]);
+    }
+    else {
+      if(selectionModel.length == 0){
+        console.log("new stops: ");
+        console.log(stopRows);
         axios.post(process.env.REACT_APP_BASE_URL+`/route`, {
             school_id: parseInt(id),
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id}),
-            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
+            stops: stopRows.map((value)=>{return { name: value.name, index: value.index-1, latitude: value.location.lat, longitude: value.location.lng}})
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -393,15 +429,17 @@ export default function RoutePlanner(props) {
                 setSnackbarSeverity('error');
                 setSnackbarMsg('Failed to create route');
             }
-        }
+          }
         );
-    }
-    else{
-        axios.patch(process.env.REACT_APP_BASE_URL+`/route/${selectionModel[0]}`, {
+      }
+      else{
+          console.log("patch stops: ");
+          console.log(stopRows);
+          axios.patch(process.env.REACT_APP_BASE_URL+`/route/${selectionModel[0]}`, {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id}),
-            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
+            stops: stopRows.map((value)=>{return { name: value.name, index: value.index-1, latitude: value.location.lat, longitude: value.location.lng}})
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -422,32 +460,14 @@ export default function RoutePlanner(props) {
                 setSnackbarSeverity('error');
                 setSnackbarMsg('Failed to update route');
             }
-        }
+          }
         );
-
-    }
-    setSelectionModel([]);
-    setToggleSelection("students");
-    setResetRoute(!resetRoute);
-  }
-
-  // update map view/zoom when students/school is changed
-  React.useEffect(()=>{
-    if(map){
-      var bounds = new window.google.maps.LatLngBounds();
-      console.log(students);
-      console.log(schoolLocation);
-      for (var i = 0; i < students.length; i++) {
-        bounds.extend(students[i].location);
       }
-      bounds.extend(schoolLocation);
-      map.fitBounds(bounds);
+      setSelectionModel([]);
+      setToggleSelection("students");
+      setResetRoute(!resetRoute);
     }
-  }, [students, schoolLocation]);
-
-  const onLoad = React.useCallback(function callback(map) {
-    setMap(map);
-  }, [])
+  }
 
   //runs when user types in textfield, should add value into correct part of routeInfo
   const handleInfoChange = (fieldindicator, new_value) => {
@@ -480,29 +500,20 @@ export default function RoutePlanner(props) {
       if (typeof(row.value) != "number") {
         setSnackbarOpen(true);
         setSnackbarSeverity('error');
-        setSnackbarMsg('Index must be a number');
+        setSnackbarMsg('Index must be a number!');
+        setStopRows(oldStopRows);
+      }
+      else if ((parseInt(row.value) < 1)) {
+        setSnackbarOpen(true);
+        setSnackbarSeverity('error');
+        setSnackbarMsg('Stops indexes must be 1 or greater!');
         setStopRows(oldStopRows);
       }
       else {
-        let rowsWithIndex = [];
-        for (let i=0;i<allRows.length;i++) {
-          let cur_row = allRows[i];
-          if (cur_row["index"] === parseInt(row.value)) {
-            rowsWithIndex.push(cur_row);
-          }
-        }
-        if (rowsWithIndex.length >= 1) {
-          setSnackbarOpen(true);
-          setSnackbarSeverity('error');
-          setSnackbarMsg('Multiple stops cannot have the same index!');
-          setStopRows(oldStopRows);
-        } 
-        else {
-          const rowIndex = allRows.findIndex(row_to_edit => row_to_edit.id === row.id);
-          const newRows = [...allRows];
-          newRows[rowIndex]["index"] = parseInt(row.value);
-          setStopRows(newRows);
-        }
+        const rowIndex = allRows.findIndex(row_to_edit => row_to_edit.id === row.id);
+        const newRows = [...allRows];
+        newRows[rowIndex]["index"] = parseInt(row.value);
+        setStopRows(newRows);
       }
     }
   };
@@ -537,6 +548,9 @@ export default function RoutePlanner(props) {
     fetchData(); 
   };
 
+  const onLoad = React.useCallback(function callback(map) {
+    setMap(map);
+  }, [])
 
   return (
     <Stack spacing={2} justifyContent="center">
@@ -583,7 +597,7 @@ export default function RoutePlanner(props) {
       <Stack spacing={2.5} justifyContent="center">
 
         <Stack spacing={0} justifyContent="center">
-          {toggleSelection=="stops" ? <Typography variant="subtitle1" align="left">Double click anywhere to add a stop!</Typography>: null}
+          {toggleSelection=="stops" ? <Typography variant="subtitle2" align="left">Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>: null}
           <LoadScript googleMapsApiKey={api_key}>
             <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad} options={mapOptions} onDblClick={(value) => handleMapClick(value.latLng)}>
               <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
@@ -596,7 +610,7 @@ export default function RoutePlanner(props) {
                 <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop)} 
                 icon={{url: "http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"}}/>)) : [] } 
               {toggleSelection=="stops" ? students.map((student, index) => (
-                <Circle center={student.location} options={CircleOptions} />)) : [] } 
+                <Circle key={index} center={student.location} options={CircleOptions} />)) : [] } 
             </GoogleMap>
           </LoadScript>
         </Stack>
