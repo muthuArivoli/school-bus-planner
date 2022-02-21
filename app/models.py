@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import inspect, select, func
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
-from sqlalchemy_filters import Filter, StringField, Field
+from sqlalchemy_filters import Filter, StringField, Field, TimestampField
 from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator
 from datetime import datetime
 import logging
@@ -164,6 +164,8 @@ class StudentFilter(Filter):
 
 class SchoolFilter(Filter):
     name = StringField(lookup_operator=ContainsOperator)
+    arrival_time = TimestampField()
+    departure_time = TimestampField()
 
     class Meta:
         model = School
