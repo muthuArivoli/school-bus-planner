@@ -31,15 +31,15 @@ const columns = [
     field: 'arrival_time',
     headerName: 'Arrival Time',
     width: 150,
-    //sortable: 
-    //filterable
+    sortable: true, 
+    filterable: false
   },
   {
     field: 'departure_time',
     headerName: 'Departure Time',
     width: 150,
-    //sortable,
-    //filterable
+    sortable: true,
+    filterable: false
   }
 ];
 
@@ -97,7 +97,7 @@ export default function DataTable(props) {
         }
         let arr = result.data.schools.map((value) => {
           console.log({name: value.name, id: value.id, address: value.address});
-          return {name: {name: value.name, id: value.id}, address: value.address, id: value.id};
+          return {name: {name: value.name, id: value.id}, address: value.address, id: value.id, departure_time: value.departure_time, arrival_time: value.arrival_time};
         });
         setRows(arr);
       }
