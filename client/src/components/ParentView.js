@@ -7,12 +7,13 @@ import Button from '@mui/material/Button';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import {Link as RouterLink, useParams} from 'react-router-dom';
 import DeleteDialog from './DeleteDialog';
-import { DataGrid } from '@mui/x-data-grid';
+import { GridOverlay, DataGrid } from '@mui/x-data-grid';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
 
 const columns = [
   { field: 'name', headerName: 'Full Name', width: 250},
@@ -36,6 +37,13 @@ const columns = [
   },
 ];
 
+function NoStudentsOverlay() {
+  return (
+    <GridOverlay>
+      <Box sx={{ mt: 1 }}>No Students for Current User</Box>
+    </GridOverlay>
+  );
+}
 
 export default function ParentView() {
 
@@ -130,6 +138,9 @@ export default function ParentView() {
         <div style={{ display: 'flex', height: '100%' }}>
           <div style={{ flexGrow: 1 }}>
             <DataGrid
+              components={{
+                NoRowsOverlay: NoStudentsOverlay,
+              }}
               rows={rows}
               columns={columns}
               getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
