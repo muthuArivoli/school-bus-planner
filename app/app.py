@@ -972,8 +972,8 @@ def get_time_and_dist(stops, departure_time, arrival_time, school_lat, school_lo
             times.append(matrix['rows'][0]['elements'][0]['duration']['value'])
         #Creates a list of times in seconds that represent travel duration for each pair of locations
         logging.debug(times)
-        current_time = datetime.combine(date(1,1,1),departure_time)
-        current_pickup = datetime.combine(date(1,1,1),arrival_time)
+        current_time = datetime.combine(date.today(),departure_time)
+        current_pickup = datetime.combine(date.today(),arrival_time)
         
         for time in times:
             current_time = current_time + timedelta(seconds=time)

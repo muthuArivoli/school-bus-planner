@@ -34,7 +34,7 @@ export default function UpdateSchool(props) {
           departure_time: depart,
           arrival_time: arrive
         });
-        
+
         axios.patch(process.env.REACT_APP_BASE_URL+`/school/${id}`, {
           name: na,
           address: ad,
@@ -74,12 +74,10 @@ export default function UpdateSchool(props) {
           if (result.data.success){
             setName(result.data.school.name);
             setAddress(result.data.school.address);
-            // setLongitude(result.data.school.longitude);
-            // setLatitude(result.data.school.latitude);
-            // setDepartureTime(result.data.school.departure_time);
-            // setArrivalTime(result.data.school.arrival_time);
-            console.log(name);
-            console.log(address);
+            setLongitude(result.data.school.longitude);
+            setLatitude(result.data.school.latitude);
+            setDepartureTime(new Date('2011-10-10T' + result.data.school.departure_time));
+            setArrivalTime(new Date('2011-10-10T' + result.data.school.arrival_time));
           }
           else{
             props.setSnackbarMsg(`School could not be loaded`);
