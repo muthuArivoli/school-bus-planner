@@ -738,13 +738,13 @@ def schools(school_uid = None):
             arrival_time = content.get('arrival_time', None)
             if type(arrival_time) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
-            parsed_arrival_time = datetime.strptime(arrival_time, "%Y-%m-%dT%H:%M:%SZ")
+            parsed_arrival_time = datetime.strptime(arrival_time, "%Y-%m-%dT%H:%M:%S.%fZ")
             school.arrival_time = parsed_arrival_time
         if 'departure_time' in content:
             departure_time = content.get('departure_time', None)
             if type(departure_time) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
-            parsed_departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%SZ")
+            parsed_departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%S.%fZ")
             school.departure_time = parsed_departure_time
         try:
             db.session.commit()
