@@ -976,6 +976,8 @@ def send_email_system():
     users = User.query.all()
     for user in users:
         student_txt = ""
+        if '@example.com' in user.email:
+            continue
         if email_type == 'route':
             students = Student.query.filter_by(user_id=user.id).all()
             for student in students:
@@ -1047,6 +1049,8 @@ def send_email_school(school_uid=None):
     for user_id in user_ids:
         student_txt = ""
         user = User.query.filter_by(id=user_id).first()
+        if '@example.com' in user.email:
+            continue
         if email_type == 'route':
             students = Student.query.filter_by(user_id=user.id).all()
             for student in students:
@@ -1119,6 +1123,8 @@ def send_email_route(route_uid=None):
     for user_id in user_ids:
         student_txt = ""
         user = User.query.filter_by(id=user_id).first()
+        if '@example.com' in user.email:
+            continue
         if email_type == 'route':
             students = Student.query.filter_by(user_id=user.id).all()
             for student in students:
