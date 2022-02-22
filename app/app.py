@@ -175,6 +175,25 @@ def calc_distance_miles():
     response = {"success": True, "miles": distance}
     return response
 
+@app.route('/check_school_name/<school_name>', methods=['OPTIONS'])
+@cross_origin()
+def name_unq_options(school_name=None):
+    return json.dumps({"success": True})
+
+
+@app.route('/check_school_name/<school_name>', methods=['GET'])
+@admin_required()
+@cross_origin()
+def check_school_name_uniqueness(school_name=None):
+    if school_name is not None:
+        school = School.query.filter_by(name=school_name).first()
+        if school is not None:
+            return {"success": True, "unique": False}
+        else:
+            return {"success": True, "unique": True}
+    else:
+        return {"msg": "Invalid Query Syntax"}, 400
+
 
 @app.route('/check_complete', methods = ['OPTIONS'])
 @cross_origin()
@@ -623,8 +642,8 @@ def schools(school_uid = None):
         if type(name) is not str or type(address) is not str or type(longitude) is not float or type(latitude) is not float or type(arrival_time) is not str or type(departure_time) is not str:
             return {"msg": "Invalid Query Syntax"}, 400
 
-        parsed_arrival_time = datetime.strptime(arrival_time, "%Y-%m-%dT%H:%M:%SZ")
-        parsed_departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%SZ")
+        parsed_arrival_time = datetime.strptime(arrival_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+        parsed_departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%S.%fZ")
 
         new_school = School(name=name, address=address, longitude=longitude, latitude=latitude, arrival_time=parsed_arrival_time, departure_time=parsed_departure_time)
         try:
@@ -633,7 +652,7 @@ def schools(school_uid = None):
             db.session.refresh(new_school)
             db.session.commit()
         except SQLAlchemyError:
-            return {"msg": "Database Error"}, 400
+            return json.dumps({"success": False, "msg": "School Name already exists in Database"})
         return json.dumps({'success': True, 'id': new_school.id})
     
     if request.method == 'PATCH':

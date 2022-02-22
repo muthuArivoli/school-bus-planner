@@ -15,22 +15,33 @@ export default function UpdateSchool(props) {
     const [latitude, setLatitude] = React.useState("");
     const [longitude, setLongitude] = React.useState("");
 
-    const handleSubmit = (event, na, ad, latitude, longitude) => { //
+    const [departureTime, setDepartureTime] = React.useState(new Date('2018-01-01T00:00:00.000Z'));
+    const [arrivalTime, setArrivalTime] = React.useState(new Date('2018-01-01T00:00:00.000Z'));
+
+
+    const handleSubmit = (event, na, ad, latitude, longitude, departureTime, arrivalTime) => { //
         event.preventDefault();
-    
+        var offset = arrivalTime.getTimezoneOffset() / 60; 
+        arrivalTime.setHours(arrivalTime.getHours() - offset);
+        departureTime.setHours(departureTime.getHours() - offset);
+        var arrive = arrivalTime.toISOString();
+        var depart = departureTime.toISOString();
         console.log({
           name: na,
           address: ad,
           latitude: latitude, //
-          longitude: longitude //
+          longitude: longitude, //
+          departure_time: depart,
+          arrival_time: arrive
         });
-
-
+        
         axios.patch(process.env.REACT_APP_BASE_URL+`/school/${id}`, {
           name: na,
           address: ad,
           latitude:latitude,
-          longitude: longitude
+          longitude:longitude,
+          departure_time: depart,
+          arrival_time: arrive
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -63,6 +74,10 @@ export default function UpdateSchool(props) {
           if (result.data.success){
             setName(result.data.school.name);
             setAddress(result.data.school.address);
+            // setLongitude(result.data.school.longitude);
+            // setLatitude(result.data.school.latitude);
+            // setDepartureTime(result.data.school.departure_time);
+            // setArrivalTime(result.data.school.arrival_time);
             console.log(name);
             console.log(address);
           }
@@ -78,7 +93,17 @@ export default function UpdateSchool(props) {
 
     return(
         <>
-        <SchoolForm name={name} address={address} latitude={latitude} setLatitude = {setLatitude} longitude={longitude} setLongitude = {setLongitude} handleSubmit={handleSubmit} title="Update School"/>
+        <SchoolForm 
+        name={name} 
+        address={address} 
+        departureTime={departureTime} 
+        arrivalTime={arrivalTime}
+        latitude={latitude} 
+        setLatitude={setLatitude} 
+        longitude={longitude} 
+        setLongitude={setLongitude} 
+        handleSubmit={handleSubmit} 
+        title="Update School"/>
         </>
     )
 }

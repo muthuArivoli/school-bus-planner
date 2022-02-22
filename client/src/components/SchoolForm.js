@@ -11,6 +11,9 @@ import InputLabel from '@mui/material/InputLabel';
 import GoogleMap from './GoogleMap';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import DesktopTimePicker from '@mui/lab/DesktopTimePicker';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
 
 const theme = createTheme();
 
@@ -19,8 +22,12 @@ export default function SchoolForm(props) {
   const [name, setName] = React.useState(props.name || "");
   const [address, setAddress] = React.useState(props.address || "");
   
-  const [latitude, setLatitude] = React.useState("");
-  const [longitude, setLongitude] = React.useState("");
+  const [latitude, setLatitude] = React.useState(props.latitude || "");
+  const [longitude, setLongitude] = React.useState(props.longitude || "");
+
+  const [departureTime, setDepartureTime] = React.useState(props.departureTime || new Date('2018-01-01T00:00:00.000Z'));
+  const [arrivalTime, setArrivalTime] = React.useState(props.arrivalTime || new Date('2018-01-01T00:00:00.000Z'));
+
 
   React.useEffect(() => {
     setName(props.name);
@@ -29,6 +36,14 @@ export default function SchoolForm(props) {
   React.useEffect(() => {
     setAddress(props.address);
   }, [props.address])
+
+  React.useEffect(()=> {
+    setDepartureTime(props.departureTime);
+  }, [props.departureTime])
+
+  React.useEffect(()=> {
+    setArrivalTime(props.arrivalTime);
+  }, [props.arrivalTime])
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -54,18 +69,44 @@ export default function SchoolForm(props) {
           <Typography component="h1" variant="h5">
             {props.title}
           </Typography>
-        <Box component="form" noValidate onSubmit={(event) => props.handleSubmit(event, name, address, latitude, longitude)} sx={{ mt: 3 }}>  
+        <Box component="form" noValidate onSubmit={(event) => props.handleSubmit(event, name, address, latitude, longitude, arrivalTime, departureTime)} sx={{ mt: 3 }}>  
           <Grid container spacing={2}>
               <Grid item xs={12}>
-              <TextField
-                        autoFocus
-                        required
-                        label="Name"
-                        id="name"
-                        value={name}
-                        onChange={handleNameChange}
-                        fullWidth
-                    />
+                <TextField
+                          autoFocus
+                          required
+                          label="Name"
+                          id="name"
+                          value={name}
+                          onChange={handleNameChange}
+                          fullWidth
+                      />
+              </Grid>
+              <Grid item xs={12}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DesktopTimePicker
+                    required
+                    label="Departure Time"
+                    value={departureTime}
+                    onChange={(newValue) => {
+                    setDepartureTime(newValue);
+                  }}
+                  renderInput={(params) => <TextField {...params} />}
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DesktopTimePicker
+                    required
+                    label="Arrival Time"
+                    value={arrivalTime}
+                    onChange={(newValue) => {
+                    setArrivalTime(newValue);
+                  }}
+                  renderInput={(params) => <TextField {...params} />}
+                  />
+                </LocalizationProvider>
               </Grid>
               <Grid item md={12} sx={{ height: 450 }} >
                 <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude ={longitude} setLongitude ={setLongitude}/>
@@ -75,7 +116,7 @@ export default function SchoolForm(props) {
                 <Button type="submit"
                   variant="contained"
                   fullWidth
-                  disabled={name=="" || address == ""}
+                  disabled={name=="" || address == "" || departureTime == "" || arrivalTime == ""}
                   sx={{ mt: 3, mb: 2 }}
                   >
                     Submit
