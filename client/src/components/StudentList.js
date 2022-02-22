@@ -10,6 +10,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 const columns = [
   { field: 'name', headerName: 'Full Name', width: 250, filterable: false,
@@ -38,9 +40,16 @@ const columns = [
   {
     field: 'in_range',
     headerName: 'In Route Range',
-    width: 100,
-    sortable: false,
-    filterable: false
+    width: 150,
+    renderCell: (params) => (
+      <>
+      {
+        params.value ? 
+        <CheckIcon/> : 
+        <CloseIcon/>
+      }
+      </>
+    )
   },
 ];
 

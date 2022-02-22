@@ -18,7 +18,7 @@ export default function UpdateSchool(props) {
     const [arrivalTime, setArrivalTime] = React.useState(new Date('2018-01-01T00:00:00.000Z'));
 
 
-    const handleSubmit = (event, na, ad, lat, long, departureTimeLoc, arrivalTimeLoc) => {
+    const handleSubmit = (event, na, ad, lat, long, arrivalTimeLoc, departureTimeLoc) => {
         event.preventDefault();
         var offset = arrivalTimeLoc.getTimezoneOffset() / 60; 
         arrivalTimeLoc.setHours(arrivalTimeLoc.getHours() - offset);
