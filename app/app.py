@@ -699,8 +699,8 @@ def schools(school_uid = None):
         if type(name) is not str or type(address) is not str or type(longitude) is not float or type(latitude) is not float or type(arrival_time) is not str or type(departure_time) is not str:
             return {"msg": "Invalid Query Syntax"}, 400
 
-        parsed_arrival_time = datetime.strptime(arrival_time, "%Y-%m-%dT%H:%M:%S.%fZ")
-        parsed_departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+        parsed_arrival_time = datetime.strptime(arrival_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
+        parsed_departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
 
         new_school = School(name=name, address=address, longitude=longitude, latitude=latitude, arrival_time=parsed_arrival_time, departure_time=parsed_departure_time)
         try:
@@ -738,13 +738,13 @@ def schools(school_uid = None):
             arrival_time = content.get('arrival_time', None)
             if type(arrival_time) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
-            parsed_arrival_time = datetime.strptime(arrival_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+            parsed_arrival_time = datetime.strptime(arrival_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
             school.arrival_time = parsed_arrival_time
         if 'departure_time' in content:
             departure_time = content.get('departure_time', None)
             if type(departure_time) is not str:
                 return {"msg": "Invalid Query Syntax"}, 400
-            parsed_departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+            parsed_departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
             school.departure_time = parsed_departure_time
         try:
             db.session.commit()
