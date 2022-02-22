@@ -4,9 +4,16 @@ import { DataGrid } from '@mui/x-data-grid';
 import {Link as RouterLink} from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import Link from '@mui/material/Link';
 
 const columns = [
-  { field: 'name', headerName: 'Route Name', width: 200},
+  { field: 'data', headerName: 'Route Name', width: 200,
+    renderCell: (params) => (
+    <Link component={RouterLink} to={"/routes/" + params.value.id}>
+      {params.value.name}
+    </Link>
+    )
+  },
   {
     field: 'complete', headerName: "Route Complete", width: 150,
     renderCell: (params) => (
@@ -18,24 +25,6 @@ const columns = [
       }
       </>
     )
-  },
-  {
-    field: 'id',
-    headerName: 'Detailed View',
-    width: 200,
-    renderCell: (params) => (
-      <>
-        <Button
-          component={RouterLink}
-          to={"/routes/" + params.value}
-          color="primary"
-          size="small"
-          style={{ marginLeft: 16 }}
-        >
-          View Route
-        </Button>
-      </>
-    ),
   }
 ];
 

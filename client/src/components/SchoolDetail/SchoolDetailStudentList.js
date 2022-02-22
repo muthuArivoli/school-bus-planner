@@ -4,9 +4,24 @@ import { DataGrid } from '@mui/x-data-grid';
 import {Link as RouterLink} from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import Link from '@mui/material/Link';
 
 const columns = [
-  { field: 'name', headerName: 'Full Name', width: 200},
+  { field: 'name', headerName: 'Full Name', width: 200,
+    renderCell: (params) => (
+    <Link component={RouterLink} to={"/students/" + params.value.id}>
+      {params.value.name}
+    </Link>)},
+    {
+      field: 'route', headerName: 'Route', width: 200,
+      renderCell:(params) => (
+      params.value == null ? 
+      <CloseIcon/> : 
+       <Link component={RouterLink} to={"/routes/" + params.value.id}>
+       {params.value.name}
+       </Link>
+      )
+    },
   {
     field: 'in_range',
     headerName: 'In Route Range',
@@ -20,24 +35,6 @@ const columns = [
       }
       </>
     )
-  },
-  {
-    field: 'id',
-    headerName: 'Detailed View',
-    width: 200,
-    renderCell: (params) => (
-      <>
-        <Button
-          component={RouterLink}
-          to={"/students/" + params.value}
-          color="primary"
-          size="small"
-          style={{ marginLeft: 16 }}
-        >
-          View Student
-        </Button>
-      </>
-    ),
   },
 ];
 

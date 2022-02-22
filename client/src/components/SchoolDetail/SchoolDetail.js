@@ -44,7 +44,31 @@ export default function SchoolDetail(props) {
             }
           );
           if(studentRes.data.success){
-            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], route_id: studentRes.data.student.route_id, in_range: studentRes.data.student.in_range}]
+            if(studentRes.data.student.route_id != null){
+              const routRes = await axios.get(
+                process.env.REACT_APP_BASE_URL+`/route/${studentRes.data.student.route_id}`, {
+                  headers: {
+                      Authorization: `Bearer ${localStorage.getItem('token')}`
+                  }
+                }
+              );
+              if (routRes.data.success){
+                newRows = [...newRows, {name: {name: studentRes.data.student.name, id: result.data.school.students[i]}, 
+                                        id: result.data.school.students[i], route: {id: studentRes.data.student.route_id, name: routRes.data.route.name}, 
+                                        in_range: studentRes.data.student.in_range}]
+              }
+              else{
+                props.setSnackbarMsg(`School could not be loaded`);
+                props.setShowSnackbar(true);
+                props.setSnackbarSeverity("error");
+                navigate("/schools");
+              }
+            }
+            else{
+              newRows = [...newRows, {name: {name: studentRes.data.student.name, id: result.data.school.students[i]}, 
+                                      id: result.data.school.students[i], route: null, 
+                                      in_range: studentRes.data.student.in_range}]
+            }
           }
           else{
             props.setSnackbarMsg(`School could not be loaded`);
@@ -55,7 +79,7 @@ export default function SchoolDetail(props) {
         }
         setStudents(newRows);
 
-        let newRoutes = result.data.school.routes.map((value)=>{return {name: value.name, id: value.id, complete: value.complete}});
+        let newRoutes = result.data.school.routes.map((value)=>{return {data: {name: value.name, id: value.id}, id: value.id, complete: value.complete}});
         setRoutes(newRoutes);
 
       }
