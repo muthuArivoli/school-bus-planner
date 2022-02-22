@@ -3,3 +3,4 @@ venv
 *.pyc
 *.key
 record.log
+app/email_api.key
