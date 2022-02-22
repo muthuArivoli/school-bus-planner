@@ -969,9 +969,25 @@ def send_email_system():
                         f"Route Description: \n"
                         f"{route.description} \n"
                     )
+                    stops = route.stops
+                    in_range_stops = []
+                    for stop in stops:
+                        if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
+                            in_range_stops.append(stop)
+                    if len(in_range_stops) == 0:
+                        route_txt += "Stops: None in range\n"
+                    else:
+                        route_txt += "\nPossible Stops: \n"
+                        for stop in in_range_stops:
+                            route_txt += (
+                                f"\n"
+                                f"\tStop Name: {stop.name}\n"
+                                f"\tPickup Time: {stop.pickup_time}\n"
+                                f"\tDropoff Time: {stop.dropoff_time}\n"
+                            )
                 student_txt += (
                     "\n"
-                    f"Student Name: {student.full_name}\n"
+                    f"Student Name: {student.name}\n"
                     f"Student ID: {student.student_id if student.student_id is not None else 'No Student ID'}\n"
                     f"School Name: {school.name}\n"
                     f"{route_txt}"
@@ -1024,9 +1040,25 @@ def send_email_school(school_uid=None):
                         f"Route Description: \n"
                         f"{route.description} \n"
                     )
+                    stops = route.stops
+                    in_range_stops = []
+                    for stop in stops:
+                        if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
+                            in_range_stops.append(stop)
+                    if len(in_range_stops) == 0:
+                        route_txt += "Stops: None in range\n"
+                    else:
+                        route_txt += "\nPossible Stops: \n"
+                        for stop in in_range_stops:
+                            route_txt += (
+                                f"\n"
+                                f"\tStop Name: {stop.name}\n"
+                                f"\tPickup Time: {stop.pickup_time}\n"
+                                f"\tDropoff Time: {stop.dropoff_time}\n"
+                            )
                 student_txt += (
                     "\n"
-                    f"Student Name: {student.full_name}\n"
+                    f"Student Name: {student.name}\n"
                     f"Student ID: {student.student_id if student.student_id is not None else 'No Student ID'}\n"
                     f"School Name: {school.name}\n"
                     f"{route_txt}"
@@ -1080,9 +1112,25 @@ def send_email_route(route_uid=None):
                         f"Route Description: \n"
                         f"{route.description} \n"
                     )
+                    stops = route.stops
+                    in_range_stops = []
+                    for stop in stops:
+                        if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
+                            in_range_stops.append(stop)
+                    if len(in_range_stops) == 0:
+                        route_txt += "Stops: None in range\n"
+                    else:
+                        route_txt += "\nPossible Stops: \n"
+                        for stop in in_range_stops:
+                            route_txt += (
+                                f"\n"
+                                f"\tStop Name: {stop.name}\n"
+                                f"\tPickup Time: {stop.pickup_time}\n"
+                                f"\tDropoff Time: {stop.dropoff_time}\n"
+                            )
                 student_txt += (
                     "\n"
-                    f"Student Name: {student.full_name}\n"
+                    f"Student Name: {student.name}\n"
                     f"Student ID: {student.student_id if student.student_id is not None else 'No Student ID'}\n"
                     f"School Name: {school.name}\n"
                     f"{route_txt}"

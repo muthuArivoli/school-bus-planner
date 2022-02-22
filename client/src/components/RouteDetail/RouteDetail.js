@@ -137,7 +137,7 @@ export default function RouteDetail(props) {
         if (schoolRes.data.success){
           setSchool(schoolRes.data.school.name);
           setSchoolLocation({lat: schoolRes.data.school.latitude, lng: schoolRes.data.school.longitude})
-          newStopRows = [...newStopRows, {name: schoolRes.data.school.name, id: -1, pickup_time: schoolRes.data.school.arrival_time, dropoff_time: schoolRes.data.school.departure_time }]
+          newStopRows = [{name: schoolRes.data.school.name, id: -1, pickup_time: schoolRes.data.school.arrival_time, dropoff_time: schoolRes.data.school.departure_time }, ...newStopRows]
           setStopRows(newStopRows);
         }
         else{
