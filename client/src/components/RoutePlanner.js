@@ -357,9 +357,20 @@ export default function RoutePlanner(props) {
       };
 
       // update stopRows
+      let exp = "^Stop [0-9]+$";
+      let max = stopRows.length+1;
+      for (let i=0;i<stopRows.length;i++) {
+        let stringmatch = stopRows[i].name.match(exp);
+        if (stringmatch != null) {
+          let num = stopRows[i].name.split(' ')[1];
+          max = Math.max(max, parseInt(num)+1);
+        }
+      }
+
       let stopindex = stopRows.length+1;
-      let newStopRow = {id: value.lat() + value.lng(), index: stopindex, name: "Stop "+stopindex, location: loc};
+      let newStopRow = {id: value.lat() + value.lng(), index: stopindex, name: `Stop ${max}`, location: loc};
       let newStopRows = [...stopRows, newStopRow];
+      console.log(newStopRow);
       setStopRows(newStopRows);
     }
   };
@@ -367,6 +378,11 @@ export default function RoutePlanner(props) {
   // function when stop icon is clicked
   const handleStopClick = (stop) => {
     let newStopRows = stopRows.filter(value => value.id != stop.id);
+    for (let i=0;i<newStopRows.length;i++) {
+      if (newStopRows[i]["index"] > stop.index) {
+        newStopRows[i]["index"] = newStopRows[i]["index"]-1;
+      }
+    }
     setStopRows(newStopRows);
   };
 
