@@ -439,6 +439,7 @@ export default function RoutePlanner(props) {
                 setSnackbarMsg('Route successfully created');
                 setSelectionModel([]);
                 setResetRoute(!resetRoute);
+                setToggleSelection("students");
             }
             else {
                 setSnackbarOpen(true);
@@ -470,6 +471,7 @@ export default function RoutePlanner(props) {
                 setSnackbarMsg('Route successfully updated');
                 setSelectionModel([]);
                 setResetRoute(!resetRoute);
+                setToggleSelection("students");
             }
             else{
                 setSnackbarOpen(true);
@@ -479,9 +481,6 @@ export default function RoutePlanner(props) {
           }
         );
       }
-      setSelectionModel([]);
-      setToggleSelection("students");
-      setResetRoute(!resetRoute);
     }
   }
 
