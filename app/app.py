@@ -1212,6 +1212,7 @@ def check_complete(students, stops):
             raise Exception("invalid query")
         stop_lat = stop['latitude']
         stop_long = stop['longitude']
+        found = []
         for stud_id in incomplete:
             student = Student.query.filter_by(id=stud_id).first()
             if student is None:
@@ -1224,7 +1225,8 @@ def check_complete(students, stops):
             stud_lat = user.latitude
             stud_long = user.longitude
             if get_distance(stop_lat, stop_long, stud_lat, stud_long) < 0.3:
-                incomplete.remove(stud_id)
+                found.append(stud_id)
+        incomplete = [id for id in incomplete if id not in found]
     if len(incomplete)>0:
         return False
     return True
