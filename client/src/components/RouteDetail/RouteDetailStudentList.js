@@ -39,8 +39,7 @@ export default function DataTable(props) {
               rows={props.rows}
               columns={columns}
               getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
-              pageSize={5}
-              rowsPerPageOptions={[5]}
+              autoPageSize
               disableSelectionOnClick
               density="compact"
             />

@@ -288,6 +288,17 @@ def user_options(username=None):
 @admin_required()
 def users_get(user_id=None):
     if request.method == 'GET':
+
+        if user_id is not None:
+            user = User.query.filter_by(id=user_id).first()
+            if user is None:
+                return {"msg": "Invalid User ID"}, 400
+            students = Student.query.filter_by(user_id = user_id).all()
+            all_students = []
+            for student in students:
+                all_students.append(student.as_dict())
+            return json.dumps({'success': True, 'user': user.as_dict(), 'students': all_students})
+
         args = request.args
         name_search = args.get('name', '')
         email_search = args.get('email', '')
@@ -309,16 +320,6 @@ def users_get(user_id=None):
             record_num = base_query.count()
 
         users = base_query
-        
-        if user_id is not None:
-            user = User.query.filter_by(id=user_id).first()
-            if user is None:
-                return {"msg": "Invalid User ID"}, 400
-            students = Student.query.filter_by(user_id = user_id).all()
-            all_students = []
-            for student in students:
-                all_students.append(student.as_dict())
-            return json.dumps({'success': True, 'user': user.as_dict(), 'students': all_students})
 
         all_users = []
         for user in users:
@@ -452,6 +453,26 @@ def student_options(student_uid=None):
 @admin_required()
 def students_get(student_uid=None):
     if request.method == 'GET':
+
+        if student_uid is not None:
+            student = Student.query.filter_by(id=student_uid).first()
+            student_dict = student.as_dict()
+            if student is None:
+                return json.dumps({'error': 'Invalid Student Id'})
+            user = User.query.filter_by(id=student.user_id).first()
+            if user is None:
+                return json.dumps({'error': 'Student doesn\'t have valid User'})
+            in_range=False
+            route = Route.query.filter_by(id=student.route_id).first()
+            if route is not None:
+                stops = route.stops
+                for stop in stops:
+                    if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
+                        in_range = True
+                        break
+            student_dict['in_range'] = in_range
+            return json.dumps({'success': True, 'student': student_dict})
+
         args = request.args
         name_search = args.get('name', '')
         id_search = args.get('id', None, type=int)
@@ -488,26 +509,6 @@ def students_get(student_uid=None):
             student_dict = student.as_dict()
             student_dict['in_range'] = in_range
             students.append(student_dict)
-
-
-        if student_uid is not None:
-            student = Student.query.filter_by(id=student_uid).first()
-            student_dict = student.as_dict()
-            if student is None:
-                return json.dumps({'error': 'Invalid Student Id'})
-            user = User.query.filter_by(id=student.user_id).first()
-            if user is None:
-                return json.dumps({'error': 'Student doesn\'t have valid User'})
-            in_range=False
-            route = Route.query.filter_by(id=student.route_id).first()
-            if route is not None:
-                stops = route.stops
-                for stop in stops:
-                    if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
-                        in_range = True
-                        break
-            student_dict['in_range'] = in_range
-            return json.dumps({'success': True, 'student': student_dict})
         
         all_students = []
         for student in students:
@@ -621,6 +622,13 @@ def schools_options(school_uid=None):
 @admin_required()
 def schools_get(school_uid=None):
     if request.method == 'GET':
+
+        if school_uid is not None:
+            school = School.query.filter_by(id=school_uid).first()
+            if school is None:
+                return json.dumps({'error': 'Invalid School Id'})
+            return json.dumps({'success': True, 'school': school.as_dict()})
+
         args = request.args
         name_search = args.get("name", '')
         page = args.get('page',None,type=int)
@@ -641,12 +649,6 @@ def schools_get(school_uid=None):
             record_num = base_query.count()
 
         schools = base_query
-
-        if school_uid is not None:
-            school = School.query.filter_by(id=school_uid).first()
-            if school is None:
-                return json.dumps({'error': 'Invalid School Id'})
-            return json.dumps({'success': True, 'school': school.as_dict()})
 
         all_schools = []
         for school in schools:
