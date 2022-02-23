@@ -14,13 +14,24 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Box from '@mui/material/Box';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import Divider from '@mui/material/Divider';
 
 let api_key = "AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o";
+
 
 const containerStyle = {
     height: "400px",
     width: "500px",
 };
+
+const titleStyle = (size, margin) => {
+  return(
+    { 
+      fontWeight: 'bold', 
+      fontSize: size, 
+      m: margin, 
+    });
+  };
 
 const CircleOptions = {
   strokeColor: '#d9db58',
@@ -49,8 +60,8 @@ const studentColumns = [
 const routeColumns = [
   { field: 'id', hide: true, width: 30},
   { field: 'name', headerName: "Name", width: 150},
-  { field: 'description', headerName: "Description", width: 100},
-  { field: 'completeness', headerName: "Route Complete", width: 150,
+  { field: 'description', headerName: "Description", flex: 1},
+  { field: 'completeness', headerName: "Is Route Complete?", width: 175,
     renderCell: (params) => (
     <>
     {
@@ -579,22 +590,90 @@ export default function RoutePlanner(props) {
   }, [])
 
   return (
-    <Stack spacing={2} justifyContent="center">
-      <ToggleButtonGroup
-          color="primary"
-          value={toggleSelection}
-          exclusive
-          onChange={handleToggleMode}
-        >
+    <Stack id="container-stack" spacing={5} justifyContent="center" alignItems="center">
+      <Stack id="top-stack" spacing={0} justifyContent="center">
+        <Typography variant="h3" align="left" sx={titleStyle(28, 1)}>
+          Current Routes: (Click on a route to start editing it)
+        </Typography>
+        <div style={{ height: 400, width: 1200 }}>
+          <div style={{ display: 'flex', height: '100%' }}>
+            <div style={{ flexGrow: 1 }}>
+              <DataGrid
+                components={{
+                  NoRowsOverlay: NoRoutesOverlay,
+                }}
+                rows={routeRows}
+                columns={routeColumns}
+                selectionModel={selectionModel}
+                onSelectionModelChange={(selectionModel) => setSelectionModel(selectionModel)}
+                getRowId={(row) => row.id}
+                autoPageSize
+                density="compact"
+              />
+            </div>
+          </div>
+        </div>
+      </Stack>
+
+      <Divider id="divider" style={{width:'100%'}}/>
+
+      <Stack id="bottom-stack" spacing={3} justifyContent="center" alignItems="center">
+
+        <ToggleButtonGroup color="primary" value={toggleSelection} exclusive onChange={handleToggleMode}>
           <ToggleButton value="students">Student Mode</ToggleButton>
           <ToggleButton value="stops" disabled={routeInfo["name"].length == 0}>Stops Mode</ToggleButton>
-      </ToggleButtonGroup>
-      {toggleSelection=="stops" ? <Stack spacing={0} justifyContent="center">
-          <Typography variant="h5" align="left">
+        </ToggleButtonGroup>
+
+        <Stack id="bottom-middle-stack" direction="row" spacing={10} justifyContent="center" alignItems="center" sx={{ width: 1200 }}>
+          <Stack id="route-info-stack" spacing={2} justifyContent="center" alignItems="center">
+            <Stack id="indicator-and-check-stack" direction="row" spacing={1} justifyContent="center" alignItems="center">
+              <Typography variant="h5" align="left" sx={{ width: 300, fontWeight: 'bold', fontSize: 28 }}>
+                Current Route: {routeInfo["name"].length==0 ? "None" : routeInfo["name"]}
+              </Typography>
+              <Button variant="contained" color="primary" onClick={handleCheckCompleteness} disabled={routeInfo["name"].length == 0} sx={{ width: 250 }}>
+                Check Route Completeness
+              </Button>
+            </Stack>
+            <TextField label="Route Name" 
+            variant="outlined" 
+            value={routeInfo["name"]} 
+            onChange={(e) => handleInfoChange("name", e.target.value)} 
+            fullWidth />
+            <TextField label="Route Description" 
+            variant="outlined"
+            multiline 
+            rows={10} 
+            value={routeInfo["description"]} 
+            onChange={(e) => handleInfoChange("description", e.target.value)} 
+            fullWidth />
+          </Stack>
+          <Stack id="map-stack" spacing={0} justifyContent="center" alignItems="center" sx={{ p: 2, border: 2, borderRadius: '16px', borderColor: '#dcdcdc'}}>
+            {toggleSelection=="stops" ? <Typography variant="subtitle2" align="left">Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>
+            : <Typography variant="subtitle2" align="left">Click on an address to add it to the route! Click on that address again to remove it.</Typography>}
+            <LoadScript googleMapsApiKey={api_key}>
+              <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad} options={mapOptions} onDblClick={(value) => handleMapClick(value.latLng)}>
+                <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
+                {students.map((student, index) => (
+                  <Marker key={index} title={student.name} position={student.location} onClick={() => handleAddressClick(student)}
+                  icon={{url: studentRows.find(element => student.id == element.id) ? "http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"
+                  : (student.route == null ? "http://maps.google.com/mapfiles/kml/paddle/red-circle.png"
+                  : "http://maps.google.com/mapfiles/kml/paddle/blu-circle.png") }}/> ))}
+                {toggleSelection=="stops" ? stopRows.map((stop, index) => (
+                  <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop)} 
+                  icon={{url: "http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"}}/>)) : [] } 
+                {toggleSelection=="stops" ? students.map((student, index) => (
+                  <Circle key={index} center={student.location} options={CircleOptions} />)) : [] } 
+              </GoogleMap>
+            </LoadScript>
+          </Stack>
+        </Stack>
+
+        { toggleSelection=="stops" ? <Stack id="stop-stable-stack" spacing={0} justifyContent="center">
+          <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
             Current Stops in Route: 
-            (double click on any stop name or index to edit it)
+            (double click on any stop name or ordering to edit it)
           </Typography>
-          <div style={{ height: 250, width: 800 }}>
+          <div style={{ height: 350, width: 1000 }}>
             <div style={{ display: 'flex', height: '100%' }}>
               <div style={{ flexGrow: 1 }}>
                 <DataGrid
@@ -611,85 +690,11 @@ export default function RoutePlanner(props) {
               </div>
             </div>
           </div>
-        </Stack> : null}
-    <Snackbar open={snackbarOpen} onClose={handleClose} anchorOrigin={{vertical: 'bottom', horizontal: 'center'}} sx={{ width: 600 }}>
-      <Alert onClose={handleClose} severity={snackbarSeverity}>
-        {snackbarMsg}
-      </Alert>
-    </Snackbar>
-      
-    <Stack direction="row" spacing={8} justifyContent="center">
-      <Stack spacing={2.5} justifyContent="center">
-
-        <Stack spacing={0} justifyContent="center">
-          {toggleSelection=="stops" ? <Typography variant="subtitle2" align="left">Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>: null}
-          <LoadScript googleMapsApiKey={api_key}>
-            <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad} options={mapOptions} onDblClick={(value) => handleMapClick(value.latLng)}>
-              <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
-              {students.map((student, index) => (
-                <Marker key={index} title={student.name} position={student.location} onClick={() => handleAddressClick(student)}
-                icon={{url: studentRows.find(element => student.id == element.id) ? "http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"
-                : (student.route == null ? "http://maps.google.com/mapfiles/kml/paddle/red-circle.png"
-                : "http://maps.google.com/mapfiles/kml/paddle/blu-circle.png") }}/> ))}
-              {toggleSelection=="stops" ? stopRows.map((stop, index) => (
-                <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop)} 
-                icon={{url: "http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"}}/>)) : [] } 
-              {toggleSelection=="stops" ? students.map((student, index) => (
-                <Circle key={index} center={student.location} options={CircleOptions} />)) : [] } 
-            </GoogleMap>
-          </LoadScript>
-        </Stack>
-
-        <Stack spacing={0} justifyContent="center">
-          <Typography variant="h5" align="left">
-            Current Routes:
-          </Typography>
-          <div style={{ height: 400, width: 400 }}>
-            <div style={{ display: 'flex', height: '100%' }}>
-              <div style={{ flexGrow: 1 }}>
-                <DataGrid
-                  components={{
-                    NoRowsOverlay: NoRoutesOverlay,
-                  }}
-                  rows={routeRows}
-                  columns={routeColumns}
-                  selectionModel={selectionModel}
-                  onSelectionModelChange={(selectionModel) => setSelectionModel(selectionModel)}
-                  getRowId={(row) => row.id}
-                  autoPageSize
-                  density="compact"
-                />
-              </div>
-            </div>
-          </div>
-        </Stack>
-      </Stack>
-      <Stack spacing={2.5} justifyContent="center">
-        <Button variant="contained" color="primary" onClick={handleCheckCompleteness} disabled={routeInfo["name"].length == 0}>Check Route Completeness</Button>
-        <Typography variant="h5" align="left">
-          Current Route: {routeInfo["name"].length==0 ? "None" : routeInfo["name"]}
-        </Typography>
-        <TextField
-          fullWidth
-          variant="outlined"
-          label="Route Name"
-          value={routeInfo["name"]}
-          onChange={(e) => handleInfoChange("name", e.target.value)}
-        />
-        <TextField
-          fullWidth
-          variant="outlined"
-          label="Route Description"
-          multiline
-          rows={10}
-          value={routeInfo["description"]}
-          onChange={(e) => handleInfoChange("description", e.target.value)}
-        />
-        <Stack spacing={0} justifyContent="center">
-          <Typography variant="h5" align="left">
+        </Stack> : <Stack id="student-table-stack" spacing={0} justifyContent="center">
+          <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
             Current Students in Route:
           </Typography>
-          <div style={{ height: 400, width: 400 }}>
+          <div style={{ height: 350, width: 1000 }}>
             <div style={{ display: 'flex', height: '100%' }}>
               <div style={{ flexGrow: 1 }}>
                 <DataGrid
@@ -705,12 +710,18 @@ export default function RoutePlanner(props) {
               </div>
             </div>
           </div>
-        </Stack>
+        </Stack> }
+
         <Button variant="contained" color="primary" onClick={handleSubmit} disabled={routeInfo["name"] == ""}>
           {selectionModel.length == 0 ? "Add Route" : "Update Route"}
         </Button>
-      </Stack>  
-    </Stack>
+      </Stack>
+
+      <Snackbar open={snackbarOpen} onClose={handleClose} anchorOrigin={{vertical: 'bottom', horizontal: 'center'}} sx={{ width: 600 }}>
+        <Alert onClose={handleClose} severity={snackbarSeverity}>
+          {snackbarMsg}
+        </Alert>
+      </Snackbar>
     </Stack>
   )
 } 
