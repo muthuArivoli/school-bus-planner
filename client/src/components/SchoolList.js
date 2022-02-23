@@ -53,6 +53,8 @@ export default function DataTable(props) {
   const [sortModel, setSortModel] = React.useState([]);
   const [filterStr, setFilterStr] = React.useState("");
 
+  const [loading , setLoading] = React.useState(true);
+
   const [filterType, setFilterType] = React.useState(null);
   const filterValues = ['name'];
 
@@ -61,6 +63,7 @@ export default function DataTable(props) {
 
   React.useEffect(()=> {
     const fetchData = async() => {
+      setLoading(true);
       let params = {}
       params.page = showAll ? null : page + 1;
 
@@ -89,12 +92,6 @@ export default function DataTable(props) {
       if (result.data.success){
         console.log(result.data);
         setTotalRows(result.data.records);
-        if(showAll){
-          setPageSize(result.data.records);
-        }
-        else{
-          setPageSize(10);
-        }
         let arr = result.data.schools.map((value) => {
           console.log({name: value.name, id: value.id, address: value.address});
           return {name: {name: value.name, id: value.id}, address: value.address, id: value.id, departure_time: value.departure_time, arrival_time: value.arrival_time};
@@ -107,6 +104,7 @@ export default function DataTable(props) {
         props.setSnackbarSeverity("error");
         navigate("/routes");
       }
+      setLoading(false);
     };
     fetchData();
   }, [page, sortModel, filterStr, filterType, showAll])
@@ -147,18 +145,20 @@ export default function DataTable(props) {
         columns={columns}
         getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
         pagination
-        paginationMode="server"
+        paginationMode={totalRows > 100 && pageSize != 10 ? "client" : "server"}
         rowCount={totalRows}
         page={page}
         onPageChange={(page) => setPage(page)}
         pageSize={pageSize}
         onPageSizeChange={(pageSize) => {setShowAll(pageSize != 10);
+          setPageSize(pageSize)
           setPage(0);}}
-        rowsPerPageOptions={[10, totalRows]}
+        rowsPerPageOptions={[10, totalRows > 100 ? 100 : totalRows]}
         sortingMode="server"
         sortModel={sortModel}
         onSortModelChange={(sortModel) => setSortModel(sortModel)}
         disableSelectionOnClick
+        loading={loading}
       />
       <Button
       component={RouterLink}

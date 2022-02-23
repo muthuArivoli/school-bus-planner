@@ -10,13 +10,13 @@ export default function SchoolDetMid(props) {
     <Typography variant="body1" align="center">
       Bus Routes
     </Typography>
-    <SchoolDetailRouteList rows={props.routes}/>
+    <SchoolDetailRouteList rows={props.routes} loading={props.loading}/>
   </Stack>
   <Stack spacing={1} sx={{ width: '100%'}}>
     <Typography variant="body1" align="center">
       Students
     </Typography>
-    <SchoolDetailStudentList rows={props.students}/>
+    <SchoolDetailStudentList rows={props.students} loading={props.loading}/>
   </Stack>
 </Stack>
   );

@@ -52,6 +52,8 @@ export default function DataTable(props) {
   const [sortModel, setSortModel] = React.useState([]);
   const [filterStr, setFilterStr] = React.useState("");
   const [showAll, setShowAll] = React.useState(false);
+  const [loading , setLoading] = React.useState(true);
+
 
   const [filterType, setFilterType] = React.useState(null);
   const filterValues = ['name', 'email'];
@@ -61,6 +63,7 @@ export default function DataTable(props) {
   React.useEffect(()=> {
     const fetchData = async() => {
 
+      setLoading(true);
       let params = {}
       params.page = showAll ? null : page + 1;
 
@@ -92,12 +95,6 @@ export default function DataTable(props) {
         console.log(result.data.users);
         console.log(result.data);
         setTotalRows(result.data.records);
-        if(showAll){
-          setPageSize(result.data.records);
-        }
-        else{
-          setPageSize(10);
-        }
         let arr = result.data.users.map((value) => {
           console.log({name: value.full_name, id: value.id, address: value.uaddress, email: value.email, admin: value.admin_flag});
           return {name: {name: value.full_name, id: value.id}, id: value.id, address: value.uaddress, email: value.email, admin: value.admin_flag};
@@ -110,6 +107,7 @@ export default function DataTable(props) {
         props.setSnackbarSeverity("error");
         navigate("/users");
       }
+      setLoading(false);
     };
     fetchData();
   }, [page, sortModel, filterStr, filterType, showAll])
@@ -150,18 +148,20 @@ export default function DataTable(props) {
         columns={columns}
         getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
         pagination
-        paginationMode="server"
         rowCount={totalRows}
+        paginationMode={totalRows > 100 && pageSize != 10 ? "client" : "server"}
         page={page}
         onPageChange={(page) => setPage(page)}
         pageSize={pageSize}
         onPageSizeChange={(pageSize) => {setShowAll(pageSize != 10);
+          setPageSize(pageSize)
           setPage(0);}}
-        rowsPerPageOptions={[10, totalRows]}
+        rowsPerPageOptions={[10, totalRows > 100 ? 100 : totalRows]}
         sortingMode="server"
         sortModel={sortModel}
         onSortModelChange={(sortModel) => setSortModel(sortModel)}
         disableSelectionOnClick
+        loading={loading}
       />
     </div>
     <Button

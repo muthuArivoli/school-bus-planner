@@ -16,6 +16,7 @@ export default function SchoolDetail(props) {
   let { id } = useParams();
   let navigate = useNavigate();
 
+  const [loading, setLoading] = React.useState(true);
   const [data, setData] = React.useState({name: "", address: "", arrival_time: "", departure_time: ""});
 
   const [students, setStudents] = React.useState([]);
@@ -23,6 +24,7 @@ export default function SchoolDetail(props) {
 
   React.useEffect(() => {
     const fetchData = async() => {
+      setLoading(true);
       const result = await axios.get(
         process.env.REACT_APP_BASE_URL+`/school/${id}`, {
           headers: {
@@ -89,7 +91,7 @@ export default function SchoolDetail(props) {
         props.setSnackbarSeverity("error");
         navigate("/routes");
       }
-
+      setLoading(false);
     };
 
     fetchData();
@@ -158,7 +160,7 @@ export default function SchoolDetail(props) {
 
         </Stack>   
 
-        <SchoolDetailMid students={students} routes={routes}/>
+        <SchoolDetailMid students={students} routes={routes} loading={loading}/>
 
         <Stack direction="row" spacing={3} justifyContent="center">
           <Button component={RouterLink}

@@ -61,6 +61,7 @@ export default function DataTable(props) {
   const [sortModel, setSortModel] = React.useState([]);
   const [filterStr, setFilterStr] = React.useState("");
 
+  const [loading , setLoading] = React.useState(true);
   const [filterType, setFilterType] = React.useState(null);
   const filterValues = ['name'];
 
@@ -72,6 +73,7 @@ export default function DataTable(props) {
 
   React.useEffect(()=> {
     const fetchData = async() => {
+      setLoading(true);
       let params = {}
       params.page = showAll ? null : page + 1;
 
@@ -102,12 +104,6 @@ export default function DataTable(props) {
         let data = result.data.routes
         console.log(data);
         setTotalRows(result.data.records);
-        if(showAll){
-          setPageSize(result.data.records);
-        }
-        else{
-          setPageSize(10);
-        }
         for (let i=0;i<data.length; i++){
           const getRes = await axios.get(
             process.env.REACT_APP_BASE_URL+`/school/${data[i].school_id}`, {
@@ -135,6 +131,7 @@ export default function DataTable(props) {
         props.setSnackbarSeverity("error");
         navigate("/routes");
       }
+      setLoading(false);
     };
     fetchData();
   }, [page, sortModel, filterStr, filterType, showAll])
@@ -175,18 +172,20 @@ export default function DataTable(props) {
         columns={columns}
         getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
         pagination
-        paginationMode="server"
+        paginationMode={totalRows > 100 && pageSize != 10 ? "client" : "server"}
         rowCount={totalRows}
         page={page}
         onPageChange={(page) => setPage(page)}
         pageSize={pageSize}
         onPageSizeChange={(pageSize) => {setShowAll(pageSize != 10);
+          setPageSize(pageSize)
           setPage(0);}}
-        rowsPerPageOptions={[10, totalRows]}
+        rowsPerPageOptions={[10, totalRows > 100 ? 100 : totalRows]}
         sortingMode="server"
         sortModel={sortModel}
         onSortModelChange={(sortModel) => setSortModel(sortModel)}
         disableSelectionOnClick
+        loading={loading}
       />
     </div>
     </>
