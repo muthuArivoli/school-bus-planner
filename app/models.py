@@ -103,7 +103,7 @@ class Student(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
-    student_id = db.Column(db.Integer)
+    student_id = db.Column(db.Integer, nullable=True)
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     route_id = db.Column(db.Integer, ForeignKey('routes.id'))
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
