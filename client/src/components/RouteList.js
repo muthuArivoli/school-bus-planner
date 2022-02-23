@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import { DataGrid, getGridStringOperators } from '@mui/x-data-grid';
+import { DataGrid, GridOverlay } from '@mui/x-data-grid';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import SearchIcon from '@mui/icons-material/Search';
@@ -10,6 +10,7 @@ import Link from '@mui/material/Link';
 import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
 import CheckIcon from '@mui/icons-material/Check';
+import Box from '@mui/material/Box';
 import CloseIcon from '@mui/icons-material/Close';
 
 const columns = [
@@ -51,6 +52,14 @@ const columns = [
     )
   }
 ];
+
+function NoRoutesOverlay() {
+  return (
+    <GridOverlay>
+      <Box sx={{ mt: 1 }}>No Routes Exist</Box>
+    </GridOverlay>
+  );
+}
 
 export default function DataTable(props) {
 
@@ -186,6 +195,9 @@ export default function DataTable(props) {
         onSortModelChange={(sortModel) => setSortModel(sortModel)}
         disableSelectionOnClick
         loading={loading}
+        components={{
+          NoRowsOverlay: NoRoutesOverlay,
+        }}
       />
     </div>
     </>

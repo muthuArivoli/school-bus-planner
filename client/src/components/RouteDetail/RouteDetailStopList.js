@@ -1,8 +1,16 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridOverlay } from '@mui/x-data-grid';
 import {Link as RouterLink} from 'react-router-dom';
+import Box from '@mui/material/Box';
 
+function NoStopsOverlay() {
+  return (
+    <GridOverlay>
+      <Box sx={{ mt: 1 }}>No Stops in Route</Box>
+    </GridOverlay>
+  );
+}
 
 const columns = [
   {field: 'name', headerName: 'Stop', width: 200},
@@ -24,6 +32,9 @@ export default function DataTable(props) {
               autoPageSize
               disableSelectionOnClick
               density="compact"
+              components={{
+                NoRowsOverlay: NoStopsOverlay,
+              }}
             />
           </div>
         </div>

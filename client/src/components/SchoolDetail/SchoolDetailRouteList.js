@@ -1,10 +1,19 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridOverlay } from '@mui/x-data-grid';
 import {Link as RouterLink} from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import Link from '@mui/material/Link';
+import Box from '@mui/material/Box';
+
+function NoRoutesOverlay() {
+  return (
+    <GridOverlay>
+      <Box sx={{ mt: 1 }}>No Routes in School</Box>
+    </GridOverlay>
+  );
+}
 
 const columns = [
   { field: 'data', headerName: 'Route Name', width: 200,
@@ -41,6 +50,9 @@ export default function DataTable(props) {
               loading={props.loading}
               disableSelectionOnClick
               density="compact"
+              components={{
+                NoRowsOverlay: NoRoutesOverlay,
+              }}
             />
           </div>
         </div>
