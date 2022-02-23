@@ -1292,9 +1292,9 @@ def update_stop_calculations(school):
         stop_dicts = [stop.as_dict() for stop in stops]
         sorted_stops = sorted(stop_dicts, key=lambda x: x['index'])
         dropoff_times, pickup_times = get_time_and_dist(sorted_stops, school.departure_time, school.arrival_time, school.latitude, school.longitude)
-        for f in range(len(stops)):
+        for f in range(len(sorted_stops)):
             stop_info = sorted_stops[f]
-            stop_to_edit = Stop.query.filter_by(id=stop_info['id'])
+            stop_to_edit = Stop.query.filter_by(id=stop_info['id']).first()
             stop_to_edit.pickup_time = pickup_times[f]
             stop_to_edit.dropoff_time = dropoff_times[f]
     db.session.commit()
