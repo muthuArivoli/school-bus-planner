@@ -19,6 +19,7 @@ services:
   app:
     build: ./app
     image: marivoli/school-bus
+    restart: always  
     container_name: app
     ports:
       - 5000:5000
@@ -40,6 +41,7 @@ services:
         - URI=/api
     image: marivoli/school-bus-node
     container_name: client
+    restart: always  
     ports: 
       - 80:80
       - 443:443
