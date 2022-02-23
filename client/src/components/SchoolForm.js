@@ -14,6 +14,8 @@ import Typography from '@mui/material/Typography';
 import DesktopTimePicker from '@mui/lab/DesktopTimePicker';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const theme = createTheme();
 
@@ -28,6 +30,34 @@ export default function SchoolForm(props) {
   const [departureTime, setDepartureTime] = React.useState(props.departureTime || new Date('2018-01-01T00:00:00.000Z'));
   const [arrivalTime, setArrivalTime] = React.useState(props.arrivalTime || new Date('2018-01-01T00:00:00.000Z'));
 
+  const [nameList, setNameList] = React.useState([])
+
+  let navigate = useNavigate();
+
+  React.useEffect(()=>{
+    const fetchSchoolList = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+'/school', {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (result.data.success){
+        let arr = result.data.schools.map((value) => {
+          return value.name;
+        })
+        setNameList(arr);
+      }
+      else{
+        props.setSnackbarMsg(`Schools could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/schools");
+      }
+    };
+    fetchSchoolList();
+  },[])
 
   React.useEffect(() => {
     setName(props.name);
@@ -81,6 +111,8 @@ export default function SchoolForm(props) {
           <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
+                          error={name!=props.name && nameList.includes(name)}
+                          helperText={(name!=props.name && nameList.includes(name)) ? "Name already taken" : ""}
                           autoFocus
                           required
                           label="Name"
@@ -124,7 +156,7 @@ export default function SchoolForm(props) {
                 <Button type="submit"
                   variant="contained"
                   fullWidth
-                  disabled={name=="" || address == "" || departureTime == "" || arrivalTime == ""}
+                  disabled={name=="" || address == "" || departureTime == "" || arrivalTime == "" ||(name != props.name && nameList.includes(name))}
                   sx={{ mt: 3, mb: 2 }}
                   >
                     Submit
