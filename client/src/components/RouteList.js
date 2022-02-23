@@ -13,7 +13,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
 const columns = [
-  { field: 'name', headerName: 'Route Name', width: 450, filterable: false,
+  { field: 'name', headerName: 'Route Name', width: 350, filterable: false,
   renderCell: (params) => (
     <>
     <Link component={RouterLink} to={"/routes/" + params.value.id}>
@@ -25,13 +25,13 @@ const columns = [
   {
     field: 'school',
     headerName: 'School',
-    width: 450,
+    width: 350,
     filterable: false
   },
   {
     field: 'students',
     headerName: 'Number of Students',
-    width: 250,
+    width: 200,
     filterable: false
   },
   {

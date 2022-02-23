@@ -12,6 +12,8 @@ import Alert from '@mui/material/Alert';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Box from '@mui/material/Box';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 let api_key = "AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o";
 
@@ -48,7 +50,16 @@ const routeColumns = [
   { field: 'id', hide: true, width: 30},
   { field: 'name', headerName: "Name", width: 150},
   { field: 'description', headerName: "Description", width: 100},
-  { field: 'completeness', headerName: "?", width: 40},
+  { field: 'completeness', headerName: "Route Complete", width: 150,
+    renderCell: (params) => (
+    <>
+    {
+      params.value ? 
+      <CheckIcon/> : 
+      <CloseIcon/>
+    }
+    </>
+  )},
 ];
 
 const stopColumns = [

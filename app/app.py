@@ -627,7 +627,23 @@ def schools_get(school_uid=None):
             school = School.query.filter_by(id=school_uid).first()
             if school is None:
                 return json.dumps({'error': 'Invalid School Id'})
-            return json.dumps({'success': True, 'school': school.as_dict()})
+            school_dict = school.as_dict()
+            if school_dict["routes"] is not None:
+                for route_index in range(len(school_dict["routes"])):
+                    route = school_dict["routes"][route_index]
+                    stops = route["stops"]
+                    stop_dicts = []
+                    for stop_id in stops:
+                        stop = Stop.query.filter_by(id=stop_id).first()
+                        stop_dicts.append(stop.as_dict())
+                    complete = False
+                    try:
+                        complete = check_complete(route['students'], stop_dicts)
+                    except Exception:
+                        return json.dumps({'error': 'Error in Completion Calculation'})
+                    school_dict["routes"][route_index]['complete'] = complete  
+
+            return json.dumps({'success': True, 'school': school_dict})
 
         args = request.args
         name_search = args.get("name", '')
