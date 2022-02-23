@@ -593,8 +593,7 @@ export default function RoutePlanner(props) {
                   rows={stopRows}
                   columns={stopColumns}
                   getRowId={(row) => row.id}
-                  pageSize={5}
-                  rowsPerPageOptions={[5]}
+                  autoPageSize
                   density="compact"
                   onCellEditCommit = {(row) => handleStopCellEdit(row, stopRows)}
                 />
@@ -646,8 +645,7 @@ export default function RoutePlanner(props) {
                   selectionModel={selectionModel}
                   onSelectionModelChange={(selectionModel) => setSelectionModel(selectionModel)}
                   getRowId={(row) => row.id}
-                  pageSize={5}
-                  rowsPerPageOptions={[5]}
+                  autoPageSize
                   density="compact"
                 />
               </div>
@@ -690,8 +688,7 @@ export default function RoutePlanner(props) {
                   rows={studentRows}
                   columns={studentColumns}
                   getRowId={(row) => row.id}
-                  pageSize={5}
-                  rowsPerPageOptions={[5]}
+                  autoPageSize
                   density="compact"
                 />
               </div>

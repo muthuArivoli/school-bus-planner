@@ -119,8 +119,7 @@ const mapOptions = {
                       rows={stopRows}
                       columns={stopColumns}
                       getRowId={(row) => row.id}
-                      pageSize={5}
-                      rowsPerPageOptions={[5]}
+                      autoPageSize
                       density="compact"
                     />
                   </div>
