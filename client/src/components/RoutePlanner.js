@@ -342,7 +342,7 @@ export default function RoutePlanner(props) {
       bounds.extend(schoolLocation);
       map.fitBounds(bounds);
     }
-  }, [students, schoolLocation]);
+  }, [students, schoolLocation, map]);
 
   // function when snackbar is closed
   const handleClose = (event, reason) => {
