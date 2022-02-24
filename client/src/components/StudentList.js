@@ -35,7 +35,14 @@ const columns = [
     headerName: 'Route',
     width: 250,
     sortable: false,
-    filterable: false
+    filterable: false,
+    renderCell:(params) => (
+      params.value == null ? 
+      <CloseIcon/> : 
+       <Link component={RouterLink} to={"/routes/" + params.value.id}>
+       {params.value.name}
+       </Link>
+      )
   },
   {
     field: 'in_range',
