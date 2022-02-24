@@ -119,7 +119,7 @@ export default function ParentView() {
     <Alert onClose={handleClose} severity={snackbarSeverity}>
       {snackbarMsg}
     </Alert>
-  </Snackbar>
+    </Snackbar>
     <Grid container alignItems="center" justifyContent="center" pt={5}>
         <Stack spacing={4} sx={{ width: '100%'}}>
           <Stack direction="row" spacing={25} justifyContent="center">
@@ -134,56 +134,59 @@ export default function ParentView() {
           </Typography>
           </Stack>
         </Stack>
-        <div style={{ height: 400, width: '100%' }}>
-        <div style={{ display: 'flex', height: '100%' }}>
-          <div style={{ flexGrow: 1 }}>
-            <DataGrid
-              components={{
-                NoRowsOverlay: NoStudentsOverlay,
-              }}
-              rows={rows}
-              columns={columns}
-              getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
-              autoPageSize
-              disableSelectionOnClick
-              density="compact"
-            />
+
+        <Stack spacing={1} justifyContent="center" alignItems="center" sx={{ width: '100%'}}>
+          <div style={{ height: 400, width: '100%' }}>
+            <div style={{ display: 'flex', height: '100%' }}>
+              <div style={{ flexGrow: 1 }}>
+                <DataGrid
+                  components={{
+                    NoRowsOverlay: NoStudentsOverlay,
+                  }}
+                  rows={rows}
+                  columns={columns}
+                  getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
+                  autoPageSize
+                  disableSelectionOnClick
+                  density="compact"
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <Typography variant="h5" align="left">
-        Change Password:
-      </Typography>
+          <Typography variant="h5" align="left">
+            Change Password:
+          </Typography>
 
-      <TextField
-                  fullWidth
-                  onChange={(e) => setPassword(e.target.value)}
-                  value={password}
-                  name="password"
-                  label="Password"
-                  type="password"
-                  id="password"
-                  autoComplete="new-password"
-                />
-                <TextField
-                  onChange={(e) => setConPassword(e.target.value)}
-                  value={conPassword}
-                  error={password != conPassword}
-                  helperText={password != conPassword ? "Passwords do not match" : ""}
-                  fullWidth
-                  name="confirm-password"
-                  label="Confirm Password"
-                  type="password"
-                  id="confirm-password"
-                />
-                  <Button
-                  variant="contained"
-                  onClick={handleSubmit}
-                  disabled={password == "" || password != conPassword}
-                  >
-                    Submit
-                </Button>
+          <TextField
+            fullWidth
+            onChange={(e) => setPassword(e.target.value)}
+            value={password}
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="new-password"
+          />
+          <TextField
+            onChange={(e) => setConPassword(e.target.value)}
+            value={conPassword}
+            error={password != conPassword}
+            helperText={password != conPassword ? "Passwords do not match" : ""}
+            fullWidth
+            name="confirm-password"
+            label="Confirm Password"
+            type="password"
+            id="confirm-password"
+          />
+            <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={password == "" || password != conPassword}
+            >
+              Submit
+          </Button>
+        </Stack>
 
       </Grid>
       </>

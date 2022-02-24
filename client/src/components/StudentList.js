@@ -35,7 +35,14 @@ const columns = [
     headerName: 'Route',
     width: 250,
     sortable: false,
-    filterable: false
+    filterable: false,
+    renderCell: (params) => (
+        params.value == "" ? 
+        <CloseIcon /> : 
+        <Link component={RouterLink} to={"/routes/" + params.value.id}>
+          {params.value.name}
+        </Link>
+      ),
   },
   {
     field: 'in_range',
@@ -159,6 +166,10 @@ export default function DataTable(props) {
     fetchData();
   }, [page, sortModel, filterType, filterStr, showAll])
 
+  const handleRowClick = (row) => {
+    console.log(row);
+  };
+
   return (
     <>
     <Grid container>
@@ -193,7 +204,8 @@ export default function DataTable(props) {
       <DataGrid
         rows={rows}
         columns={columns}
-        getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
+        onRowClick={(row) => handleRowClick(row)}
+        getRowId={(row) => row.id}
         pagination
         paginationMode={totalRows > 100 && pageSize != 10 ? "client" : "server"}
         rowCount={totalRows}
