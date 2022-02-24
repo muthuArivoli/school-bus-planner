@@ -23,7 +23,7 @@ const columns = [
     </>
   )
   },
-  { field: 'student_id', headerName: 'Student ID', width: 150, type: 'number', filterable: false},
+  { field: 'student_id', headerName: 'Student ID', width: 150, filterable: false},
   { 
     field: 'school',
     headerName: 'School',
