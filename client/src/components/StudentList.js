@@ -37,7 +37,7 @@ const columns = [
     sortable: false,
     filterable: false,
     renderCell: (params) => (
-        params.value == "" ? 
+        params.value == null ? 
         <CloseIcon /> : 
         <Link component={RouterLink} to={"/routes/" + params.value.id}>
           {params.value.name}
@@ -125,7 +125,7 @@ export default function DataTable(props) {
             }
           );
           if (getRes.data.success){
-            arr = [...arr, {name: {name: data[i].name, id: data[i].id}, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id, in_range: data[i].in_range}]
+            arr = [...arr, {name: {name: data[i].name, id: data[i].id}, student_id: data[i].student_id, school: getRes.data.school.name, route: null, id: data[i].id, in_range: data[i].in_range}]
           }
           else{
             props.setSnackbarMsg(`Students could not be loaded`);
@@ -142,7 +142,7 @@ export default function DataTable(props) {
               }
             );
             if (getRouteRes.data.success){
-              arr[arr.length - 1].route = getRouteRes.data.route.name;
+              arr[arr.length - 1].route = {name: getRouteRes.data.route.name, id: data[i].route_id};
             }
             else{
               props.setSnackbarMsg(`Students could not be loaded`);
