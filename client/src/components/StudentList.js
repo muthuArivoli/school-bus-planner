@@ -32,7 +32,7 @@ const columns = [
   },
   {
     field: 'route',
-    headerName: 'Has Route?',
+    headerName: 'Route',
     width: 250,
     sortable: false,
     filterable: false
