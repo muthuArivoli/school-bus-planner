@@ -135,7 +135,7 @@ export default function ParentView() {
           </Stack>
         </Stack>
 
-        <Stack spacing={1} justifyContent="center" alignItems="center">
+        <Stack spacing={1} justifyContent="center" alignItems="center" sx={{ width: '100%'}}>
           <div style={{ height: 400, width: '100%' }}>
             <div style={{ display: 'flex', height: '100%' }}>
               <div style={{ flexGrow: 1 }}>
