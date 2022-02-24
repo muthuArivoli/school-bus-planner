@@ -22,7 +22,7 @@ const columns = [
       {params.value.name}
     </Link>)},
     {
-      field: 'route', headerName: 'Route', width: 200,
+      field: 'route', headerName: 'Has Route?', width: 200,
       renderCell:(params) => (
       params.value == null ? 
       <CloseIcon/> : 
@@ -33,7 +33,7 @@ const columns = [
     },
   {
     field: 'in_range',
-    headerName: 'In Route Range',
+    headerName: 'Has a Stop?',
     width: 150,
     renderCell: (params) => (
       <>
