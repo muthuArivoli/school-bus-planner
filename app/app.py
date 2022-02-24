@@ -36,7 +36,7 @@ jwt = JWTManager(app)
 logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
 YOUR_DOMAIN_NAME="mail.hypotheticaltransportfive.email"
-API_KEY = open('email_api.key', 'r').read()
+API_KEY = open('email_api.key', 'r').read().strip().replace('\n', '')
 
 DOMAIN = os.getenv("DOMAIN", "https://hypotheticaltransportfive.colab.duke.edu")
 
