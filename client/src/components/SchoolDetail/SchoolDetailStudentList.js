@@ -33,7 +33,7 @@ const columns = [
     },
   {
     field: 'in_range',
-    headerName: 'In Route Range',
+    headerName: 'Has a Stop?',
     width: 150,
     renderCell: (params) => (
       <>

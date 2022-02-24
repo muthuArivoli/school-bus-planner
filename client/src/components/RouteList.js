@@ -37,7 +37,7 @@ const columns = [
   },
   {
     field: 'complete',
-    headerName: 'Route Complete',
+    headerName: 'Is Route Complete?',
     width: 150,
     filterable: false,
     sortable: false,
@@ -155,7 +155,7 @@ export default function DataTable(props) {
       autoSelect
       onChange={(e, new_value) => setFilterType(new_value)}
       renderInput={(params) => (
-        <TextField {...params} label="Filter Type" />
+        <TextField {...params} label="Filter By..." />
       )}
     />
     </Grid>

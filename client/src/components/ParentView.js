@@ -152,6 +152,10 @@ export default function ParentView() {
         </div>
       </div>
 
+      <Typography variant="h5" align="left">
+        Change Password:
+      </Typography>
+
       <TextField
                   fullWidth
                   onChange={(e) => setPassword(e.target.value)}

@@ -39,7 +39,7 @@ const columns = [
   },
   {
     field: 'in_range',
-    headerName: 'In Route Range',
+    headerName: 'Has a Stop?',
     width: 150,
     renderCell: (params) => (
       <>
@@ -169,7 +169,7 @@ export default function DataTable(props) {
       autoSelect
       onChange={(e, new_value) => setFilterType(new_value)}
       renderInput={(params) => (
-        <TextField {...params} label="Filter Type" />
+        <TextField {...params} label="Filter By..." />
       )}
     />
     </Grid>

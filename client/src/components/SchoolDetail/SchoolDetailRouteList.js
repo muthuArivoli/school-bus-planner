@@ -24,7 +24,7 @@ const columns = [
     )
   },
   {
-    field: 'complete', headerName: "Route Complete", width: 150,
+    field: 'complete', headerName: "Is Route Complete?", width: 150,
     renderCell: (params) => (
       <>
       {
