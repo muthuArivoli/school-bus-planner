@@ -16,13 +16,15 @@ export default function SchoolDetail(props) {
   let { id } = useParams();
   let navigate = useNavigate();
 
-  const [data, setData] = React.useState({name: "", address: ""});
+  const [loading, setLoading] = React.useState(true);
+  const [data, setData] = React.useState({name: "", address: "", arrival_time: "", departure_time: ""});
 
   const [students, setStudents] = React.useState([]);
   const [routes, setRoutes] = React.useState([]);
 
   React.useEffect(() => {
     const fetchData = async() => {
+      setLoading(true);
       const result = await axios.get(
         process.env.REACT_APP_BASE_URL+`/school/${id}`, {
           headers: {
@@ -44,7 +46,31 @@ export default function SchoolDetail(props) {
             }
           );
           if(studentRes.data.success){
-            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], route_id: studentRes.data.student.route_id}]
+            if(studentRes.data.student.route_id != null){
+              const routRes = await axios.get(
+                process.env.REACT_APP_BASE_URL+`/route/${studentRes.data.student.route_id}`, {
+                  headers: {
+                      Authorization: `Bearer ${localStorage.getItem('token')}`
+                  }
+                }
+              );
+              if (routRes.data.success){
+                newRows = [...newRows, {name: {name: studentRes.data.student.name, id: result.data.school.students[i]}, 
+                                        id: result.data.school.students[i], route: {id: studentRes.data.student.route_id, name: routRes.data.route.name}, 
+                                        in_range: studentRes.data.student.in_range}]
+              }
+              else{
+                props.setSnackbarMsg(`School could not be loaded`);
+                props.setShowSnackbar(true);
+                props.setSnackbarSeverity("error");
+                navigate("/schools");
+              }
+            }
+            else{
+              newRows = [...newRows, {name: {name: studentRes.data.student.name, id: result.data.school.students[i]}, 
+                                      id: result.data.school.students[i], route: null, 
+                                      in_range: studentRes.data.student.in_range}]
+            }
           }
           else{
             props.setSnackbarMsg(`School could not be loaded`);
@@ -55,7 +81,7 @@ export default function SchoolDetail(props) {
         }
         setStudents(newRows);
 
-        let newRoutes = result.data.school.routes.map((value)=>{return {name: value.name, id: value.id}});
+        let newRoutes = result.data.school.routes.map((value)=>{return {data: {name: value.name, id: value.id}, id: value.id, complete: value.complete}});
         setRoutes(newRoutes);
 
       }
@@ -65,7 +91,7 @@ export default function SchoolDetail(props) {
         props.setSnackbarSeverity("error");
         navigate("/routes");
       }
-
+      setLoading(false);
     };
 
     fetchData();
@@ -117,9 +143,24 @@ export default function SchoolDetail(props) {
         <Typography variant="h5" align="center">
           Address: {data.address}
         </Typography>
+
+
+
       </Stack>
 
-        <SchoolDetailMid students={students} routes={routes}/>
+
+        <Stack direction = 'row' spacing = {30} justifyContent='center'>
+        <Typography variant="h5" align="center">
+          Arrival Time: {data.arrival_time}
+        </Typography>
+
+        <Typography variant="h5" align="center">
+          Departure Time: {data.departure_time}
+        </Typography>
+
+        </Stack>   
+
+        <SchoolDetailMid students={students} routes={routes} loading={loading}/>
 
         <Stack direction="row" spacing={3} justifyContent="center">
           <Button component={RouterLink}

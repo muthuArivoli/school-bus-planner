@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import axios from 'axios';
+import Link from '@mui/material/Link';
 
 export default function StudentDetail(props) {
 
@@ -20,6 +21,7 @@ export default function StudentDetail(props) {
   const [school, setSchool] = React.useState("");
 
   const [route, setRoute] = React.useState("No Route");
+  const [inRange, setInRange] = React.useState("No");
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
@@ -85,6 +87,13 @@ export default function StudentDetail(props) {
           setRoute("No Route");
         }
 
+        if (result.data.student.in_range == true){
+          setInRange("Yes");
+        }
+        else{
+          setInRange("No");
+        }
+
         const schoolRes = await axios.get(
           process.env.REACT_APP_BASE_URL+`/school/${result.data.student.school_id}`, {
             headers: {
@@ -131,35 +140,40 @@ export default function StudentDetail(props) {
           <Typography variant="h5" align="center">
             Student ID: {data.student_id}
           </Typography>
+
         </Stack>
 
         <Stack direction="row" spacing={20} justifyContent="center">
           <Stack spacing={1} justifyContent="center">
             <Typography variant="h5" align="center">
-              School: {school}
+              {"School: "} 
+              <Link component={RouterLink} to={"/schools/" + data.school_id}>
+                {school}
+            </Link>
             </Typography>
-            <Button component={RouterLink}
-              to={"/schools/" + data.school_id}
-              color="primary"
-              variant="outlined"
-              size="small"
-              style={{ marginLeft: 16 }}>
-              View School
-            </Button>
           </Stack>
           <Stack spacing={1} justifyContent="center">
+            {
+            route == "No Route" &&
             <Typography variant="h5" align="center">
               Route: {route}
             </Typography>
-            <Button component={RouterLink}
-              disabled={route == "No Route"}
-              to={"/routes/" + data.route_id}
-              color="primary"
-              variant="outlined"
-              size="small"
-              style={{ marginLeft: 16 }}>
-              View Route
-            </Button>
+            }
+            {
+            route != "No Route" &&
+            <>
+            <Typography variant="h5" align="center">
+            {"Route: "} 
+            <Link component={RouterLink} to={"/routes/" + data.route_id}>
+              {route}
+            </Link>
+            </Typography>
+            <Typography variant="h5" align="center">
+              In Route Range: {inRange}
+            </Typography> 
+            </>
+            }
+
           </Stack>
         </Stack>
 

@@ -7,15 +7,13 @@ import {Link as RouterLink, useParams} from 'react-router-dom';
 import DeleteDialog from '../DeleteDialog';
 import Typography from '@mui/material/Typography';
 import RouteDetailStudentList from './RouteDetailStudentList';
+import RouteDetailStopList from './RouteDetailStopList';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import MuiAlert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import Geocode from "react-geocode";
-
-Geocode.setApiKey("AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o");
-Geocode.setLocationType("ROOFTOP");
+import Link from '@mui/material/Link';
 
 const containerStyle = {
   height: "400px",
@@ -37,6 +35,11 @@ export default function RouteDetail(props) {
 
   const [school, setSchool] = useState("");
   const [rows, setRows] = useState([]);
+
+  const [map, setMap] = React.useState(null);
+  const [stops, setStops] = useState([]);
+  const [stopRows, setStopRows] = useState([]);
+
   let navigate = useNavigate();
 
   const handleDelete = () => {
@@ -69,6 +72,26 @@ export default function RouteDetail(props) {
     setError(false);
   };
 
+  // update map view/zoom when students/school is changed
+  React.useEffect(()=>{
+    if(map){
+      var bounds = new window.google.maps.LatLngBounds();
+      console.log(students);
+      console.log(schoolLocation);
+      for (var i = 0; i < students.length; i++) {
+        bounds.extend(students[i].location);
+      }
+      bounds.extend(schoolLocation);
+      map.fitBounds(bounds);
+    }
+  }, [students, schoolLocation]);
+  
+  const onLoad = React.useCallback(function callback(map) {
+    setMap(map);
+  }, [])
+
+//NEED TO GET STOP INFO FOR STOP DATAGRID
+
   useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
@@ -81,6 +104,29 @@ export default function RouteDetail(props) {
       if (result.data.success){
         setData(result.data.route);
 
+        let newStopRows = []; 
+        for (let i=0; i < result.data.route.stops.length; i++){
+          const stopRes = await axios.get(
+            process.env.REACT_APP_BASE_URL+`/stop/${result.data.route.stops[i]}`, {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          if (stopRes.data.success){
+            console.log(stopRes.data.stop)
+            newStopRows = [...newStopRows, {name: stopRes.data.stop.name, id: stopRes.data.stop.id, pickup_time: stopRes.data.stop.pickup_time, dropoff_time: stopRes.data.stop.dropoff_time, loc: {lat: stopRes.data.stop.latitude, lng: stopRes.data.stop.longitude}}]
+          }
+          else{
+            props.setSnackbarMsg(`Route could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/routes");
+          }
+        }
+
+        setStops(newStopRows);
+
         const schoolRes = await axios.get(
           process.env.REACT_APP_BASE_URL+`/school/${result.data.route.school_id}`, {
             headers: {
@@ -90,10 +136,9 @@ export default function RouteDetail(props) {
         );
         if (schoolRes.data.success){
           setSchool(schoolRes.data.school.name);
-          const g = await Geocode.fromAddress(schoolRes.data.school.address);
-          const {lat, lng} = g.results[0].geometry.location;
-          console.log({lat: lat, lng: lng})
-          setSchoolLocation({lat: lat, lng: lng})
+          setSchoolLocation({lat: schoolRes.data.school.latitude, lng: schoolRes.data.school.longitude})
+          newStopRows = [{name: schoolRes.data.school.name, id: -1, pickup_time: schoolRes.data.school.arrival_time, dropoff_time: schoolRes.data.school.departure_time }, ...newStopRows]
+          setStopRows(newStopRows);
         }
         else{
           props.setSnackbarMsg(`Route could not be loaded`);
@@ -101,6 +146,7 @@ export default function RouteDetail(props) {
           props.setSnackbarSeverity("error");
           navigate("/routes");
         }
+
 
         console.log(result.data.route);
         let newRows = [];
@@ -114,7 +160,7 @@ export default function RouteDetail(props) {
             }
           );
           if(studentRes.data.success){
-            newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.route.students[i]}]
+            newRows = [...newRows, {name: {name: studentRes.data.student.name, id: result.data.route.students[i]}, id: result.data.route.students[i], in_range: studentRes.data.student.in_range}]
             const userRes = await axios.get(
               process.env.REACT_APP_BASE_URL+`/user/${studentRes.data.student.user_id}`, {
               headers: {
@@ -124,10 +170,8 @@ export default function RouteDetail(props) {
             );
             if(userRes.data.success){
                 console.log(userRes.data.user);
-                const g = await Geocode.fromAddress(userRes.data.user.uaddress);
-                const {lat, lng} = g.results[0].geometry.location;
                 console.log(studentRes.data);
-                newStudents = [...newStudents, {name: studentRes.data.student.name, address: userRes.data.user.uaddress, location: {lat: lat, lng: lng}}]
+                newStudents = [...newStudents, {name: studentRes.data.student.name, address: userRes.data.user.uaddress, location: {lat: userRes.data.user.latitude, lng: userRes.data.user.longitude}, in_range: studentRes.data.student.in_range}]
             }
             else{
                 props.setSnackbarMsg(`Route could not be loaded`);
@@ -173,10 +217,23 @@ export default function RouteDetail(props) {
             <Typography variant="h5" align="center">
               Route Name: {data.name}
             </Typography>
+
             <Typography variant="h5" align="center">
-              School: {school}
+              {"School: "} 
+              <Link component={RouterLink} to={"/schools/" + data.school_id}>
+                {school}
+              </Link>
+
             </Typography>
+
+
           </Stack>
+
+          <Typography variant="h5" align="center">
+              Route Complete: {data.complete === true ? "Yes" : "No"}  
+          </Typography>
+
+
           <TextField
           label="Description"
           value={data.description}
@@ -187,27 +244,37 @@ export default function RouteDetail(props) {
           focused
           />
 
-<Button component={RouterLink}
-              to={"/schools/" + data.school_id}
-              color="primary"
-              variant="outlined"
-              size="small"
-              style={{ marginLeft: 16 }}>
-              View School
-            </Button>
         </Stack>
 
-        <RouteDetailStudentList rows={rows}/>
-
+        <Stack direction="row" spacing={3} sx={{ width: '100%'}}>
+        
         <LoadScript
           googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
         >
-          <GoogleMap mapContainerStyle={containerStyle} zoom={3} center={schoolLocation}>
-            <Marker title="School" position={schoolLocation}/>
+          <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad}>
+            <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
             {students.map((student, index) => (
-                <Marker key={index} title={student.name} position={student.location} label="1"/> ))}
+                <Marker key={index} title={student.name} position={student.location} icon="http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"/> ))}
+            {stops.map((stop, index)=> (
+                <Marker key={index} title={stop.name} position={stop.loc} icon="http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"/> ))}
           </GoogleMap>
-        </LoadScript>        
+        </LoadScript>   
+      <Stack spacing={1} sx={{ width: '50%'}}>
+    
+      <Typography variant="body1" align="center">
+              Route Students
+          </Typography>
+
+        <RouteDetailStudentList rows={rows}/>
+      </Stack>
+    </Stack>
+             
+      <Stack spacing={1} sx={{ width: '100%'}}>
+        <Typography variant="body1" align="center">
+              Route Stop Information
+          </Typography>
+        <RouteDetailStopList rows={stopRows}/>
+      </Stack>
 
         <Stack direction="row" spacing={3} justifyContent="center">
           <Button component={RouterLink}

@@ -24,6 +24,9 @@ export default function UserUpdate(props) {
   const [data, setData] = React.useState({email:"", name:"", address: "", admin: false});
   const [emailList, setEmailList] = React.useState([])
   const [oldEmail, setOldEmail] = React.useState("");
+  
+  const [latitude, setLatitude] = React.useState(null);
+  const [longitude, setLongitude] = React.useState(null);
 
 
   let navigate = useNavigate();
@@ -40,6 +43,8 @@ export default function UserUpdate(props) {
       if (result.data.success){
         let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, admin: result.data.user.admin_flag}
         setData(newData);
+        setLatitude(result.data.user.latitude);
+        setLongitude(result.data.user.longitude);
         setOldEmail(result.data.user.email);
       }
       else{
@@ -107,7 +112,9 @@ export default function UserUpdate(props) {
         name: data.name,
         email: data.email,
         address: data.address,
-        admin_flag: data.admin
+        admin_flag: data.admin,
+        latitude: latitude,
+        longitude: longitude
       }
       console.log(req);
       axios.patch(process.env.REACT_APP_BASE_URL+`/user/${id}`, req, {
@@ -176,7 +183,7 @@ export default function UserUpdate(props) {
                 />
               </Grid>
               <Grid item xs={12} sx={{ height: 450 }} >
-                <GoogleMap address={data.address} setAddress={handleAddressChange}/>
+                <GoogleMap address={data.address} setAddress={handleAddressChange} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel

@@ -1,12 +1,16 @@
 from app import db
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine
+from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine, CheckConstraint
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import inspect, select, func
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
-from sqlalchemy_filters import Filter, StringField, Field
+from sqlalchemy_filters import Filter, StringField, Field, TimestampField
 from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator
+from datetime import datetime
+import logging
+logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+
 
 
 class User(db.Model):
@@ -19,6 +23,8 @@ class User(db.Model):
     pswd = db.Column(db.String())
     admin_flag = db.Column(db.Boolean())
     children = relationship("Student")
+    longitude = db.Column(db.Float())
+    latitude = db.Column(db.Float())
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -28,18 +34,22 @@ class User(db.Model):
         return main
 
     def __repr__(self):
-        return "<User(email='{}', full_name='{}', pswd={}, admin_flag={})>"\
-            .format(self.email, self.full_name, self.pswd, self.admin_flag)
+        return "<User(email='{}', uaddress='{}',full_name='{}', pswd='{}', admin_flag={}, latitude={}, longitude={})>"\
+            .format(self.email, self.uaddress, self.full_name, self.pswd, self.admin_flag, self.latitude, self.longitude)
   
 
 class School(db.Model):
     __tablename__ = 'schools'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String())
+    name = db.Column(db.String(), unique=True)
     address = db.Column(db.String())
     routes = relationship("Route")
     students = relationship("Student")
+    longitude = db.Column(db.Float())
+    latitude = db.Column(db.Float())
+    arrival_time = db.Column(db.Time())
+    departure_time = db.Column(db.Time())
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -47,11 +57,13 @@ class School(db.Model):
         students = [student.id for student in self.students]
         main['routes'] = routes
         main['students'] = students
+        main['arrival_time'] = self.arrival_time.isoformat()
+        main['departure_time'] = self.departure_time.isoformat()
         return main
 
     def __repr__(self):
-        return "<School(name='{}', address='{}')>"\
-            .format(self.name, self.address)
+        return "<School(name='{}', address='{}',latitude={}, longitude={}, 'arrival_time='{}', departure_time='{}')>"\
+            .format(self.name, self.address, self.latitude, self.longitude, self.arrival_time, self.departure_time)
 
 class Route(db.Model):
     __tablename__ = 'routes'
@@ -61,6 +73,7 @@ class Route(db.Model):
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     description = db.Column(db.String())
     students = relationship("Student")
+    stops = relationship("Stop")
 
     @hybrid_property
     def student_count(self):
@@ -76,33 +89,63 @@ class Route(db.Model):
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
         students = [student.id for student in self.students]
+        stops = [stop.id for stop in self.stops]
         main['students'] = students
+        main['stops'] = stops
         return main
 
     def __repr__(self):
-        return "<Route(name='{}', school_id='{}')>"\
+        return "<Route(name='{}', school_id={})>"\
             .format(self.name, self.school_id)
 
 class Student(db.Model):
     __tablename__ = 'students'
 
     id = db.Column(db.Integer, primary_key=True)
-    full_name = db.Column(db.String())
-    student_id = db.Column(db.Integer)
+    name = db.Column(db.String())
+    student_id = db.Column(db.Integer, nullable=True)
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
     route_id = db.Column(db.Integer, ForeignKey('routes.id'))
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
+    __table_args__ = (
+        CheckConstraint(student_id >= 0, name='check_id_positive'),
+        {})
 
     def as_dict(self):
-        return{"name": getattr(self, 'full_name'), "student_id": getattr(self, "student_id"), "id": getattr(self, "id"), "school_id": getattr(self, "school_id"), "route_id": getattr(self, "route_id"), "user_id": getattr(self, "user_id")}
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        return main
 
     def __repr__(self):
-        return "<Student(full_name='{}', school_id={}, user_id={})>"\
-            .format(self.full_name, self.school_id, self.user_id)
+        return "<Student(name='{}', school_id={}, user_id={})>"\
+            .format(self.name, self.school_id, self.user_id)
 
 class TokenBlocklist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(36), nullable=False)
+
+class Stop(db.Model):
+    __tablename__ = 'stops'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String())
+    pickup_time = db.Column(db.Time())
+    dropoff_time = db.Column(db.Time())
+    route_id = db.Column(db.Integer, ForeignKey('routes.id'))
+    longitude = db.Column(db.Float())
+    latitude = db.Column(db.Float())
+    index = db.Column(db.Integer)
+
+    def as_dict(self):
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        logging.debug(type(self.pickup_time))
+        main['pickup_time'] = self.pickup_time.isoformat()
+        main['dropoff_time'] = self.dropoff_time.isoformat()
+        return main
+
+    def __repr__(self):
+        return "<Stop(name='{}', route_id={}, latitude={}, longitude={}, index={}, pickup_time={}, dropoff_time={})>"\
+            .format(self.name, self.route_id, self.latitude, self.longitude, self.index, self.pickup_time, self.dropoff_time)
+
 
 class UserFilter(Filter):
     email = StringField(lookup_operator=ContainsOperator)
@@ -116,7 +159,7 @@ class UserFilter(Filter):
 class StudentFilter(Filter):
     student_id = Field(lookup_operator = EqualsOperator)
     school_id = Field(lookup_operator = EqualsOperator)
-    full_name = StringField(lookup_operator=ContainsOperator)
+    name = StringField(lookup_operator = ContainsOperator)
 
     class Meta:
         model = Student
@@ -125,6 +168,8 @@ class StudentFilter(Filter):
 
 class SchoolFilter(Filter):
     name = StringField(lookup_operator=ContainsOperator)
+    arrival_time = TimestampField()
+    departure_time = TimestampField()
 
     class Meta:
         model = School

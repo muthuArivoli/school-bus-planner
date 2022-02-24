@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import { DataGrid, getGridStringOperators, getGridNumericColumnOperators} from '@mui/x-data-grid';
+import CheckBoxOutlineBlankTwoToneIcon from '@mui/icons-material/CheckBoxOutlineBlankTwoTone';
+import { DataGrid, getGridStringOperators, getGridNumericColumnOperators, getGridBooleanOperators} from '@mui/x-data-grid';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import SearchIcon from '@mui/icons-material/Search';
@@ -9,6 +10,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 const columns = [
   { field: 'name', headerName: 'Full Name', width: 250, filterable: false,
@@ -20,7 +23,7 @@ const columns = [
     </>
   )
   },
-  { field: 'student_id', headerName: 'Student ID', width: 250, type: 'number', filterable: false},
+  { field: 'student_id', headerName: 'Student ID', width: 150, filterable: false},
   { 
     field: 'school',
     headerName: 'School',
@@ -32,8 +35,29 @@ const columns = [
     headerName: 'Route',
     width: 250,
     sortable: false,
-    filterable: false
-  }
+    filterable: false,
+    renderCell: (params) => (
+        params.value == null ? 
+        <CloseIcon /> : 
+        <Link component={RouterLink} to={"/routes/" + params.value.id}>
+          {params.value.name}
+        </Link>
+      ),
+  },
+  {
+    field: 'in_range',
+    headerName: 'Has a Stop?',
+    width: 150,
+    renderCell: (params) => (
+      <>
+      {
+        params.value ? 
+        <CheckIcon/> : 
+        <CloseIcon/>
+      }
+      </>
+    )
+  },
 ];
 
 export default function DataTable(props) {
@@ -46,16 +70,19 @@ export default function DataTable(props) {
   const [sortModel, setSortModel] = React.useState([]);
   const [filterStr, setFilterStr] = React.useState("");
 
+  const [loading , setLoading] = React.useState(true);
+
   const [filterType, setFilterType] = React.useState(null);
   const filterValues = ['name', 'id'];
 
-  const mappings = {"name": "full_name", "student_id": "student_id", "school": "school_id"}
+  const mappings = {"name": "name", "student_id": "student_id", "school": "school_id"} 
 
   const [showAll, setShowAll] = React.useState(false);
 
 
   React.useEffect(()=> {
     const fetchData = async() => {
+      setLoading(true);
       let params = {}
       params.page = showAll ? null : page + 1;
 
@@ -88,12 +115,6 @@ export default function DataTable(props) {
         let arr = [];
         let data = result.data.students
         setTotalRows(result.data.records);
-        if(showAll){
-          setPageSize(result.data.records);
-        }
-        else{
-          setPageSize(10);
-        }
         console.log(data);
         for (let i=0;i<data.length; i++){
           const getRes = await axios.get(
@@ -104,7 +125,7 @@ export default function DataTable(props) {
             }
           );
           if (getRes.data.success){
-            arr = [...arr, {name: {name: data[i].name, id: data[i].id}, student_id: data[i].student_id, school: getRes.data.school.name, route: "", id: data[i].id}]
+            arr = [...arr, {name: {name: data[i].name, id: data[i].id}, student_id: data[i].student_id, school: getRes.data.school.name, route: null, id: data[i].id, in_range: data[i].in_range}]
           }
           else{
             props.setSnackbarMsg(`Students could not be loaded`);
@@ -121,7 +142,7 @@ export default function DataTable(props) {
               }
             );
             if (getRouteRes.data.success){
-              arr[arr.length - 1].route = getRouteRes.data.route.name;
+              arr[arr.length - 1].route = {name: getRouteRes.data.route.name, id: data[i].route_id};
             }
             else{
               props.setSnackbarMsg(`Students could not be loaded`);
@@ -140,9 +161,14 @@ export default function DataTable(props) {
         props.setSnackbarSeverity("error");
         navigate("/students");
       }
+      setLoading(false);
     };
     fetchData();
   }, [page, sortModel, filterType, filterStr, showAll])
+
+  const handleRowClick = (row) => {
+    console.log(row);
+  };
 
   return (
     <>
@@ -154,7 +180,7 @@ export default function DataTable(props) {
       autoSelect
       onChange={(e, new_value) => setFilterType(new_value)}
       renderInput={(params) => (
-        <TextField {...params} label="Filter Type" />
+        <TextField {...params} label="Filter By..." />
       )}
     />
     </Grid>
@@ -178,20 +204,23 @@ export default function DataTable(props) {
       <DataGrid
         rows={rows}
         columns={columns}
-        getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
+        onRowClick={(row) => handleRowClick(row)}
+        getRowId={(row) => row.id}
         pagination
-        paginationMode="server"
+        paginationMode={totalRows > 100 && pageSize != 10 ? "client" : "server"}
         rowCount={totalRows}
         page={page}
         onPageChange={(page) => setPage(page)}
         pageSize={pageSize}
         onPageSizeChange={(pageSize) => {setShowAll(pageSize != 10);
+                                          setPageSize(pageSize)
                                           setPage(0);}}
-        rowsPerPageOptions={[10, totalRows]}
+        rowsPerPageOptions={[10, totalRows > 100 ? 100 : totalRows]}
         sortingMode="server"
         sortModel={sortModel}
         onSortModelChange={(sortModel) => setSortModel(sortModel)}
         disableSelectionOnClick
+        loading={loading}
       />
     </div>
     <Button

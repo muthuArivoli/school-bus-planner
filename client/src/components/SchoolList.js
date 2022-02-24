@@ -11,7 +11,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
 
 const columns = [
-  { field: 'name', headerName: 'School Name', width: 500, filterable: false, 
+  { field: 'name', headerName: 'School Name', width: 250, filterable: false, 
   renderCell: (params) => (
     <>
     <Link component={RouterLink} to={"/schools/" + params.value.id}>
@@ -27,6 +27,20 @@ const columns = [
     sortable: false,
     filterable: false
   },
+  {
+    field: 'arrival_time',
+    headerName: 'Arrival Time',
+    width: 150,
+    sortable: true, 
+    filterable: false
+  },
+  {
+    field: 'departure_time',
+    headerName: 'Departure Time',
+    width: 150,
+    sortable: true,
+    filterable: false
+  }
 ];
 
 
@@ -39,6 +53,8 @@ export default function DataTable(props) {
   const [sortModel, setSortModel] = React.useState([]);
   const [filterStr, setFilterStr] = React.useState("");
 
+  const [loading , setLoading] = React.useState(true);
+
   const [filterType, setFilterType] = React.useState(null);
   const filterValues = ['name'];
 
@@ -47,6 +63,7 @@ export default function DataTable(props) {
 
   React.useEffect(()=> {
     const fetchData = async() => {
+      setLoading(true);
       let params = {}
       params.page = showAll ? null : page + 1;
 
@@ -75,15 +92,9 @@ export default function DataTable(props) {
       if (result.data.success){
         console.log(result.data);
         setTotalRows(result.data.records);
-        if(showAll){
-          setPageSize(result.data.records);
-        }
-        else{
-          setPageSize(10);
-        }
         let arr = result.data.schools.map((value) => {
           console.log({name: value.name, id: value.id, address: value.address});
-          return {name: {name: value.name, id: value.id}, address: value.address, id: value.id};
+          return {name: {name: value.name, id: value.id}, address: value.address, id: value.id, departure_time: value.departure_time, arrival_time: value.arrival_time};
         });
         setRows(arr);
       }
@@ -93,6 +104,7 @@ export default function DataTable(props) {
         props.setSnackbarSeverity("error");
         navigate("/routes");
       }
+      setLoading(false);
     };
     fetchData();
   }, [page, sortModel, filterStr, filterType, showAll])
@@ -107,7 +119,7 @@ export default function DataTable(props) {
       autoSelect
       onChange={(e, new_value) => setFilterType(new_value)}
       renderInput={(params) => (
-        <TextField {...params} label="Filter Type" />
+        <TextField {...params} label="Filter By..." />
       )}
     />
     </Grid>
@@ -133,18 +145,20 @@ export default function DataTable(props) {
         columns={columns}
         getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
         pagination
-        paginationMode="server"
+        paginationMode={totalRows > 100 && pageSize != 10 ? "client" : "server"}
         rowCount={totalRows}
         page={page}
         onPageChange={(page) => setPage(page)}
         pageSize={pageSize}
         onPageSizeChange={(pageSize) => {setShowAll(pageSize != 10);
+          setPageSize(pageSize)
           setPage(0);}}
-        rowsPerPageOptions={[10, totalRows]}
+        rowsPerPageOptions={[10, totalRows > 100 ? 100 : totalRows]}
         sortingMode="server"
         sortModel={sortModel}
         onSortModelChange={(sortModel) => setSortModel(sortModel)}
         disableSelectionOnClick
+        loading={loading}
       />
       <Button
       component={RouterLink}

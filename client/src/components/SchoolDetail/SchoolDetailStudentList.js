@@ -1,27 +1,49 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridOverlay } from '@mui/x-data-grid';
 import {Link as RouterLink} from 'react-router-dom';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import Link from '@mui/material/Link';
+import Box from '@mui/material/Box';
+
+function NoStudentsOverlay() {
+  return (
+    <GridOverlay>
+      <Box sx={{ mt: 1 }}>No Students in School</Box>
+    </GridOverlay>
+  );
+}
 
 const columns = [
-  { field: 'name', headerName: 'Full Name', width: 200},
+  { field: 'name', headerName: 'Full Name', width: 200,
+    renderCell: (params) => (
+    <Link component={RouterLink} to={"/students/" + params.value.id}>
+      {params.value.name}
+    </Link>)},
+    {
+      field: 'route', headerName: 'Route', width: 200,
+      renderCell:(params) => (
+      params.value == null ? 
+      <CloseIcon/> : 
+       <Link component={RouterLink} to={"/routes/" + params.value.id}>
+       {params.value.name}
+       </Link>
+      )
+    },
   {
-    field: 'id',
-    headerName: 'Detailed View',
-    width: 200,
+    field: 'in_range',
+    headerName: 'Has a Stop?',
+    width: 150,
     renderCell: (params) => (
       <>
-        <Button
-          component={RouterLink}
-          to={"/students/" + params.value}
-          color="primary"
-          size="small"
-          style={{ marginLeft: 16 }}
-        >
-          View Student
-        </Button>
+      {
+        params.value ? 
+        <CheckIcon/> : 
+        <CloseIcon/>
+      }
       </>
-    ),
+    )
   },
 ];
 
@@ -35,10 +57,13 @@ export default function DataTable(props) {
               rows={props.rows}
               columns={columns}
               getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
-              pageSize={5}
-              rowsPerPageOptions={[5]}
+              autoPageSize
+              loading={props.loading}
               disableSelectionOnClick
               density="compact"
+              components={{
+                NoRowsOverlay: NoStudentsOverlay,
+              }}
             />
           </div>
         </div>

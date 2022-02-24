@@ -7,20 +7,13 @@ import Button from '@mui/material/Button';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import {Link as RouterLink, useParams} from 'react-router-dom';
 import DeleteDialog from './DeleteDialog';
-import { DataGrid } from '@mui/x-data-grid';
+import { GridOverlay, DataGrid } from '@mui/x-data-grid';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
-
-
-const Item = styled(Paper)(({ theme }) => ({
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: 'center',
-  color: theme.palette.text.secondary,
-}));
+import Box from '@mui/material/Box';
 
 const columns = [
   { field: 'name', headerName: 'Full Name', width: 250},
@@ -44,6 +37,13 @@ const columns = [
   },
 ];
 
+function NoStudentsOverlay() {
+  return (
+    <GridOverlay>
+      <Box sx={{ mt: 1 }}>No Students for Current User</Box>
+    </GridOverlay>
+  );
+}
 
 export default function ParentView() {
 
@@ -119,7 +119,7 @@ export default function ParentView() {
     <Alert onClose={handleClose} severity={snackbarSeverity}>
       {snackbarMsg}
     </Alert>
-  </Snackbar>
+    </Snackbar>
     <Grid container alignItems="center" justifyContent="center" pt={5}>
         <Stack spacing={4} sx={{ width: '100%'}}>
           <Stack direction="row" spacing={25} justifyContent="center">
@@ -134,50 +134,59 @@ export default function ParentView() {
           </Typography>
           </Stack>
         </Stack>
-        <div style={{ height: 400, width: '100%' }}>
-        <div style={{ display: 'flex', height: '100%' }}>
-          <div style={{ flexGrow: 1 }}>
-            <DataGrid
-              rows={rows}
-              columns={columns}
-              getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
-              pageSize={5}
-              rowsPerPageOptions={[5]}
-              disableSelectionOnClick
-              density="compact"
-            />
-          </div>
-        </div>
-      </div>
 
-      <TextField
-                  fullWidth
-                  onChange={(e) => setPassword(e.target.value)}
-                  value={password}
-                  name="password"
-                  label="Password"
-                  type="password"
-                  id="password"
-                  autoComplete="new-password"
+        <Stack spacing={1} justifyContent="center" alignItems="center" sx={{ width: '100%'}}>
+          <div style={{ height: 400, width: '100%' }}>
+            <div style={{ display: 'flex', height: '100%' }}>
+              <div style={{ flexGrow: 1 }}>
+                <DataGrid
+                  components={{
+                    NoRowsOverlay: NoStudentsOverlay,
+                  }}
+                  rows={rows}
+                  columns={columns}
+                  getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
+                  autoPageSize
+                  disableSelectionOnClick
+                  density="compact"
                 />
-                <TextField
-                  onChange={(e) => setConPassword(e.target.value)}
-                  value={conPassword}
-                  error={password != conPassword}
-                  helperText={password != conPassword ? "Passwords do not match" : ""}
-                  fullWidth
-                  name="confirm-password"
-                  label="Confirm Password"
-                  type="password"
-                  id="confirm-password"
-                />
-                  <Button
-                  variant="contained"
-                  onClick={handleSubmit}
-                  disabled={password == "" || password != conPassword}
-                  >
-                    Submit
-                </Button>
+              </div>
+            </div>
+          </div>
+
+          <Typography variant="h5" align="left">
+            Change Password:
+          </Typography>
+
+          <TextField
+            fullWidth
+            onChange={(e) => setPassword(e.target.value)}
+            value={password}
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="new-password"
+          />
+          <TextField
+            onChange={(e) => setConPassword(e.target.value)}
+            value={conPassword}
+            error={password != conPassword}
+            helperText={password != conPassword ? "Passwords do not match" : ""}
+            fullWidth
+            name="confirm-password"
+            label="Confirm Password"
+            type="password"
+            id="confirm-password"
+          />
+            <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={password == "" || password != conPassword}
+            >
+              Submit
+          </Button>
+        </Stack>
 
       </Grid>
       </>

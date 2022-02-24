@@ -11,13 +11,36 @@ export default function UpdateSchool(props) {
 
     const [name, setName] = React.useState("");
     const [address, setAddress] = React.useState("");
+    const [latitude, setLatitude] = React.useState(null);
+    const [longitude, setLongitude] = React.useState(null);
 
-    const handleSubmit = (event, na, ad) => {
+    const [departureTime, setDepartureTime] = React.useState(new Date('2018-01-01T00:00:00.000Z'));
+    const [arrivalTime, setArrivalTime] = React.useState(new Date('2018-01-01T00:00:00.000Z'));
+
+
+    const handleSubmit = (event, na, ad, lat, long, arrivalTimeLoc, departureTimeLoc) => {
         event.preventDefault();
-    
+        var offset = arrivalTimeLoc.getTimezoneOffset() / 60; 
+        arrivalTimeLoc.setHours(arrivalTimeLoc.getHours() - offset);
+        departureTimeLoc.setHours(departureTimeLoc.getHours() - offset);
+        var arrive = arrivalTimeLoc.toISOString();
+        var depart = departureTimeLoc.toISOString();
+        console.log({
+          name: na,
+          address: ad,
+          latitude: lat,
+          longitude: long,
+          departure_time: depart,
+          arrival_time: arrive
+        });
+
         axios.patch(process.env.REACT_APP_BASE_URL+`/school/${id}`, {
           name: na,
-          address: ad
+          address: ad,
+          latitude: lat,
+          longitude: long,
+          departure_time: depart,
+          arrival_time: arrive
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -50,8 +73,11 @@ export default function UpdateSchool(props) {
           if (result.data.success){
             setName(result.data.school.name);
             setAddress(result.data.school.address);
-            console.log(name);
-            console.log(address);
+            setLongitude(result.data.school.longitude);
+            setLatitude(result.data.school.latitude);
+            setDepartureTime(new Date('2011-10-10T' + result.data.school.departure_time));
+            setArrivalTime(new Date('2011-10-10T' + result.data.school.arrival_time));
+            console.log(result.data.school);
           }
           else{
             props.setSnackbarMsg(`School could not be loaded`);
@@ -65,7 +91,15 @@ export default function UpdateSchool(props) {
 
     return(
         <>
-        <SchoolForm name={name} address={address} handleSubmit={handleSubmit} title="Update School"/>
+        <SchoolForm 
+        name={name} 
+        address={address} 
+        departureTime={departureTime} 
+        arrivalTime={arrivalTime}
+        latitude={latitude} 
+        longitude={longitude} 
+        handleSubmit={handleSubmit} 
+        title="Update School"/>
         </>
     )
 }

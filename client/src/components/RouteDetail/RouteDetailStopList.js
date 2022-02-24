@@ -1,31 +1,25 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridOverlay } from '@mui/x-data-grid';
 import {Link as RouterLink} from 'react-router-dom';
+import Box from '@mui/material/Box';
+
+function NoStopsOverlay() {
+  return (
+    <GridOverlay>
+      <Box sx={{ mt: 1 }}>No Stops in Route</Box>
+    </GridOverlay>
+  );
+}
 
 const columns = [
-  { field: 'name', headerName: 'Full Name', width: 250},
-  {
-    field: 'id',
-    headerName: 'Detailed View',
-    width: 250,
-    renderCell: (params) => (
-      <>
-        <Button
-          component={RouterLink}
-          to={"/students/" + params.value}
-          color="primary"
-          size="small"
-          style={{ marginLeft: 16 }}
-        >
-          View Student
-        </Button>
-      </>
-    ),
-  },
+  {field: 'name', headerName: 'Stop', width: 200},
+  {field: 'pickup_time',headerName: 'Pick-up Time',width: 200},
+  {field: 'dropoff_time',headerName: 'Drop-off Time',width: 200},
 ];
 
 export default function DataTable(props) {
+
   return (
     <>
       <div style={{ height: 400, width: '100%' }}>
@@ -35,10 +29,12 @@ export default function DataTable(props) {
               rows={props.rows}
               columns={columns}
               getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
-              pageSize={5}
-              rowsPerPageOptions={[5]}
+              autoPageSize
               disableSelectionOnClick
               density="compact"
+              components={{
+                NoRowsOverlay: NoStopsOverlay,
+              }}
             />
           </div>
         </div>
