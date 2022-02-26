@@ -48,7 +48,7 @@ function NoStudentsOverlay() {
 export default function ParentView() {
 
   const [rows, setRows] = React.useState([]);
-  const [data, setData] = React.useState({});
+  const [data, setData] = React.useState({children: []});
 
   const [error, setError] = React.useState(false);
   const [snackbarMsg, setSnackbarMsg] = React.useState("");
@@ -68,7 +68,6 @@ export default function ParentView() {
       );
       if (result.data.success){
         setData(result.data.user);
-        setRows(result.data.students);
       }
     }
     fetchData();
@@ -143,7 +142,7 @@ export default function ParentView() {
                   components={{
                     NoRowsOverlay: NoStudentsOverlay,
                   }}
-                  rows={rows}
+                  rows={data.children}
                   columns={columns}
                   getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
                   autoPageSize

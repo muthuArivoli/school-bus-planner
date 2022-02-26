@@ -27,7 +27,14 @@ const columns = [
     field: 'school',
     headerName: 'School',
     width: 350,
-    filterable: false
+    filterable: false,
+    renderCell: (params) => (
+      <>
+      <Link component={RouterLink} to={"/schools/" + params.value.id}>
+        {params.value.name}
+      </Link>
+      </>
+    )
   },
   {
     field: 'students',
@@ -109,29 +116,11 @@ export default function DataTable(props) {
         }
       );
       if (result.data.success){
-        let arr = [];
-        let data = result.data.routes
-        console.log(data);
+        let newRows = result.data.routes.map((value)=>{
+          return {...value, name: {name: value.name, id: value.id}, students: value.students.length}
+        })
         setTotalRows(result.data.records);
-        for (let i=0;i<data.length; i++){
-          const getRes = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/school/${data[i].school_id}`, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if (getRes.data.success){
-            arr = [...arr, {name: {name: data[i].name, id: data[i].id}, id: data[i].id, school: getRes.data.school.name, students: data[i].students.length, complete: data[i].complete}]
-          }
-          else{
-            props.setSnackbarMsg(`Routes could not be loaded - school`);
-            props.setShowSnackbar(true);
-            props.setSnackbarSeverity("error");
-            navigate("/routes");
-          }
-        }
-        setRows(arr);
+        setRows(newRows);
       }
       else{
         // console.log(result.data)

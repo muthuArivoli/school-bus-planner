@@ -35,52 +35,10 @@ export default function SchoolDetail(props) {
       if (result.data.success){
         console.log(result.data);
         setData(result.data.school);
-
-        let newRows = [];
-        for(let i=0; i<result.data.school.students.length; i++){
-          const studentRes = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/student/${result.data.school.students[i]}`, {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if(studentRes.data.success){
-            if(studentRes.data.student.route_id != null){
-              const routRes = await axios.get(
-                process.env.REACT_APP_BASE_URL+`/route/${studentRes.data.student.route_id}`, {
-                  headers: {
-                      Authorization: `Bearer ${localStorage.getItem('token')}`
-                  }
-                }
-              );
-              if (routRes.data.success){
-                newRows = [...newRows, {name: {name: studentRes.data.student.name, id: result.data.school.students[i]}, 
-                                        id: result.data.school.students[i], route: {id: studentRes.data.student.route_id, name: routRes.data.route.name}, 
-                                        in_range: studentRes.data.student.in_range}]
-              }
-              else{
-                props.setSnackbarMsg(`School could not be loaded`);
-                props.setShowSnackbar(true);
-                props.setSnackbarSeverity("error");
-                navigate("/schools");
-              }
-            }
-            else{
-              newRows = [...newRows, {name: {name: studentRes.data.student.name, id: result.data.school.students[i]}, 
-                                      id: result.data.school.students[i], route: null, 
-                                      in_range: studentRes.data.student.in_range}]
-            }
-          }
-          else{
-            props.setSnackbarMsg(`School could not be loaded`);
-            props.setShowSnackbar(true);
-            props.setSnackbarSeverity("error");
-            navigate("/schools");
-          }
-        }
+        let newRows = result.data.school.students.map((value)=>{
+          return {...value, name: {name: value.name, id: value.id}}
+        })
         setStudents(newRows);
-
         let newRoutes = result.data.school.routes.map((value)=>{return {data: {name: value.name, id: value.id}, id: value.id, complete: value.complete}});
         setRoutes(newRoutes);
 

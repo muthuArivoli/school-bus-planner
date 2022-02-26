@@ -56,22 +56,13 @@ const mapOptions = {
         );
         if (result.data.success){
           setData(result.data.student);
-          setSchool(result.data.school);
-          const userRes = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/current_user`, {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if (userRes.data.success) {
-            setUser(userRes.data.user);
-          }
-          if(result.data.route == null){
+          setSchool(result.data.student.school);
+          setUser(result.data.student.user);
+          if(result.data.student.route == null){
             setRoute({name: "No Route", description: ""});
           }
           else {
-            setRoute(result.data.route);
+            setRoute(result.data.student.route);
             let newStopRows = [];
             for (let i=0;i<result.data.in_range_stops.length;i++) {
               let cur_stop = result.data.in_range_stops[i];

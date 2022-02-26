@@ -59,50 +59,10 @@ export default function UserDetail(props) {
       );
       if (result.data.success){
         setData(result.data.user);
-
-        let newRows = [];
-        for(let i=0;i<result.data.user.children.length; i++){
-          const studentRes = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/student/${result.data.user.children[i]}`, {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if(studentRes.data.success){
-            if(studentRes.data.student.route_id != null){
-              const routRes = await axios.get(
-                process.env.REACT_APP_BASE_URL+`/route/${studentRes.data.student.route_id}`, {
-                  headers: {
-                      Authorization: `Bearer ${localStorage.getItem('token')}`
-                  }
-                }
-              );
-              if (routRes.data.success){
-                newRows = [...newRows, {name: {name: studentRes.data.student.name, id: result.data.user.children[i]}, 
-                                        id: result.data.user.children[i], route: {id: studentRes.data.student.route_id, name: routRes.data.route.name}, 
-                                        in_range: studentRes.data.student.in_range}];
-              }
-              else{
-                props.setSnackbarMsg(`User could not be loaded`);
-                props.setShowSnackbar(true);
-                props.setSnackbarSeverity("error");
-                navigate("/users");
-              }
-            }
-            else{
-              newRows = [...newRows, {name: {name: studentRes.data.student.name, id: result.data.user.children[i]}, 
-                                            id: result.data.user.children[i], route: null, 
-                                            in_range: studentRes.data.student.in_range}];
-            }
-          }
-          else{
-            props.setSnackbarMsg(`User could not be loaded`);
-            props.setShowSnackbar(true);
-            props.setSnackbarSeverity("error");
-            navigate("/users");
-          }
-        }
+        let newRows = result.data.user.children.map((value)=>{
+          return {...value, name: {name: value.name, id: value.id}}
+        });
+        console.log(newRows);
         setRows(newRows);
       }
       else{

@@ -81,59 +81,12 @@ export default function UserUpdate(props) {
         if (result.data.success){
           setName(result.data.student.name);
           setStudentId(result.data.student.student_id);
-
+          setSchool({label: result.data.student.school.name, id: result.data.student.school.id});
+          setUser({label: result.data.student.user.email, id: result.data.student.user.id});
           if(result.data.student.route_id != null){
-            const routRes = await axios.get(
-              process.env.REACT_APP_BASE_URL+`/route/${result.data.student.route_id}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
-                }
-              }
-            );
-            if (routRes.data.success){
-              setRoute({label: routRes.data.route.name, id: result.data.student.route_id});
-            }
-            else{
-              props.setSnackbarMsg(`Student could not be loaded`);
-              props.setShowSnackbar(true);
-              props.setSnackbarSeverity("error");
-              navigate("/students");
-            }
+            setRoute({label: result.data.student.route.name, id: result.data.student.route.id})
           }
 
-          const schoolRes = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/school/${result.data.student.school_id}`, {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if (schoolRes.data.success){
-            setSchool({label: schoolRes.data.school.name, id: result.data.student.school_id});
-          }
-          else{
-            props.setSnackbarMsg(`Student could not be loaded`);
-            props.setShowSnackbar(true);
-            props.setSnackbarSeverity("error");
-            navigate("/students");
-          }
-
-          const userRes = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/user/${result.data.student.user_id}`, {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if (userRes.data.success){
-            setUser({label: userRes.data.user.email, id: result.data.student.user_id});
-          }
-          else{
-            props.setSnackbarMsg(`Student could not be loaded`);
-            props.setShowSnackbar(true);
-            props.setSnackbarSeverity("error");
-            navigate("/students");
-          }
         }
         else{
           props.setSnackbarMsg(`Student could not be loaded`);
