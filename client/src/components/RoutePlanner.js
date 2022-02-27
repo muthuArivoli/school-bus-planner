@@ -61,7 +61,7 @@ const routeColumns = [
   { field: 'id', hide: true, width: 30},
   { field: 'name', headerName: "Name", width: 150},
   { field: 'description', headerName: "Description", flex: 1},
-  { field: 'completeness', headerName: "Is Route Complete?", width: 175,
+  { field: 'complete', headerName: "Is Route Complete?", width: 175,
     renderCell: (params) => (
     <>
     {
@@ -148,11 +148,14 @@ export default function RoutePlanner(props) {
         );
       if(result.data.success) {
           console.log(result.data.school);
-          let newRouteRows = result.data.school.routes.map((value)=>{return {name: value.name, id: value.id, description: value.description, completeness: value.complete}});
-          setRouteRows(newRouteRows);
+          setRouteRows(result.data.school.routes);
+          setSchoolLocation({lat: result.data.school.latitude, lng: result.data.school.longitude})
+          let newRows = result.data.school.students.map((value)=>{
+            return {...value, address: value.user.uaddress, location: {lat: value.user.latitude, lng: value.user.longitude}}
+          });
+          setStudents(newRows); 
       }
       else{
-          console.log("a");
           props.setSnackbarMsg(`Route could not be loaded`);
           props.setShowSnackbar(true);
           props.setSnackbarSeverity("error");
@@ -161,91 +164,6 @@ export default function RoutePlanner(props) {
   };
   fetchData();
   }, [resetRoute]);
-
-  // load all student data for the school into page
-  React.useEffect(()=>{
-      const fetchData = async() => {
-          const result = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/school/${id}`, {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if (result.data.success){
-            console.log(result.data)
-              let newRows = [];
-              for(let i=0; i<result.data.school.students.length; i++){
-                const studentRes = await axios.get(
-                  process.env.REACT_APP_BASE_URL+`/student/${result.data.school.students[i]}`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                  }
-                );
-                if(studentRes.data.success){
-                      const userRes = await axios.get(
-                          process.env.REACT_APP_BASE_URL+`/user/${studentRes.data.student.user_id}`, {
-                          headers: {
-                              Authorization: `Bearer ${localStorage.getItem('token')}`
-                          }
-                          }
-                      );
-                      if(userRes.data.success){
-                          console.log(userRes.data.user);
-                          console.log(studentRes.data);
-                          newRows = [...newRows, {name: studentRes.data.student.name, id: result.data.school.students[i], address: userRes.data.user.uaddress, 
-                            location: {lat: userRes.data.user.latitude, lng: userRes.data.user.longitude}, route: studentRes.data.student.route_id}]
-                      }
-                      else{
-                          props.setSnackbarMsg(`Route could not be loaded`);
-                          props.setShowSnackbar(true);
-                          props.setSnackbarSeverity("error");
-                          navigate("/routes");
-                      }
-                }
-                else{
-                  props.setSnackbarMsg(`School could not be loaded`);
-                  props.setShowSnackbar(true);
-                  props.setSnackbarSeverity("error");
-                  navigate("/schools");
-                }
-              }
-              setStudents(newRows);
-          }
-          else{
-            console.log("d");
-            props.setSnackbarMsg(`Route could not be loaded`);
-            props.setShowSnackbar(true);
-            props.setSnackbarSeverity("error");
-            navigate("/routes");
-          }
-        };
-        fetchData();
-  }, [resetRoute])
-
-  // load school address into page
-  React.useEffect(()=>{
-    const fetchData = async() => {
-      const result = await axios.get(
-        process.env.REACT_APP_BASE_URL+`/school/${id}`, {
-          headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        }
-      );
-      if(result.data.success){
-        setSchoolLocation({lat: result.data.school.latitude, lng: result.data.school.longitude})
-      }
-      else{
-        props.setSnackbarMsg(`Route could not be loaded`);
-        props.setShowSnackbar(true);
-        props.setSnackbarSeverity("error");
-        navigate("/routes");
-      }
-    }
-    fetchData();  
-  },[])
 
   // load route info into fields when route is clicked
   React.useEffect(() => {
@@ -264,66 +182,22 @@ export default function RoutePlanner(props) {
               }
             }
           );
-          if(response.data.success){
-            setRouteInfo({"name": response.data.route.name, "description": response.data.route.description});
-            let newStudentRows = [];
-            let newStopRows = [];
-            for(let i=0; i<response.data.route.students.length; i++){
-                const studentRes = await axios.get(
-                    process.env.REACT_APP_BASE_URL+`/student/${response.data.route.students[i]}`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                    }
-                );
-                if(studentRes.data.success){
-                    console.log(studentRes.data);
-                    const userRes = await axios.get(
-                        process.env.REACT_APP_BASE_URL+`/user/${studentRes.data.student.user_id}`, {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('token')}`
-                        }
-                        }
-                    );
-                    if(userRes.data.success){
-                        console.log(userRes.data);
-                        newStudentRows = [...newStudentRows, {name: studentRes.data.student.name, id: response.data.route.students[i], address: userRes.data.user.uaddress}]
-                    }
-                    else{
-                        props.setSnackbarMsg(`Route could not be loaded`);
-                        props.setShowSnackbar(true);
-                        props.setSnackbarSeverity("error");
-                        navigate("/routes");
-                    }
-                }
-                else{
-                    props.setSnackbarMsg(`Route could not be loaded`);
-                    props.setShowSnackbar(true);
-                    props.setSnackbarSeverity("error");
-                    navigate("/routes");
-                }
-            }
-            for(let i=0; i<response.data.route.stops.length; i++){
-              const stopRes = await axios.get(
-                  process.env.REACT_APP_BASE_URL+`/stop/${response.data.route.stops[i]}`, {
-                  headers: {
-                      Authorization: `Bearer ${localStorage.getItem('token')}`
-                  }
-                  }
-              );
-              if(stopRes.data.success){
-                  console.log(stopRes.data);
-                  newStopRows = [...newStopRows, {name: stopRes.data.stop.name, id: stopRes.data.stop.pickup_time, index: stopRes.data.stop.index+1, location: {lat: stopRes.data.stop.latitude, lng: stopRes.data.stop.longitude}}]
-              }
-              else{
-                  props.setSnackbarMsg(`Route could not be loaded`);
-                  props.setShowSnackbar(true);
-                  props.setSnackbarSeverity("error");
-                  navigate("/routes");
-              }
-            }
+        if(response.data.success){
+          setRouteInfo({"name": response.data.route.name, "description": response.data.route.description});
+          let newStudentRows = response.data.route.students.map((value)=>{
+            return {...value, address: value.user.uaddress}
+          })
+          let newStopRows = response.data.route.stops.map((value)=>{
+            return {...value, location: {lat: value.latitude, lng: value.longitude}}
+          });
           setStudentRows(newStudentRows);
           setStopRows(newStopRows);
+        }
+        else{
+          props.setSnackbarMsg(`Route could not be loaded`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("error");
+          navigate("/routes");
         }
     }
 
@@ -446,7 +320,7 @@ export default function RoutePlanner(props) {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id}),
-            stops: stopRows.map((value)=>{return { name: value.name, index: value.index-1, latitude: value.location.lat, longitude: value.location.lng}})
+            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -478,7 +352,7 @@ export default function RoutePlanner(props) {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id}),
-            stops: stopRows.map((value)=>{return { name: value.name, index: value.index-1, latitude: value.location.lat, longitude: value.location.lng}})
+            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`

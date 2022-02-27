@@ -28,7 +28,14 @@ const columns = [
     field: 'school',
     headerName: 'School',
     width: 250,
-    filterable: false
+    filterable: false,
+    renderCell: (params) => (
+      <>
+      <Link component={RouterLink} to={"/schools/" + params.value.id}>
+        {params.value.name}
+      </Link>
+      </>
+    )
   },
   {
     field: 'route',
@@ -112,11 +119,14 @@ export default function DataTable(props) {
         }
       );
       if (result.data.success){
-        let arr = [];
-        let data = result.data.students
+        let rows = result.data.students.map((value)=>{
+          return {...value, name: {name: value.name, id: value.id}}
+        })
+        console.log(rows)
         setTotalRows(result.data.records);
-        console.log(data);
-        for (let i=0;i<data.length; i++){
+        setRows(rows);
+
+        /*for (let i=0;i<data.length; i++){
           const getRes = await axios.get(
             process.env.REACT_APP_BASE_URL+`/school/${data[i].school_id}`, {
               headers: {
@@ -153,7 +163,7 @@ export default function DataTable(props) {
           }
 
         }
-        setRows(arr);
+        setRows(arr);*/
       }
       else{
         props.setSnackbarMsg(`Students could not be loaded`);

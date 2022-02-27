@@ -99,10 +99,10 @@ export default function DataTable(props) {
         setRows(arr);
       }
       else{
-        props.setSnackbarMsg(`Routes could not be loaded`);
+        props.setSnackbarMsg(`Schools could not be loaded`);
         props.setShowSnackbar(true);
         props.setSnackbarSeverity("error");
-        navigate("/routes");
+        navigate("/schools");
       }
       setLoading(false);
     };

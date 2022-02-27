@@ -78,7 +78,7 @@ def refresh_expiring_jwts(response):
 @app.route("/current_user/<student_id>", methods = ['OPTIONS'])
 @cross_origin()
 def current_user_options(student_id=None):
-    return json.dumps({'success':True})
+    return {'success':True}
 
 @app.route("/current_user", methods = ['GET'])
 @jwt_required()
@@ -87,38 +87,29 @@ def get_current_user():
     verify_jwt_in_request()
     user = User.query.filter_by(email = get_jwt_identity()).first()
     if user is None:
-        return json.dumps({'success': False, 'msg': 'Invalid User ID'})
-    students = Student.query.filter_by(user_id = user.id).all()
-    all_students = []
-    for student in students:
-        all_students.append(student.as_dict())
-    return json.dumps({'success': True, 'user': user.as_dict(), 'students': all_students})
+        return {'success': False, 'msg': 'Invalid User ID'}
+    return {'success': True, 'user': user.as_dict()}
 
 @app.route("/current_user/<student_id>", methods = ['GET'])
 @jwt_required()
 @cross_origin()
 def get_current_user_student(student_id=None):
     if student_id is None:
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+        return {'success': False, "msg": "Invalid Query Syntax"}
     verify_jwt_in_request()
     user = User.query.filter_by(email = get_jwt_identity()).first()
     if user is None:
-        return json.dumps({'success': False, "msg": "Invalid User ID"})
+        return {'success': False, "msg": "Invalid User ID"}
     student = Student.query.filter_by(id=student_id).first()
     if student.user_id != user.id:
-        return jsonify(msg="User not authorized to do this action"), 403
-    school = School.query.filter_by(id=student.school_id).first()
-    school_dict = {"id": school.id, "name": school.name, "address": school.address}
-    route_dict = None
+        return {'success': False, 'msg':"User not authorized to do this action"}
     in_range_stops = []
-    if student.route_id is not None:
-        route = Route.query.filter_by(id=student.route_id).first()
-        stops = route.stops
+    if student.route is not None:
+        stops = student.route.stops
         for stop in stops:
             if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
                 in_range_stops.append(stop.as_dict())
-        route_dict = {"id": route.id, "name": route.name, "description": route.description}
-    return json.dumps({'success': True, 'student': student.as_dict(), 'school': school_dict, 'route': route_dict, 'in_range_stops': in_range_stops})
+    return {'success': True, 'student': student.as_dict(), 'in_range_stops': in_range_stops}
 
 @app.route("/current_user", methods = ['PATCH'])
 @jwt_required()
@@ -127,30 +118,30 @@ def patch_current_user():
     verify_jwt_in_request()
     user = User.query.filter_by(email = get_jwt_identity()).first()
     if user is None:
-        return json.dumps({'success': False, "msg": "Invalid User ID"})
+        return {'success': False, "msg": "Invalid User ID"}
     content = request.json
     if 'password' in content:
         pswd = content.get('password', None)
         if type(pswd) is not str:
-            return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+            return {'success': False, "msg": "Invalid Query Syntax"}
         encrypted_pswd = bcrypt.hashpw(pswd.encode('utf-8'), bcrypt.gensalt())
         user.pswd = encrypted_pswd.decode('utf-8')
         try:
             db.session.commit()
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Database Error"})
+            return {'success': False, "msg": "Database Error"}
     if 'revoke' in content:
         revoke = content.get('revoke', False)
         if type(revoke) is not bool:
-            return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+            return {'success': False, "msg": "Invalid Query Syntax"}
         if revoke:
             jti = get_jwt()["jti"]
             try:
                 db.session.add(TokenBlocklist(jti=jti))
                 db.session.commit()
             except SQLAlchemyError:
-                return json.dumps({'success': False, "msg": "Database Error"})
-    return json.dumps({'success': True})
+                return {'success': False, "msg": "Database Error"}
+    return {'success': True}
 
 
 @app.route('/login', methods = ['POST'])
@@ -160,7 +151,7 @@ def login():
     password = request.json.get('password', None)
 
     if not email or not password:
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+        return {'success': False, "msg": "Invalid Query Syntax"}
     user = User.query.filter_by(email=email).first()
     if not user:
         return {"success": False, "msg": "There is no account associated with that email"}
@@ -169,8 +160,7 @@ def login():
     if not bcrypt.checkpw(password.encode('utf-8'), user.pswd.encode('utf-8')):
         return {"success": False, "msg": "Invalid password"}
     access_token = create_access_token(identity=email)
-    response = {"success": True, "access_token": access_token}
-    return response
+    return {"success": True, "access_token": access_token}
 
 @app.route('/logout', methods = ['POST'])
 @jwt_required()
@@ -185,7 +175,7 @@ def logout():
 def forgot_password():
     email = request.json.get('email', None)
     if email is None:
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+        return {'success': False, "msg": "Invalid Query Syntax"}
     user = User.query.filter_by(email=email).first()
     if not user:
         return {"success": False, "msg": "There is no account associated with that email"}
@@ -203,53 +193,13 @@ def forgot_password():
         "html": f"Please use the following link to reset the password for your account: \n <a href={link}>{link}</a>"})
     if r.status_code != 200:
         return {'success': False}
-
-    response = {"success": True}
-    return response
-
-@app.route('/distance', methods = ['POST'])
-@admin_required()
-@cross_origin()
-def calc_distance_miles():
-    long1 = request.json.get('longitude1', None)
-    lat1 = request.json.get('latitude1', None)
-    long2 = request.json.get('longitude2', None)
-    lat2 = request.json.get('latitude2', None)
-
-    if not long1 or not lat1 or not long2 or not lat2:
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
-
-    if type(long1) is not float or type(lat1) is not float or type(long2) is not float or type(lat2) is not float:
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
-    
-    distance = get_distance(lat1, long1, lat2, long2)
-    response = {"success": True, "miles": distance}
-    return response
-
-@app.route('/check_school_name/<school_name>', methods=['OPTIONS'])
-@cross_origin()
-def name_unq_options(school_name=None):
-    return json.dumps({"success": True})
-
-
-@app.route('/check_school_name/<school_name>', methods=['GET'])
-@admin_required()
-@cross_origin()
-def check_school_name_uniqueness(school_name=None):
-    if school_name is not None:
-        school = School.query.filter_by(name=school_name).first()
-        if school is not None:
-            return {"success": True, "unique": False}
-        else:
-            return {"success": True, "unique": True}
-    else:
-        return {"msg": "Invalid Query Syntax"}, 400
+    return {"success": True}
 
 
 @app.route('/check_complete', methods = ['OPTIONS'])
 @cross_origin()
 def check_comp_options():
-    return json.dumps({'success':True})
+    return {'success':True}
 
 
 @app.route('/check_complete', methods = ['POST'])
@@ -263,16 +213,15 @@ def check_comp():
 
     if type(stops) is not list or type(students) is not list:
         logging.debug('not list')
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+        return {'success': False, "msg": "Invalid Query Syntax"}
 
     try:
         completion = check_complete(students, stops)
     except Exception:
         logging.debug("EXCEPTION")
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+        return {'success': False, "msg": "Invalid Query Syntax"}
 
-    response = {"success": True, "completion": completion}
-    return response
+    return {"success": True, "completion": completion}
 
 #USER CRUD
 
@@ -280,51 +229,46 @@ def check_comp():
 @app.route('/user', methods = ['OPTIONS'])
 @cross_origin()
 def user_options(username=None):
-    return json.dumps({'success':True})
+    return {'success':True}
 
 @app.route('/user/<user_id>', methods = ['GET'])
 @app.route('/user', methods = ['GET'])
 @cross_origin()
 @admin_required()
 def users_get(user_id=None):
-    if request.method == 'GET':
 
-        if user_id is not None:
-            user = User.query.filter_by(id=user_id).first()
-            if user is None:
-                return json.dumps({'success': False, "msg": "Invalid User ID"})
-            students = Student.query.filter_by(user_id = user_id).all()
-            all_students = []
-            for student in students:
-                all_students.append(student.as_dict())
-            return json.dumps({'success': True, 'user': user.as_dict(), 'students': all_students})
+    if user_id is not None:
+        user = User.query.filter_by(id=user_id).first()
+        if user is None:
+            return {'success': False, "msg": "Invalid User ID"}
+        return {'success': True, 'user': user.as_dict()}
 
-        args = request.args
-        name_search = args.get('name', '')
-        email_search = args.get('email', '')
-        sort = args.get('sort', None)
-        direction = args.get('dir', None)
-        page = args.get('page', None, type=int)
-        base_query = User.query
-        record_num = None
+    args = request.args
+    name_search = args.get('name', '')
+    email_search = args.get('email', '')
+    sort = args.get('sort', None)
+    direction = args.get('dir', None)
+    page = args.get('page', None, type=int)
+    base_query = User.query
+    record_num = None
 
-        if sort and direction == 'desc':
-            sort = '-'+sort
-        if page:
-            user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = user_filt.get_objects()
-            record_num = user_filt.count
-        else:
-            user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort})
-            base_query = user_filt.apply()
-            record_num = base_query.count()
+    if sort and direction == 'desc':
+        sort = '-'+sort
+    if page:
+        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}).paginate()
+        base_query = user_filt.get_objects()
+        record_num = user_filt.count
+    else:
+        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort})
+        base_query = user_filt.apply()
+        record_num = base_query.count()
 
-        users = base_query
+    users = base_query
 
-        all_users = []
-        for user in users:
-            all_users.append(user.as_dict())
-        return json.dumps({'success': True, "users": all_users, "records": record_num})
+    all_users = []
+    for user in users:
+        all_users.append(user.as_dict())
+    return {'success': True, "users": all_users, "records": record_num}
 
 
 @app.route('/user/<user_id>', methods = ['PATCH','DELETE'])
@@ -335,7 +279,7 @@ def users(user_id=None):
     if request.method == 'DELETE':
         user = User.query.filter_by(id=user_id).first()
         if user is None:
-            return json.dumps({'success':False, 'msg': 'Invalid Email'})
+            return {'success':False, 'msg': 'Invalid Email'}
         students = Student.query.filter_by(user_id = user_id)
         for student in students:
             db.session.delete(student)
@@ -343,8 +287,8 @@ def users(user_id=None):
             db.session.delete(user)
             db.session.commit()
         except SQLAlchemyError:
-            return json.dumps({'success': False, 'msg': 'Database Error'})
-        return json.dumps({'success': True})
+            return {'success': False, 'msg': 'Database Error'}
+        return {'success': True}
     
     if request.method == 'POST':
         content = request.json
@@ -357,15 +301,15 @@ def users(user_id=None):
 
         if not email or not name or not address or not longitude or not latitude or admin_flag is None:
             logging.debug('MISSING A FIELD')
-            return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+            return {'success': False, "msg": "Invalid Query Syntax"}
         
         if type(email) is not str or type(name) is not str or type(admin_flag) is not bool or type(address) is not str or type(latitude) is not float or type(longitude) is not float:
             logging.debug('WRONG FIELD TYPE')
-            return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+            return {'success': False, "msg": "Invalid Query Syntax"}
         
         user = User.query.filter_by(email=email).first()
         if user:
-            return json.dumps({'success': False, 'msg': 'User with this email exists'})
+            return {'success': False, 'msg': 'User with this email exists'}
 
         new_user = User(email=email, full_name=name, uaddress=address, admin_flag=admin_flag, latitude=latitude, longitude=longitude)
         try:
@@ -373,11 +317,11 @@ def users(user_id=None):
             db.session.flush()
             db.session.refresh(new_user)
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Database Error"})
+            return {'success': False, "msg": "Database Error"}
         try:
             db.session.commit()
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Database Error"})
+            return {'success': False, "msg": "Database Error"}
         
 
         access_token = create_access_token(identity=email)
@@ -391,53 +335,52 @@ def users(user_id=None):
             "subject": "Account Creation for Hypothetical Transportation",
             "html": f"Please use the following link to set the password for your new account: \n <a href={link}>{link}</a>"})
         if r.status_code != 200:
-            return json.dumps({'success': False})
+            return {'success': False}
 
-        return json.dumps({'success': True, 'id': new_user.id})
+        return {'success': True, 'id': new_user.id}
 
     if request.method == 'PATCH':
         content = request.json
 
         user = User.query.filter_by(id=user_id).first()
         if user is None:
-            return json.dumps({'success': False, 'msg': 'Invalid User'})
-        
-        else:
-            if 'email' in content:
-                email = content.get('email', None)
-                if type(email) is not str:
-                    return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
-                email_user = User.query.filter_by(email=email).first()
-                if email_user and email_user.id != int(user_id):
-                    return json.dumps({'success': False, "msg": "Account already exists with this email"})
-                user.email = email
-            if 'name' in content:
-                full_name = content.get('name', None)
-                if type(full_name) is not str:
-                    return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
-                user.full_name = full_name
-            if 'address' in content:
-                address = content.get('address', None)
-                longitude = content.get('longitude', None)
-                latitude = content.get('latitude', None)
-                if not latitude or not longitude:
-                    return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
-                if type(address) is not str or type(longitude) is not float or type(latitude) is not float:
-                    return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
-                user.uaddress = address
-                user.longitude = longitude
-                user.latitude = latitude
-            if 'admin_flag' in content:
-                admin_flag = content.get('admin_flag', None)
-                if type(admin_flag) is not bool:
-                    return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
-                user.admin_flag = admin_flag
+            return {'success': False, 'msg': 'Invalid User'}
+    
+        if 'email' in content:
+            email = content.get('email', None)
+            if type(email) is not str:
+                return {'success': False, "msg": "Invalid Query Syntax"}
+            email_user = User.query.filter_by(email=email).first()
+            if email_user and email_user.id != int(user_id):
+                return {'success': False, "msg": "Account already exists with this email"}
+            user.email = email
+        if 'name' in content:
+            full_name = content.get('name', None)
+            if type(full_name) is not str:
+                return {'success': False, "msg": "Invalid Query Syntax"}
+            user.full_name = full_name
+        if 'address' in content:
+            address = content.get('address', None)
+            longitude = content.get('longitude', None)
+            latitude = content.get('latitude', None)
+            if not latitude or not longitude:
+                return {'success': False, "msg": "Invalid Query Syntax"}
+            if type(address) is not str or type(longitude) is not float or type(latitude) is not float:
+                return {'success': False, "msg": "Invalid Query Syntax"}
+            user.uaddress = address
+            user.longitude = longitude
+            user.latitude = latitude
+        if 'admin_flag' in content:
+            admin_flag = content.get('admin_flag', None)
+            if type(admin_flag) is not bool:
+                return {'success': False, "msg": "Invalid Query Syntax"}
+            user.admin_flag = admin_flag
         try:
             db.session.commit()
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Database Error"})
-        return json.dumps({'success': True})
-    return json.dumps({'success': False})
+            return {'success': False, "msg": "Database Error"}
+        return {'success': True}
+    return {'success': False}
 
 #STUDENT CRUD
 
@@ -445,75 +388,42 @@ def users(user_id=None):
 @app.route('/student', methods = ['OPTIONS'])
 @cross_origin()
 def student_options(student_uid=None):
-    return json.dumps({'success':True})
+    return {'success':True}
 
 @app.route('/student/<student_uid>', methods = ['GET'])
 @app.route('/student', methods = ['GET'])
 @cross_origin()
 @admin_required()
 def students_get(student_uid=None):
-    if request.method == 'GET':
 
-        if student_uid is not None:
-            student = Student.query.filter_by(id=student_uid).first()
-            student_dict = student.as_dict()
-            if student is None:
-                return json.dumps({'success': False, 'msg': 'Invalid Student Id'})
-            user = User.query.filter_by(id=student.user_id).first()
-            if user is None:
-                return json.dumps({'success': False, 'msg': 'Student doesn\'t have valid User'})
-            in_range=False
-            route = Route.query.filter_by(id=student.route_id).first()
-            if route is not None:
-                stops = route.stops
-                for stop in stops:
-                    if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
-                        in_range = True
-                        break
-            student_dict['in_range'] = in_range
-            return json.dumps({'success': True, 'student': student_dict})
+    if student_uid is not None:
+        student = Student.query.filter_by(id=student_uid).first()
+        if student is None:
+            return {'success': False, 'msg': 'Invalid Student Id'}
+        return {'success': True, 'student': student.as_dict()}
 
-        args = request.args
-        name_search = args.get('name', '')
-        id_search = args.get('id', None, type=int)
-        page = args.get('page', None, type=int)
-        sort = args.get('sort', None)
-        direction = args.get('dir', None)
-        base_query = Student.query
-        record_num = None
+    args = request.args
+    name_search = args.get('name', '')
+    id_search = args.get('id', None, type=int)
+    page = args.get('page', None, type=int)
+    sort = args.get('sort', None)
+    direction = args.get('dir', None)
+    base_query = Student.query
+    record_num = None
 
-        if sort and direction == 'desc':
-            sort = '-'+sort
-        if page:
-            student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = student_filt.get_objects()
-            record_num = student_filt.count
-        else:
-            student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort})
-            base_query = student_filt.apply()
-            record_num = base_query.count()
+    if sort and direction == 'desc':
+        sort = '-'+sort
+    if page:
+        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}).paginate()
+        base_query = student_filt.get_objects()
+        record_num = student_filt.count
+    else:
+        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort})
+        base_query = student_filt.apply()
+        record_num = base_query.count()
 
-        students = []
-        for student in base_query:
-            user = User.query.filter_by(id=student.user_id).first()
-            if user is None:
-                return json.dumps({'sucess': False, 'msg': 'Student doesn\'t have valid User'})
-            in_range=False
-            route = Route.query.filter_by(id=student.route_id).first()
-            if route is not None:
-                stops = route.stops
-                for stop in stops:
-                    if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
-                        in_range = True
-                        break
-            student_dict = student.as_dict()
-            student_dict['in_range'] = in_range
-            students.append(student_dict)
-        
-        all_students = []
-        for student in students:
-            all_students.append(student)
-        return json.dumps({'success':True, "students": all_students, "records": record_num})
+    students = [student.as_dict() for student in base_query]
+    return {'success':True, "students": students, "records": record_num}
 
 @app.route('/student/<student_uid>', methods = ['PATCH', 'DELETE'])
 @app.route('/student', methods = ['POST'])
@@ -523,10 +433,10 @@ def students(student_uid = None):
     if request.method == 'DELETE':
         student = Student.query.filter_by(id=student_uid).first()
         if student is None:
-            return json.dumps({'sucess': False, 'msg': 'Invalid Student Id'})
+            return {'sucess': False, 'msg': 'Invalid Student Id'}
         db.session.delete(student)
         db.session.commit()
-        return json.dumps({'success': True})
+        return {'success': True}
     
     if request.method == 'POST':
         content = request.json
@@ -535,16 +445,16 @@ def students(student_uid = None):
         user_id = content.get('user_id', None)
 
         if not name or not school_id or not user_id:
-            return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+            return {'success': False, "msg": "Invalid Query Syntax"}
         
         if type(name) is not str or type(school_id) is not int or type(user_id) is not int:
-            return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+            return {'success': False, "msg": "Invalid Query Syntax"}
 
         user = User.query.filter_by(id=user_id).first()
         if user is None:
-            return json.dumps({'success': False, 'msg': 'Student doesn\'t belong to a user'})
+            return {'success': False, 'msg': 'Student doesn\'t belong to a user'}
         if user.uaddress is None:
-            return json.dumps({'success': False, 'msg': 'User must have an address to create a student'})
+            return {'success': False, 'msg': 'User must have an address to create a student'}
 
         new_student = Student(name=name, school_id=school_id, user_id=user_id)
         try:
@@ -552,61 +462,61 @@ def students(student_uid = None):
             db.session.flush()
             db.session.refresh(new_student)
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Database Error"})
+            return {'success': False, "msg": "Database Error"}
 
         if 'route_id' in content:
             route_id = content.get("route_id", None)
             if type(route_id) is not int:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             new_student.route_id = route_id
         if 'student_id' in content:
             student_id = content.get("student_id", None)
             if type(student_id) is not int:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             new_student.student_id = content['student_id']
         try:
             db.session.commit()
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Database Error"})
-        return json.dumps({'success': True, 'id': new_student.id})
+            return {'success': False, "msg": "Database Error"}
+        return {'success': True, 'id': new_student.id}
 
     if request.method == 'PATCH':
         content = request.json
         student = Student.query.filter_by(id=student_uid).first()
 
         if student is None:
-            return json.dumps({'success': False, 'msg': 'Invalid Student Id'})
+            return {'success': False, 'msg': 'Invalid Student Id'}
         if 'name' in content:
             name = content.get('name', None)
             if type(name) is not str:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             student.name = name
         if 'student_id' in content:
             student_id = content.get('student_id', None)
             if student_id is not None and type(student_id) is not int:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             student.student_id = student_id
         if 'school_id' in content:
             school_id = content.get('school_id', None)
             if type(school_id) is not int:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             student.school_id = school_id
         if 'route_id' in content:
             route_id = content.get('route_id', None)
             if route_id is not None and type(route_id) is not int:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             student.route_id = route_id
         if 'user_id' in content:
             user_id = content.get('user_id', None)
             if type(user_id) is not int:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             student.user_id = user_id
         try:
             db.session.commit()
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Database Error"})
-        return json.dumps({'success': True})
-    return json.dumps({'success': False})
+            return {'success': False, "msg": "Database Error"}
+        return {'success': True}
+    return {'success': False}
 
 #SCHOOL CRUD
 
@@ -614,62 +524,41 @@ def students(student_uid = None):
 @app.route('/school', methods = ['OPTIONS'])
 @cross_origin()
 def schools_options(school_uid=None):
-    return json.dumps({'success':True})
+    return {'success':True}
 
 @app.route('/school/<school_uid>', methods = ['GET'])
 @app.route('/school', methods = ['GET'])
 @cross_origin()
 @admin_required()
 def schools_get(school_uid=None):
-    if request.method == 'GET':
 
-        if school_uid is not None:
-            school = School.query.filter_by(id=school_uid).first()
-            if school is None:
-                return json.dumps({'success': False, 'msg': 'Invalid School Id'})
-            school_dict = school.as_dict()
-            if school_dict["routes"] is not None:
-                for route_index in range(len(school_dict["routes"])):
-                    route = school_dict["routes"][route_index]
-                    stops = route["stops"]
-                    stop_dicts = []
-                    for stop_id in stops:
-                        stop = Stop.query.filter_by(id=stop_id).first()
-                        stop_dicts.append(stop.as_dict())
-                    complete = False
-                    try:
-                        complete = check_complete(route['students'], stop_dicts)
-                    except Exception:
-                        return json.dumps({'success': False, 'error': 'Error in Completion Calculation'})
-                    school_dict["routes"][route_index]['complete'] = complete  
+    if school_uid is not None:
+        school = School.query.filter_by(id=school_uid).first()
+        if school is None:
+            return {'success': False, 'msg': 'Invalid School Id'}
+        return {'success': True, 'school': school.as_dict()}
 
-            return json.dumps({'success': True, 'school': school_dict})
+    args = request.args
+    name_search = args.get("name", '')
+    page = args.get('page',None,type=int)
+    sort = args.get('sort', None)
+    direction = args.get('dir', 'asc')
+    base_query = School.query
+    record_num = None
 
-        args = request.args
-        name_search = args.get("name", '')
-        page = args.get('page',None,type=int)
-        sort = args.get('sort', None)
-        direction = args.get('dir', 'asc')
-        base_query = School.query
-        record_num = None
+    if sort and direction == 'desc':
+        sort = '-'+sort
+    if page:
+        school_filt = SchoolFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
+        base_query = school_filt.get_objects()
+        record_num = school_filt.count
+    else:
+        school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort})
+        base_query = school_filt.apply()
+        record_num = base_query.count()
 
-        if sort and direction == 'desc':
-            sort = '-'+sort
-        if page:
-            school_filt = SchoolFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = school_filt.get_objects()
-            record_num = school_filt.count
-        else:
-            school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort})
-            base_query = school_filt.apply()
-            record_num = base_query.count()
-
-        schools = base_query
-
-        all_schools = []
-        for school in schools:
-            all_schools.append(school.as_dict())
-        return json.dumps({'success':True, "schools": all_schools, "records": record_num})
+    all_schools = [school.as_dict() for school in base_query]
+    return {'success':True, "schools": all_schools, "records": record_num}
      
 
 @app.route('/school/<school_uid>', methods = ['PATCH', 'DELETE'])
@@ -680,25 +569,25 @@ def schools(school_uid = None):
     if request.method == 'DELETE':
         school = School.query.filter_by(id=school_uid).first()
         if school is None:
-            return json.dumps({'success': False, "msg": 'Invalid School Id'})
+            return {'success': False, "msg": 'Invalid School Id'}
         routes = Route.query.filter_by(school_id=school.id)
         students = Student.query.filter_by(school_id=school.id)
         for route in routes:
             try:
                 db.session.delete(route)
             except SQLAlchemyError:
-                return json.dumps({'success': False, "msg": "Error Deleting Route"})
+                return {'success': False, "msg": "Error Deleting Route"}
         for student in students:
             try:
                 db.session.delete(student)
             except SQLAlchemyError:
-                return json.dumps({'success': False, "msg": "Error Deleting Student"})
+                return {'success': False, "msg": "Error Deleting Student"}
         try:
             db.session.delete(school)
             db.session.commit()
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Error Deleting School"})
-        return json.dumps({'success': True})
+            return {'success': False, "msg": "Error Deleting School"}
+        return {'success': True}
     
     if request.method == 'POST':
         content = request.json
@@ -711,11 +600,11 @@ def schools(school_uid = None):
         
         #REQUIRED FIELDS
         if not name or not address or not longitude or not latitude or not arrival_time or not departure_time:
-            return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+            return {'success': False, "msg": "Invalid Query Syntax"}
         
         #TYPE CHECKING
         if type(name) is not str or type(address) is not str or type(longitude) is not float or type(latitude) is not float or type(arrival_time) is not str or type(departure_time) is not str:
-            return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+            return {'success': False, "msg": "Invalid Query Syntax"}
 
         parsed_arrival_time = datetime.strptime(arrival_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
         parsed_departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
@@ -727,55 +616,55 @@ def schools(school_uid = None):
             db.session.refresh(new_school)
             db.session.commit()
         except SQLAlchemyError:
-            return json.dumps({"success": False, "msg": "School Name already exists in Database"})
-        return json.dumps({'success': True, 'id': new_school.id})
+            return {"success": False, "msg": "School Name already exists in Database"}
+        return {'success': True, 'id': new_school.id}
     
     if request.method == 'PATCH':
         content = request.json
 
         school = School.query.filter_by(id=school_uid).first()
         if school is None:
-            return json.dumps({'success': False, 'msg': 'Invalid School Id'})
+            return {'success': False, 'msg': 'Invalid School Id'}
         if 'name' in content:
             name = content.get('name', None)
             if type(name) is not str:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             school.name = name
         if 'address' in content:
             address = content.get('address', None)
             longitude = content.get('longitude', None)
             latitude = content.get('latitude', None)
             if not latitude or not longitude:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             if type(address) is not str or type(longitude) is not float or type(latitude) is not float:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             school.address = address
             school.longitude = longitude
             school.latitude = latitude
         if 'arrival_time' in content:
             arrival_time = content.get('arrival_time', None)
             if type(arrival_time) is not str:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             parsed_arrival_time = datetime.strptime(arrival_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
             school.arrival_time = parsed_arrival_time
         if 'departure_time' in content:
             departure_time = content.get('departure_time', None)
             if type(departure_time) is not str:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             parsed_departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
             school.departure_time = parsed_departure_time
         try:
             db.session.commit()
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Database Error"})
+            return {'success': False, "msg": "Database Error"}
 
         if 'arrival_time' in content or 'departure_time' in content:
             try:
                 update_stop_calculations(school)
             except SQLAlchemyError:
-                return json.dumps({'success': False, "msg": "Database Error"})
-        return json.dumps({'success': True})
-    return json.dumps({'success': False})
+                return {'success': False, "msg": "Database Error"}
+        return {'success': True}
+    return {'success': False}
 
 # ROUTE CRUD
 
@@ -783,65 +672,41 @@ def schools(school_uid = None):
 @app.route('/route', methods = ['OPTIONS'])
 @cross_origin()
 def route_options(route_uid=None):
-    return json.dumps({'success':True})
+    return {'success':True}
 
 @app.route('/route/<route_uid>', methods = ['GET'])
 @app.route('/route', methods = ['GET'])
 @cross_origin()
 @admin_required()
 def routes_get(route_uid=None):
-    if request.method == 'GET':
-        args = request.args
-        name_search = args.get('name', '')
-        page = args.get('page', None,type=int)
-        sort = args.get('sort', None)
-        direction = args.get('dir', 'asc')
-        base_query = Route.query
-        record_num = None
+    
+    if route_uid is not None:
+        route = Route.query.filter_by(id=route_uid).first()
+        if route is None:
+            return {'success': False, 'msg': 'Invalid Route Id'}
+        return {'success': True, 'route': route.as_dict()}
 
-        if route_uid is not None:
-            route = Route.query.filter_by(id=route_uid).first()
-            if route is None:
-                return json.dumps({'success': False, 'msg': 'Invalid Route Id'})
-            route_dict = route.as_dict()
-            stops = route.stops
-            stop_dicts = []
-            for stop in stops:
-                stop_dicts.append(stop.as_dict())
-            try:
-                complete = check_complete(route_dict['students'], stop_dicts)
-            except Exception:
-                return json.dumps({'success': False, 'msg': 'Error in Completion Calculation'})
-            route_dict['complete'] = complete  
-            return json.dumps({'success': True, 'route': route_dict})
+    args = request.args
+    name_search = args.get('name', '')
+    page = args.get('page', None,type=int)
+    sort = args.get('sort', None)
+    direction = args.get('dir', 'asc')
+    base_query = Route.query
+    record_num = None
 
-        if sort and direction == 'desc':
-            sort = '-'+sort
-        if page:
-            route_filt = RouteFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
-            base_query = route_filt.get_objects()
-            record_num = route_filt.count
-        else:
-            route_filt = RouteFilter(data={'name': name_search, 'order_by': sort})
-            base_query = route_filt.apply()
-            record_num = base_query.count()
+    if sort and direction == 'desc':
+        sort = '-'+sort
+    if page:
+        route_filt = RouteFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
+        base_query = route_filt.get_objects()
+        record_num = route_filt.count
+    else:
+        route_filt = RouteFilter(data={'name': name_search, 'order_by': sort})
+        base_query = route_filt.apply()
+        record_num = base_query.count()
 
-        all_routes = []
-
-        for route in base_query:
-            stops = route.stops
-            stop_dicts = []
-            for stop in stops:
-                stop_dicts.append(stop.as_dict())
-            route_dict = route.as_dict()
-            try:
-                complete = check_complete(route_dict['students'], stop_dicts)
-            except Exception:
-                return json.dumps({'success': False, 'msg': 'Error in Completion Calculation'})
-            route_dict['complete'] = complete  
-            all_routes.append(route_dict)     
-
-        return json.dumps({'success':True, "routes": all_routes, "records": record_num})
+    all_routes = [route.as_dict() for route in base_query]
+    return {'success':True, "routes": all_routes, "records": record_num}
 
 
 @app.route('/route/<route_uid>', methods = ['PATCH','DELETE'])
@@ -852,7 +717,7 @@ def routes(route_uid = None):
     if request.method == 'DELETE':
         route = Route.query.filter_by(id=route_uid).first()
         if route is None:
-                return json.dumps({'success': False, 'msg': 'Invalid Route Id'})
+            return {'success': False, 'msg': 'Invalid Route Id'}
         students = Student.query.filter_by(route_id=route.id)
         stops = Stop.query.filter_by(route_id=route.id)
         for student in students:
@@ -863,8 +728,8 @@ def routes(route_uid = None):
             db.session.delete(route)
             db.session.commit()
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Database Error"})
-        return json.dumps({'success': True})
+            return {'success': False, "msg": "Database Error"}
+        return {'success': True}
 
     if request.method == 'POST':
         content = request.json
@@ -874,14 +739,14 @@ def routes(route_uid = None):
         stops = content.get('stops', [])
 
         if not name or not school_id:
-            return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+            return {'success': False, "msg": "Invalid Query Syntax"}
         
         if type(name) is not str or type(school_id) is not int or type(stops) is not list or type(students) is not list or not all(isinstance(x, int) for x in students):
-            return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+            return {'success': False, "msg": "Invalid Query Syntax"}
 
         school = School.query.filter_by(id=school_id).first()
         if school is None:
-            return json.dumps({'success': False, "msg": "Invalid Query"})
+            return {'success': False, "msg": "Invalid Query"}
 
         new_route = Route(name = name, school_id = school_id)
         try:
@@ -889,7 +754,7 @@ def routes(route_uid = None):
             db.session.flush()
             db.session.refresh(new_route)
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Database Error"})
+            return {'success': False, "msg": "Database Error"}
         
         for student_num in students:
             logging.debug("in here" + str(student_num))
@@ -899,7 +764,7 @@ def routes(route_uid = None):
         if 'description' in content:
             description = content.get('description', None)
             if type(description) is not str:
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             new_route.description = description
         
         #ADDED THIS FOR STOPS
@@ -907,24 +772,24 @@ def routes(route_uid = None):
         dropoff_times, pickup_times = get_time_and_dist(sorted_stops, school.departure_time, school.arrival_time, school.latitude, school.longitude)
         for f in range(len(stops)):
             stop_info = sorted_stops[f]
-            stop = Stop(name=stop_info['name'], route_id=new_route.id, latitude=stop_info['latitude'], longitude=stop_info['longitude'], index=f, pickup_time=pickup_times[f], dropoff_time=dropoff_times[f])
+            stop = Stop(name=stop_info['name'], route_id=new_route.id, latitude=stop_info['latitude'], longitude=stop_info['longitude'], index=stop_info['index'], pickup_time=pickup_times[f], dropoff_time=dropoff_times[f])
             db.session.add(stop)
         try:
             db.session.commit()
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Database Error"})
-        return json.dumps({'success': True, 'id': new_route.id})
+            return {'success': False, "msg": "Database Error"}
+        return {'success': True, 'id': new_route.id}
     
     if request.method == 'PATCH':
         content = request.json
 
         route = Route.query.filter_by(id=route_uid).first()
         if route is None:
-            return json.dumps({'success': False, 'msg': 'Invalid Route Id'})
+            return {'success': False, 'msg': 'Invalid Route Id'}
         if 'students' in content:
             students = content.get('students',[])
             if type(students) is not list or not all(isinstance(x, int) for x in students):
-                return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+                return {'success': False, "msg": "Invalid Query Syntax"}
             curr_students = Student.query.filter_by(route_id=route.id)
             for student in curr_students:
                 student.route_id = None
@@ -935,20 +800,18 @@ def routes(route_uid = None):
         if 'name' in content:
             name = content.get('name', None)
             if type(name) is not str:
-                return json.dumps({'success': False, "msg": "Invalid Name"})
+                return {'success': False, "msg": "Invalid Name"}
             route.name = name
         if 'description' in content:
             description = content.get('description', None)
             if type(description) is not str:
-                return json.dumps({'success': False, "msg": "Invalid Description"})
+                return {'success': False, "msg": "Invalid Description"}
             route.description = description
         if 'stops' in content:
             stops = content.get('stops', [])
             if type(stops) is not list:
-                return json.dumps({'success': False, "msg": "Invalid Stops"})
-            school = School.query.filter_by(id=route.school_id).first()
-            if school is None:
-                return json.dumps({'success': False, "msg": "Invalid School ID"})
+                return {'success': False, "msg": "Invalid Stops"}
+            school = route.school
             
             #DELETE ALL EXISTING STOPS
             existing_stops = Stop.query.filter_by(route_id=route_uid)
@@ -960,21 +823,21 @@ def routes(route_uid = None):
             dropoff_times, pickup_times = get_time_and_dist(sorted_stops, school.departure_time, school.arrival_time, school.latitude, school.longitude)
             for f in range(len(stops)):
                 stop_info = sorted_stops[f]
-                new_stop = Stop(name=stop_info['name'], route_id=route_uid, latitude=stop_info['latitude'], longitude=stop_info['longitude'], index=f, pickup_time=pickup_times[f], dropoff_time=dropoff_times[f])
+                new_stop = Stop(name=stop_info['name'], route_id=route_uid, latitude=stop_info['latitude'], longitude=stop_info['longitude'], index=stop_info['index'], pickup_time=pickup_times[f], dropoff_time=dropoff_times[f])
                 db.session.add(new_stop)   
         try:
             db.session.commit()
         except SQLAlchemyError:
-            return json.dumps({'success': False, "msg": "Erorr Committing Stops"})
-        return json.dumps({'success': True})
-    return json.dumps({'success': False})
+            return {'success': False, "msg": "Erorr Committing Stops"}
+        return {'success': True}
+    return {'success': False}
 
 @app.route('/email/route/<uid>', methods = ['OPTIONS'])
 @app.route('/email/school/<uid>', methods = ['OPTIONS'])
 @app.route('/email/system', methods = ['OPTIONS'])
 @cross_origin()
 def email_options(uid=None):
-    return json.dumps({'success':True})
+    return {'success':True}
 
 @app.route('/email/system', methods = ['POST'])
 @cross_origin()
@@ -986,10 +849,10 @@ def send_email_system():
     body = content.get("body", None)
 
     if not email_type or not subject or not body:
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+        return {'success': False, "msg": "Invalid Query Syntax"}
 
     if email_type not in ["general", "route"] or type(subject) is not str or type(body) is not str:
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+        return {'success': False, "msg": "Invalid Query Syntax"}
 
     users = User.query.all()
     for user in users:
@@ -997,18 +860,15 @@ def send_email_system():
         if '@example.com' in user.email:
             continue
         if email_type == 'route':
-            students = Student.query.filter_by(user_id=user.id).all()
-            for student in students:
-                school = School.query.filter_by(id=student.school_id).first()
+            for student in user.children:
                 route_txt = "Route: No route - see admin\n"
-                if student.route_id is not None:
-                    route = Route.query.filter_by(id=student.route_id).first()
+                if student.route is not None:
                     route_txt = (
-                        f"Route Name: {route.name}\n"
+                        f"Route Name: {student.route.name}\n"
                         f"Route Description: \n"
-                        f"{route.description} \n"
+                        f"{student.route.description} \n"
                     )
-                    stops = route.stops
+                    stops = student.route.stops
                     in_range_stops = []
                     for stop in stops:
                         if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
@@ -1028,7 +888,7 @@ def send_email_system():
                     "\n"
                     f"Student Name: {student.name}\n"
                     f"Student ID: {student.student_id if student.student_id is not None else 'No Student ID'}\n"
-                    f"School Name: {school.name}\n"
+                    f"School Name: {student.school.name}\n"
                     f"{route_txt}"
                     "\n"
                 )
@@ -1041,8 +901,8 @@ def send_email_system():
             "text": body + student_txt})
         if r.status_code != 200:
             logging.info(r.json())
-            return json.dumps({'success': False, "msg": "Internal Server Error"})
-    return json.dumps({'success': True})
+            return {'success': False, "msg": "Internal Server Error"}
+    return {'success': True}
 
 
 @app.route('/email/school/<school_uid>', methods = ['POST'])
@@ -1055,10 +915,10 @@ def send_email_school(school_uid=None):
     body = content.get("body", None)
 
     if not email_type or not subject or not body:
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+        return {'success': False, "msg": "Invalid Query Syntax"}
 
     if email_type not in ["general", "route"] or type(subject) is not str or type(body) is not str:
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+        return {'success': False, "msg": "Invalid Query Syntax"}
 
     all_students = Student.query.filter_by(school_id=school_uid)
     user_ids = set()
@@ -1070,18 +930,15 @@ def send_email_school(school_uid=None):
         if '@example.com' in user.email:
             continue
         if email_type == 'route':
-            students = Student.query.filter_by(user_id=user.id).all()
-            for student in students:
-                school = School.query.filter_by(id=student.school_id).first()
+            for student in user.children:
                 route_txt = "Route: No route - see admin\n"
-                if student.route_id is not None:
-                    route = Route.query.filter_by(id=student.route_id).first()
+                if student.route is not None:
                     route_txt = (
-                        f"Route Name: {route.name}\n"
+                        f"Route Name: {student.route.name}\n"
                         f"Route Description: \n"
-                        f"{route.description} \n"
+                        f"{student.route.description} \n"
                     )
-                    stops = route.stops
+                    stops = student.route.stops
                     in_range_stops = []
                     for stop in stops:
                         if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
@@ -1101,7 +958,7 @@ def send_email_school(school_uid=None):
                     "\n"
                     f"Student Name: {student.name}\n"
                     f"Student ID: {student.student_id if student.student_id is not None else 'No Student ID'}\n"
-                    f"School Name: {school.name}\n"
+                    f"School Name: {student.school.name}\n"
                     f"{route_txt}"
                     "\n"
                 )
@@ -1114,8 +971,8 @@ def send_email_school(school_uid=None):
             "text": body + student_txt})
         if r.status_code != 200:
             logging.info(r.json())
-            return json.dumps({"success": False})
-    return json.dumps({'success': True})
+            return {"success": False}
+    return {'success': True}
     
 
 
@@ -1129,10 +986,10 @@ def send_email_route(route_uid=None):
     body = content.get("body", None)
 
     if not email_type or not subject or not body:
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+        return {'success': False, "msg": "Invalid Query Syntax"}
 
     if email_type not in ["general", "route"] or type(subject) is not str or type(body) is not str:
-        return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+        return {'success': False, "msg": "Invalid Query Syntax"}
 
     all_students = Student.query.filter_by(route_id=route_uid)
     user_ids = set()
@@ -1144,18 +1001,15 @@ def send_email_route(route_uid=None):
         if '@example.com' in user.email:
             continue
         if email_type == 'route':
-            students = Student.query.filter_by(user_id=user.id).all()
-            for student in students:
-                school = School.query.filter_by(id=student.school_id).first()
+            for student in user.children:
                 route_txt = "Route: No route - see admin\n"
-                if student.route_id is not None:
-                    route = Route.query.filter_by(id=student.route_id).first()
+                if student.route is not None:
                     route_txt = (
-                        f"Route Name: {route.name}\n"
+                        f"Route Name: {student.route.name}\n"
                         f"Route Description: \n"
-                        f"{route.description} \n"
+                        f"{student.route.description} \n"
                     )
-                    stops = route.stops
+                    stops = student.route.stops
                     in_range_stops = []
                     for stop in stops:
                         if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
@@ -1175,7 +1029,7 @@ def send_email_route(route_uid=None):
                     "\n"
                     f"Student Name: {student.name}\n"
                     f"Student ID: {student.student_id if student.student_id is not None else 'No Student ID'}\n"
-                    f"School Name: {school.name}\n"
+                    f"School Name: {student.school.name}\n"
                     f"{route_txt}"
                     "\n"
                 )
@@ -1188,28 +1042,8 @@ def send_email_route(route_uid=None):
             "text": body + student_txt})
         if r.status_code != 200:
             logging.info(r.json())
-            return json.dumps({"success": False})
-    return json.dumps({'success': True})
-
-#STOP CRUD
-@app.route('/stop/<stop_uid>', methods=['OPTIONS'])
-@app.route('/stop', methods=['OPTIONS'])
-@cross_origin()
-def stop_options(stop_uid=None):
-    return json.dumps({'success':True})
-
-@app.route('/stop/<stop_uid>', methods=['GET'])
-@cross_origin()
-@admin_required()
-def stop_get(stop_uid=None):
-    if request.method == 'GET':
-        if stop_uid is not None:
-            stop = Stop.query.filter_by(id=stop_uid).first()
-            if stop is None:
-                return json.dumps({'success': False, 'msg': 'Invalid Stop Id'})
-            return json.dumps({'success': True, 'stop': stop.as_dict()})
-        else:
-            return json.dumps({'success': False, "msg": "Invalid Query Syntax"})
+            return {"success": False}
+    return {'success': True}
 
 #HELPER METHODS
 

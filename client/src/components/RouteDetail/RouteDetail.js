@@ -79,12 +79,12 @@ export default function RouteDetail(props) {
       console.log(students);
       console.log(schoolLocation);
       for (var i = 0; i < students.length; i++) {
-        bounds.extend(students[i].location);
+        bounds.extend(students[i].loc);
       }
       bounds.extend(schoolLocation);
       map.fitBounds(bounds);
     }
-  }, [students, schoolLocation]);
+  }, [students, schoolLocation, map]);
   
   const onLoad = React.useCallback(function callback(map) {
     setMap(map);
@@ -104,91 +104,25 @@ export default function RouteDetail(props) {
       if (result.data.success){
         setData(result.data.route);
 
-        let newStopRows = []; 
-        for (let i=0; i < result.data.route.stops.length; i++){
-          const stopRes = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/stop/${result.data.route.stops[i]}`, {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if (stopRes.data.success){
-            console.log(stopRes.data.stop)
-            newStopRows = [...newStopRows, {name: stopRes.data.stop.name, id: stopRes.data.stop.id, pickup_time: stopRes.data.stop.pickup_time, dropoff_time: stopRes.data.stop.dropoff_time, loc: {lat: stopRes.data.stop.latitude, lng: stopRes.data.stop.longitude}}]
-          }
-          else{
-            props.setSnackbarMsg(`Route could not be loaded`);
-            props.setShowSnackbar(true);
-            props.setSnackbarSeverity("error");
-            navigate("/routes");
-          }
-        }
+        let newStops = result.data.route.stops.map((value)=>{
+          return {...value, loc: {lat: value.latitude, lng: value.longitude}}
+        })
+        setStops(newStops);
 
-        setStops(newStopRows);
-
-        const schoolRes = await axios.get(
-          process.env.REACT_APP_BASE_URL+`/school/${result.data.route.school_id}`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-          }
-        );
-        if (schoolRes.data.success){
-          setSchool(schoolRes.data.school.name);
-          setSchoolLocation({lat: schoolRes.data.school.latitude, lng: schoolRes.data.school.longitude})
-          newStopRows = [{name: schoolRes.data.school.name, id: -1, pickup_time: schoolRes.data.school.arrival_time, dropoff_time: schoolRes.data.school.departure_time }, ...newStopRows]
-          setStopRows(newStopRows);
-        }
-        else{
-          props.setSnackbarMsg(`Route could not be loaded`);
-          props.setShowSnackbar(true);
-          props.setSnackbarSeverity("error");
-          navigate("/routes");
-        }
-
+        setSchool(result.data.route.school.name);
+        setSchoolLocation({lat: result.data.route.school.latitude, lng: result.data.route.school.longitude})
+        let newStopRows = [{name: result.data.route.school.name, pickup_time: result.data.route.school.arrival_time, dropoff_time: result.data.route.school.departure_time, id: -1}, ...newStops]
+        setStopRows(newStopRows);
 
         console.log(result.data.route);
-        let newRows = [];
-        let newStudents=[];
-        for(let i=0; i<result.data.route.students.length; i++){
-          const studentRes = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/student/${result.data.route.students[i]}`, {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if(studentRes.data.success){
-            newRows = [...newRows, {name: {name: studentRes.data.student.name, id: result.data.route.students[i]}, id: result.data.route.students[i], in_range: studentRes.data.student.in_range}]
-            const userRes = await axios.get(
-              process.env.REACT_APP_BASE_URL+`/user/${studentRes.data.student.user_id}`, {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-              }
-            );
-            if(userRes.data.success){
-                console.log(userRes.data.user);
-                console.log(studentRes.data);
-                newStudents = [...newStudents, {name: studentRes.data.student.name, address: userRes.data.user.uaddress, location: {lat: userRes.data.user.latitude, lng: userRes.data.user.longitude}, in_range: studentRes.data.student.in_range}]
-            }
-            else{
-                props.setSnackbarMsg(`Route could not be loaded`);
-                props.setShowSnackbar(true);
-                props.setSnackbarSeverity("error");
-                navigate("/routes");
-            }
-
-          }
-          else{
-            props.setSnackbarMsg(`Route could not be loaded`);
-            props.setShowSnackbar(true);
-            props.setSnackbarSeverity("error");
-            navigate("/routes");
-          }
-        }
+        let newRows = result.data.route.students.map((value)=>{
+          return {...value, name: {name: value.name, id: value.id}}
+        });
         setRows(newRows);
+
+        let newStudents = result.data.route.students.map((value)=>{
+          return {...value, loc: {lat: value.user.latitude, lng: value.user.longitude}}
+        })
         setStudents(newStudents);
       }
       else{
@@ -254,7 +188,7 @@ export default function RouteDetail(props) {
           <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad}>
             <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
             {students.map((student, index) => (
-                <Marker key={index} title={student.name} position={student.location} icon="http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"/> ))}
+                <Marker key={index} title={student.name} position={student.loc} icon="http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"/> ))}
             {stops.map((stop, index)=> (
                 <Marker key={index} title={stop.name} position={stop.loc} icon="http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"/> ))}
           </GoogleMap>

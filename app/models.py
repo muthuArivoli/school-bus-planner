@@ -9,28 +9,32 @@ from sqlalchemy_filters import Filter, StringField, Field, TimestampField
 from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator
 from datetime import datetime
 import logging
+import geopy.distance
 logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
+def get_distance(lat1, long1, lat2, long2):
+    coords_1 = (lat1, long1)
+    coords_2 = (lat2, long2)
+    return geopy.distance.geodesic(coords_1, coords_2).miles 
 
 
 class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String())
+    email = db.Column(db.String(), unique=True)
     full_name = db.Column(db.String())
     uaddress = db.Column(db.String())
     pswd = db.Column(db.String())
     admin_flag = db.Column(db.Boolean())
-    children = relationship("Student")
+    children = relationship("Student", back_populates="user", cascade="all, delete-orphan")
     longitude = db.Column(db.Float())
     latitude = db.Column(db.Float())
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
         main.pop('pswd')
-        students = [student.id for student in self.children]
-        main['children'] = students
+        main['children'] = [child.as_dict() for child in self.children]
         return main
 
     def __repr__(self):
@@ -44,8 +48,8 @@ class School(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), unique=True)
     address = db.Column(db.String())
-    routes = relationship("Route")
-    students = relationship("Student")
+    routes = relationship("Route", back_populates='school', cascade="all, delete-orphan")
+    students = relationship("Student", back_populates='school', cascade="all, delete-orphan")
     longitude = db.Column(db.Float())
     latitude = db.Column(db.Float())
     arrival_time = db.Column(db.Time())
@@ -53,12 +57,10 @@ class School(db.Model):
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
-        routes = [route.as_dict() for route in self.routes]
-        students = [student.id for student in self.students]
-        main['routes'] = routes
-        main['students'] = students
         main['arrival_time'] = self.arrival_time.isoformat()
         main['departure_time'] = self.departure_time.isoformat()
+        main['routes'] = [route.as_dict() for route in self.routes]
+        main['students'] = [student.as_dict() for student in self.students]
         return main
 
     def __repr__(self):
@@ -71,9 +73,10 @@ class Route(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
+    school = relationship("School", back_populates="routes")
     description = db.Column(db.String())
-    students = relationship("Student")
-    stops = relationship("Stop")
+    students = relationship("Student", back_populates="route")
+    stops = relationship("Stop", back_populates="route", cascade="all, delete-orphan")
 
     @hybrid_property
     def student_count(self):
@@ -88,10 +91,16 @@ class Route(db.Model):
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
-        students = [student.id for student in self.students]
-        stops = [stop.id for stop in self.stops]
-        main['students'] = students
-        main['stops'] = stops
+        main['students'] = [student.as_dict() for student in self.students]
+        main['stops'] = [stop.as_dict() for stop in self.stops]
+        main['school'] = {c.key: getattr(self.school, c.key) for c in inspect(self.school).mapper.column_attrs}
+        main['school']['arrival_time'] = self.school.arrival_time.isoformat()
+        main['school']['departure_time'] = self.school.departure_time.isoformat()
+        main['complete'] = True
+        for student in main['students']:
+            if not student['in_range']:
+                main['complete'] = False
+                break
         return main
 
     def __repr__(self):
@@ -105,14 +114,30 @@ class Student(db.Model):
     name = db.Column(db.String())
     student_id = db.Column(db.Integer, nullable=True)
     school_id = db.Column(db.Integer, ForeignKey('schools.id'))
+    school = relationship("School", back_populates="students")
     route_id = db.Column(db.Integer, ForeignKey('routes.id'))
+    route = relationship("Route", back_populates="students")
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
+    user = relationship("User", back_populates="children")
     __table_args__ = (
         CheckConstraint(student_id >= 0, name='check_id_positive'),
         {})
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        main['school'] = {c.key: getattr(self.school, c.key) for c in inspect(self.school).mapper.column_attrs}
+        main['school']['arrival_time'] = self.school.arrival_time.isoformat()
+        main['school']['departure_time'] = self.school.departure_time.isoformat()
+        main['route'] = None
+        main['in_range'] = False
+        if self.route is not None:
+            main['route'] = {c.key: getattr(self.route, c.key) for c in inspect(self.route).mapper.column_attrs}
+            for stop in self.route.stops:
+                if get_distance(stop.latitude, stop.longitude, self.user.latitude, self.user.longitude) < 0.3:
+                    main['in_range'] = True
+                    break
+        main['user'] = {c.key: getattr(self.user, c.key) for c in inspect(self.user).mapper.column_attrs}
+        main['user'].pop('pswd')
         return main
 
     def __repr__(self):
@@ -131,13 +156,13 @@ class Stop(db.Model):
     pickup_time = db.Column(db.Time())
     dropoff_time = db.Column(db.Time())
     route_id = db.Column(db.Integer, ForeignKey('routes.id'))
+    route = relationship("Route", back_populates="stops")
     longitude = db.Column(db.Float())
     latitude = db.Column(db.Float())
     index = db.Column(db.Integer)
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
-        logging.debug(type(self.pickup_time))
         main['pickup_time'] = self.pickup_time.isoformat()
         main['dropoff_time'] = self.dropoff_time.isoformat()
         return main
