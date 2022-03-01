@@ -35,10 +35,10 @@ const titleStyle = (size, margin) => {
 
 const CircleOptions = {
   strokeColor: '#d9db58',
-  strokeOpacity: 0.55,
+  strokeOpacity: 0.50,
   strokeWeight: 1.5,
   fillColor: '#ebed72',
-  fillOpacity: 0.35,
+  fillOpacity: 0.30,
   clickable: false,
   draggable: false,
   editable: false,
@@ -104,9 +104,9 @@ function NoRoutesOverlay() {
 }
 
 export default function RoutePlanner(props) {
-  const [studentRows, setStudentRows] = React.useState([]); //rows of data grid: "Students in Current Row"
-  const [routeRows, setRouteRows] = React.useState([]); //rows of data grid: "Current Routes"
-  const [routeInfo, setRouteInfo] = React.useState({"name": "", "description": ""}); //values from text fields
+  const [studentRows, setStudentRows] = React.useState([]);
+  const [routeRows, setRouteRows] = React.useState([]); 
+  const [routeInfo, setRouteInfo] = React.useState({"name": "", "description": ""}); 
 
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
   const [snackbarMsg, setSnackbarMsg] = React.useState("");
@@ -136,7 +136,7 @@ export default function RoutePlanner(props) {
     }
   }, []);
 
-  // load current routes into page
+  // load routes into page
   React.useEffect(()=>{
   const fetchData = async() => {
       const result = await axios.get(
@@ -165,7 +165,7 @@ export default function RoutePlanner(props) {
   fetchData();
   }, [resetRoute]);
 
-  // load route info into fields when route is clicked
+  // load route info on route edit
   React.useEffect(() => {
     const fetchStudents = async() => {
         if(selectionModel.length == 0){
@@ -218,7 +218,7 @@ export default function RoutePlanner(props) {
     }
   }, [students, schoolLocation, map]);
 
-  // function when snackbar is closed
+  // function on snackbar close
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -242,7 +242,7 @@ export default function RoutePlanner(props) {
     }
   };
 
-  // function when map is clicked (add stop to map)
+  // function when map is double clicked (add stop to map)
   const handleMapClick = (value) => {
     if (toggleSelection=="stops") {
       
@@ -271,7 +271,7 @@ export default function RoutePlanner(props) {
     }
   };
 
-  // function when stop icon is clicked
+  // function when stop icon is clicked on
   const handleStopClick = (stop) => {
     let newStopRows = stopRows.filter(value => value.id != stop.id);
     for (let i=0;i<newStopRows.length;i++) {
@@ -282,6 +282,7 @@ export default function RoutePlanner(props) {
     setStopRows(newStopRows);
   };
 
+  // function to check stop indices (will become deprecated)
   const validateStops = (allRows) => {
     const errors = [];
     console.log(allRows)
@@ -380,7 +381,7 @@ export default function RoutePlanner(props) {
     }
   }
 
-  //runs when user types in textfield, should add value into correct part of routeInfo
+  // function when user types in textfields
   const handleInfoChange = (fieldindicator, new_value) => {
     let newInfo = JSON.parse(JSON.stringify(routeInfo));
     if (fieldindicator == "name") {
@@ -393,12 +394,14 @@ export default function RoutePlanner(props) {
     }
   };
 
+  // function when toggle between stops and student mode
   const handleToggleMode = (event, newToggle) => {
     if (newToggle.length) {
       setToggleSelection(newToggle);
     }
   };
 
+  // function when user stops editing stop cell (will become deprecated?)
   const handleStopCellEdit = (row, allRows) => {
     let oldStopRows = JSON.parse(JSON.stringify(allRows));
     if (row.field === "name") {
@@ -429,6 +432,7 @@ export default function RoutePlanner(props) {
     }
   };
 
+  // function to check if route is complete
   const handleCheckCompleteness = () => {
     const fetchData = async() => {
       const result = await axios.post(process.env.REACT_APP_BASE_URL+`/check_complete`, {
@@ -459,6 +463,7 @@ export default function RoutePlanner(props) {
     fetchData(); 
   };
 
+  // function on map load-in
   const onLoad = React.useCallback(function callback(map) {
     setMap(map);
   }, [])
