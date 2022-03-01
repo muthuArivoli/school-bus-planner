@@ -485,12 +485,15 @@ export default function RoutePlanner(props) {
   return (
     <Stack id="container-stack" spacing={5} justifyContent="center" alignItems="center">
       <Typography variant="h2" align="center" sx={titleStyle(36, 1)}>
-        {schoolTitle+" - Route Planner"}
+        {schoolTitle}
+      </Typography>
+
+      <Divider id="divider" variant="fullWidth" style={{width:'100%'}}/>
+
+      <Typography variant="h2" align="center" sx={titleStyle(28, 1)}>
+        Route List
       </Typography>
       <Stack id="top-stack" spacing={0} justifyContent="center">
-        <Typography variant="h3" align="left" sx={titleStyle(28, 0)}>
-          Current Routes in School:
-        </Typography>
         <Typography variant="subtitle2" align="left">
           (Click on a route to start editing it)
         </Typography>
@@ -547,8 +550,18 @@ export default function RoutePlanner(props) {
             fullWidth />
           </Stack>
           <Stack id="map-stack" spacing={0} justifyContent="center" alignItems="center" sx={{ p: 2, border: 2, borderRadius: '16px', borderColor: '#dcdcdc'}}>
-            {toggleSelection=="stops" ? <Typography variant="subtitle2" align="left">Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>
-            : <Typography variant="subtitle2" align="left">Click on an student to add it to the route! Click on that student again to remove it.</Typography>}
+            <Stack id="legend-stack" direction="row" spacing={4} alignItems="center" justifyContent="center">
+              <List>
+                {legendItem("http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png", "= School")}
+                {legendItem("http://maps.google.com/mapfiles/kml/paddle/red-circle.png", "= Student Without a Route")}
+                
+              </List>
+              <List>
+                {legendItem("http://maps.google.com/mapfiles/kml/paddle/blu-circle.png", "= Student on a Different Route")}
+                {legendItem("http://maps.google.com/mapfiles/kml/paddle/grn-circle.png", "= Student on the Current Route")}
+              </List>
+            </Stack>
+            
             <LoadScript googleMapsApiKey={api_key}>
               <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad} options={mapOptions} onDblClick={(value) => handleMapClick(value.latLng)}>
                 <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
@@ -564,25 +577,17 @@ export default function RoutePlanner(props) {
                   <Circle key={index} center={stop.location} options={CircleOptions} />)) : [] } 
               </GoogleMap>
             </LoadScript>
-            <Stack id="legend-stack" direction="row" spacing={4} alignItems="center" justifyContent="center">
-              <List>
-                {legendItem("http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png", "= School")}
-                {legendItem("http://maps.google.com/mapfiles/kml/paddle/red-circle.png", "= Student Without a Route")}
-                
-              </List>
-              <List>
-                {legendItem("http://maps.google.com/mapfiles/kml/paddle/blu-circle.png", "= Student on a Different Route")}
-                {legendItem("http://maps.google.com/mapfiles/kml/paddle/grn-circle.png", "= Student on the Current Route")}
-              </List>
-            </Stack>
-
+            {toggleSelection=="stops" ? <Typography variant="subtitle2" align="left">Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>
+            : <Typography variant="subtitle2" align="left">Click on an student to add it to the route! Click on that student again to remove it.</Typography>}
           </Stack>
         </Stack>
 
         { toggleSelection=="stops" ? <Stack id="stop-stable-stack" spacing={0} justifyContent="center">
           <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
             Current Stops in Route: 
-            (double click on any stop name or ordering to edit it)
+          </Typography>
+          <Typography variant="subtitle2" align="left">
+            (Click on a stop name or ordering to start editing it)
           </Typography>
           <div style={{ height: 350, width: 1000 }}>
             <div style={{ display: 'flex', height: '100%' }}>
