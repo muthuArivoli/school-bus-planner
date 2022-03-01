@@ -136,6 +136,8 @@ export default function RoutePlanner(props) {
   const [stopRows, setStopRows] = React.useState([]);
   const [schoolTitle, setSchoolTitle] = React.useState("");
 
+  const [completeness, setCompleteness] = React.useState("No Route");
+
   const [map, setMap] = React.useState(null);
 
 
@@ -164,6 +166,7 @@ export default function RoutePlanner(props) {
           setRouteRows(result.data.school.routes);
           setSchoolLocation({lat: result.data.school.latitude, lng: result.data.school.longitude});
           setSchoolTitle(result.data.school.name);
+          //setCompleteness("No Route");
           let newRows = result.data.school.students.map((value)=>{
             return {...value, address: value.user.uaddress, location: {lat: value.user.latitude, lng: value.user.longitude}}
           });
@@ -230,6 +233,38 @@ export default function RoutePlanner(props) {
     }
   }, [students, schoolLocation, map]);
 
+  // update route completeness on a change
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      if (selectionModel.length != 0) {
+        const result = await axios.post(process.env.REACT_APP_BASE_URL+`/check_complete`, {
+          students: studentRows.map((value)=>{return value.id}),
+          stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
+          }, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+        if(result.data.success){
+          let isComplete = result.data.completion;
+          if (isComplete) {
+            setCompleteness("Complete");
+          }
+          else {
+            setCompleteness("Incomplete");
+          }
+        }
+        else{
+          console.log("Completeness check failed.")
+        }
+      }
+      else {
+        setCompleteness("No Route");
+      }
+    }
+    fetchData(); 
+  }, [selectionModel, stopRows, studentRows, students]);
+
   // function on snackbar close
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
@@ -254,8 +289,6 @@ export default function RoutePlanner(props) {
 
   // function when map is double clicked (add stop to map)
   const handleMapClick = (value) => {
-      
-
       let loc = {
         lat: value.lat(),
         lng: value.lng(),
@@ -344,6 +377,7 @@ export default function RoutePlanner(props) {
                 setSnackbarSeverity('success');
                 setSnackbarMsg('Route successfully created');
                 setSelectionModel([]);
+                setCompleteness("No Route");
                 setResetRoute(!resetRoute);
             }
             else {
@@ -375,6 +409,7 @@ export default function RoutePlanner(props) {
                 setSnackbarSeverity('success');
                 setSnackbarMsg('Route successfully updated');
                 setSelectionModel([]);
+                setCompleteness("No Route");
                 setResetRoute(!resetRoute);
             }
             else{
@@ -432,37 +467,6 @@ export default function RoutePlanner(props) {
     }
   };
 
-  // function to check if route is complete
-  const handleCheckCompleteness = () => {
-    const fetchData = async() => {
-      const result = await axios.post(process.env.REACT_APP_BASE_URL+`/check_complete`, {
-        students: studentRows.map((value)=>{return value.id}),
-        stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
-        }, {
-          headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-      if(result.data.success){
-        let isComplete = result.data.completion;
-        if (isComplete) {
-          setSnackbarOpen(true);
-          setSnackbarSeverity('success');
-          setSnackbarMsg('Route is complete!');
-        }
-        else {
-          setSnackbarOpen(true);
-          setSnackbarSeverity('error');
-          setSnackbarMsg('Route is incomplete!');
-        }
-      }
-      else{
-        console.log("Completeness check failed.")
-      }
-    }
-    fetchData(); 
-  };
-
   // function on map load-in
   const onLoad = React.useCallback(function callback(map) {
     setMap(map);
@@ -515,9 +519,15 @@ export default function RoutePlanner(props) {
               <Typography variant="h5" align="left" sx={{ width: 300, fontWeight: 'bold', fontSize: 28 }}>
                 Current Route: {routeInfo["name"].length==0 ? "None" : routeInfo["name"]}
               </Typography>
-              <Button variant="contained" color="primary" onClick={handleCheckCompleteness} disabled={routeInfo["name"].length == 0} sx={{ width: 250 }}>
-                Check Route Completeness
-              </Button>
+
+              {completeness=="No Route" ? <Typography variant="h5" align="right" sx={{ width: 300, fontSize: 22 }}>
+                {"Completeness: "+completeness}
+              </Typography> : (completeness=="Incomplete" ? <Typography variant="h5" align="right" sx={{ width: 300, fontSize: 22, color: '#ff0000' }}>
+                {"Completeness: "+completeness}
+              </Typography> : <Typography variant="h5" align="right" sx={{ width: 300, fontSize: 22, color: '#00ff00' }}>
+                {"Completeness: "+completeness}
+              </Typography>)}
+
             </Stack>
             <TextField label="Route Name" 
             variant="outlined" 
@@ -560,8 +570,8 @@ export default function RoutePlanner(props) {
                   <Circle key={index} center={stop.location} options={CircleOptions} />))} 
               </GoogleMap>
             </LoadScript>
-            <Typography variant="subtitle2" align="left">Click on an student to add it to the route! Click on that student again to remove it.</Typography>
-            <Typography variant="subtitle2" align="left">Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>
+            <Typography variant="subtitle2" align="left" sx={{ fontSize: 12, mt: 1 }}>Click on an student to add it to the route! Click on that student again to remove it.</Typography>
+            <Typography variant="subtitle2" align="left" sx={{ fontSize: 12 }}>Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>
           </Stack>
         </Stack>
 
@@ -588,7 +598,7 @@ export default function RoutePlanner(props) {
             </div>
           </Stack>
           <Stack id="stop-stable-stack" spacing={0} justifyContent="center">
-            <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
+            <Typography variant="h5" align="left" sx={titleStyle(28, 0)}>
               Current Stops in Route: 
             </Typography>
             <Typography variant="subtitle2" align="left">
