@@ -15,6 +15,10 @@ import Box from '@mui/material/Box';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import Divider from '@mui/material/Divider';
+import ListItem from '@mui/material/ListItem';
+import List from '@mui/material/List';
+import { Icon } from "@material-ui/core";
+import ListItemText from '@mui/material/ListItemText';
 
 let api_key = "AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o";
 
@@ -31,6 +35,17 @@ const titleStyle = (size, margin) => {
       fontSize: size, 
       m: margin, 
     });
+  };
+
+  const legendItem = (src, text) => {
+    return(
+      <ListItem disablePadding>
+        <Icon>
+          <img src={src} height={25} width={25}/>
+        </Icon>
+        <ListItemText primary={text} />
+      </ListItem>
+    );
   };
 
 const CircleOptions = {
@@ -59,7 +74,7 @@ const studentColumns = [
 
 const routeColumns = [
   { field: 'id', hide: true, width: 30},
-  { field: 'name', headerName: "Name", width: 150},
+  { field: 'name', headerName: "Name", width: 250},
   { field: 'description', headerName: "Description", flex: 1},
   { field: 'complete', headerName: "Is Route Complete?", width: 175,
     renderCell: (params) => (
@@ -119,6 +134,7 @@ export default function RoutePlanner(props) {
   const [schoolLocation, setSchoolLocation] = React.useState({lat: 0, lng:0});
 
   const [stopRows, setStopRows] = React.useState([]);
+  const [schoolTitle, setSchoolTitle] = React.useState("");
 
   const [map, setMap] = React.useState(null);
 
@@ -136,7 +152,7 @@ export default function RoutePlanner(props) {
     }
   }, []);
 
-  // load routes into page
+  // load info into page on load
   React.useEffect(()=>{
   const fetchData = async() => {
       const result = await axios.get(
@@ -147,9 +163,9 @@ export default function RoutePlanner(props) {
           }
         );
       if(result.data.success) {
-          console.log(result.data.school);
           setRouteRows(result.data.school.routes);
-          setSchoolLocation({lat: result.data.school.latitude, lng: result.data.school.longitude})
+          setSchoolLocation({lat: result.data.school.latitude, lng: result.data.school.longitude});
+          setSchoolTitle(result.data.school.name);
           let newRows = result.data.school.students.map((value)=>{
             return {...value, address: value.user.uaddress, location: {lat: value.user.latitude, lng: value.user.longitude}}
           });
@@ -208,8 +224,6 @@ export default function RoutePlanner(props) {
   React.useEffect(()=>{
     if(map){
       var bounds = new window.google.maps.LatLngBounds();
-      console.log(students);
-      console.log(schoolLocation);
       for (var i = 0; i < students.length; i++) {
         bounds.extend(students[i].location);
       }
@@ -470,9 +484,15 @@ export default function RoutePlanner(props) {
 
   return (
     <Stack id="container-stack" spacing={5} justifyContent="center" alignItems="center">
+      <Typography variant="h2" align="center" sx={titleStyle(36, 1)}>
+        {schoolTitle+" - Route Planner"}
+      </Typography>
       <Stack id="top-stack" spacing={0} justifyContent="center">
-        <Typography variant="h3" align="left" sx={titleStyle(28, 1)}>
-          Current Routes: (Click on a route to start editing it)
+        <Typography variant="h3" align="left" sx={titleStyle(28, 0)}>
+          Current Routes in School:
+        </Typography>
+        <Typography variant="subtitle2" align="left">
+          (Click on a route to start editing it)
         </Typography>
         <div style={{ height: 400, width: 1200 }}>
           <div style={{ display: 'flex', height: '100%' }}>
@@ -494,7 +514,7 @@ export default function RoutePlanner(props) {
         </div>
       </Stack>
 
-      <Divider id="divider" style={{width:'100%'}}/>
+      <Divider id="divider" variant="fullWidth" style={{width:'100%'}}/>
 
       <Stack id="bottom-stack" spacing={3} justifyContent="center" alignItems="center">
 
@@ -528,7 +548,7 @@ export default function RoutePlanner(props) {
           </Stack>
           <Stack id="map-stack" spacing={0} justifyContent="center" alignItems="center" sx={{ p: 2, border: 2, borderRadius: '16px', borderColor: '#dcdcdc'}}>
             {toggleSelection=="stops" ? <Typography variant="subtitle2" align="left">Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>
-            : <Typography variant="subtitle2" align="left">Click on an address to add it to the route! Click on that address again to remove it.</Typography>}
+            : <Typography variant="subtitle2" align="left">Click on an student to add it to the route! Click on that student again to remove it.</Typography>}
             <LoadScript googleMapsApiKey={api_key}>
               <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad} options={mapOptions} onDblClick={(value) => handleMapClick(value.latLng)}>
                 <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
@@ -540,10 +560,22 @@ export default function RoutePlanner(props) {
                 {toggleSelection=="stops" ? stopRows.map((stop, index) => (
                   <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop)} 
                   icon={{url: "http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"}}/>)) : [] } 
-                {toggleSelection=="stops" ? students.map((student, index) => (
-                  <Circle key={index} center={student.location} options={CircleOptions} />)) : [] } 
+                {toggleSelection=="stops" ? stopRows.map((stop, index) => (
+                  <Circle key={index} center={stop.location} options={CircleOptions} />)) : [] } 
               </GoogleMap>
             </LoadScript>
+            <Stack id="legend-stack" direction="row" spacing={4} alignItems="center" justifyContent="center">
+              <List>
+                {legendItem("http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png", "= School")}
+                {legendItem("http://maps.google.com/mapfiles/kml/paddle/red-circle.png", "= Student Without a Route")}
+                
+              </List>
+              <List>
+                {legendItem("http://maps.google.com/mapfiles/kml/paddle/blu-circle.png", "= Student on a Different Route")}
+                {legendItem("http://maps.google.com/mapfiles/kml/paddle/grn-circle.png", "= Student on the Current Route")}
+              </List>
+            </Stack>
+
           </Stack>
         </Stack>
 
@@ -592,11 +624,11 @@ export default function RoutePlanner(props) {
         </Stack> }
 
         <Button variant="contained" color="primary" onClick={handleSubmit} disabled={routeInfo["name"] == ""}>
-          {selectionModel.length == 0 ? "Add Route" : "Update Route"}
+          {selectionModel.length == 0 ? "Save Route" : "Update Route"}
         </Button>
       </Stack>
 
-      <Snackbar open={snackbarOpen} onClose={handleClose} anchorOrigin={{vertical: 'bottom', horizontal: 'center'}} sx={{ width: 600 }}>
+      <Snackbar open={snackbarOpen} onClose={handleClose} anchorOrigin={{vertical: 'bottom', horizontal: 'left'}} sx={{ width: 600 }}>
         <Alert onClose={handleClose} severity={snackbarSeverity}>
           {snackbarMsg}
         </Alert>
