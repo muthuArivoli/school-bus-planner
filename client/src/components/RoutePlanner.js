@@ -142,8 +142,6 @@ export default function RoutePlanner(props) {
   let { id } = useParams();
   let navigate = useNavigate();
 
-  const [toggleSelection, setToggleSelection] = React.useState('students');
-
   let [query, setQuery] = useSearchParams();
 
   React.useEffect(()=>{
@@ -242,7 +240,6 @@ export default function RoutePlanner(props) {
 
   // function when address is clicked (add address to route)
   const handleAddressClick = (student) => {
-    if (toggleSelection=="students") {
       let addresses = studentRows.map((value)=>{return value.address});
       if(addresses.includes(student.address)){
           let newStudentRows = studentRows.filter(value=> value.address != student.address)
@@ -253,12 +250,10 @@ export default function RoutePlanner(props) {
           let newStudentRows = [...studentRows, ...allStudents];
           setStudentRows(newStudentRows);
       }
-    }
   };
 
   // function when map is double clicked (add stop to map)
   const handleMapClick = (value) => {
-    if (toggleSelection=="stops") {
       
 
       let loc = {
@@ -282,7 +277,7 @@ export default function RoutePlanner(props) {
       let newStopRows = [...stopRows, newStopRow];
       console.log(newStopRow);
       setStopRows(newStopRows);
-    }
+
   };
 
   // function when stop icon is clicked on
@@ -350,7 +345,6 @@ export default function RoutePlanner(props) {
                 setSnackbarMsg('Route successfully created');
                 setSelectionModel([]);
                 setResetRoute(!resetRoute);
-                setToggleSelection("students");
             }
             else {
                 setSnackbarOpen(true);
@@ -382,7 +376,6 @@ export default function RoutePlanner(props) {
                 setSnackbarMsg('Route successfully updated');
                 setSelectionModel([]);
                 setResetRoute(!resetRoute);
-                setToggleSelection("students");
             }
             else{
                 setSnackbarOpen(true);
@@ -405,13 +398,6 @@ export default function RoutePlanner(props) {
     else if (fieldindicator == "description") {
       newInfo["description"] = new_value;
       setRouteInfo(newInfo);
-    }
-  };
-
-  // function when toggle between stops and student mode
-  const handleToggleMode = (event, newToggle) => {
-    if (newToggle.length) {
-      setToggleSelection(newToggle);
     }
   };
 
@@ -490,10 +476,10 @@ export default function RoutePlanner(props) {
 
       <Divider id="divider" variant="fullWidth" style={{width:'100%'}}/>
 
-      <Typography variant="h2" align="center" sx={titleStyle(28, 1)}>
-        Route List
-      </Typography>
       <Stack id="top-stack" spacing={0} justifyContent="center">
+        <Typography variant="h2" align="center" sx={titleStyle(28, 1)}>
+          Route List
+        </Typography>
         <Typography variant="subtitle2" align="left">
           (Click on a route to start editing it)
         </Typography>
@@ -520,12 +506,9 @@ export default function RoutePlanner(props) {
       <Divider id="divider" variant="fullWidth" style={{width:'100%'}}/>
 
       <Stack id="bottom-stack" spacing={3} justifyContent="center" alignItems="center">
-
-        <ToggleButtonGroup color="primary" value={toggleSelection} exclusive onChange={handleToggleMode}>
-          <ToggleButton value="students">Student Mode</ToggleButton>
-          <ToggleButton value="stops" disabled={routeInfo["name"].length == 0}>Stops Mode</ToggleButton>
-        </ToggleButtonGroup>
-
+        <Typography variant="h2" align="center" sx={titleStyle(28, 1)}>
+          Route Editor
+        </Typography>
         <Stack id="bottom-middle-stack" direction="row" spacing={10} justifyContent="center" alignItems="center" sx={{ width: 1200 }}>
           <Stack id="route-info-stack" spacing={2} justifyContent="center" alignItems="center">
             <Stack id="indicator-and-check-stack" direction="row" spacing={1} justifyContent="center" alignItems="center">
@@ -570,63 +553,66 @@ export default function RoutePlanner(props) {
                   icon={{url: studentRows.find(element => student.id == element.id) ? "http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"
                   : (student.route == null ? "http://maps.google.com/mapfiles/kml/paddle/red-circle.png"
                   : "http://maps.google.com/mapfiles/kml/paddle/blu-circle.png") }}/> ))}
-                {toggleSelection=="stops" ? stopRows.map((stop, index) => (
+                {stopRows.map((stop, index) => (
                   <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop)} 
-                  icon={{url: "http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"}}/>)) : [] } 
-                {toggleSelection=="stops" ? stopRows.map((stop, index) => (
-                  <Circle key={index} center={stop.location} options={CircleOptions} />)) : [] } 
+                  icon={{url: "http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"}}/>))} 
+                {stopRows.map((stop, index) => (
+                  <Circle key={index} center={stop.location} options={CircleOptions} />))} 
               </GoogleMap>
             </LoadScript>
-            {toggleSelection=="stops" ? <Typography variant="subtitle2" align="left">Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>
-            : <Typography variant="subtitle2" align="left">Click on an student to add it to the route! Click on that student again to remove it.</Typography>}
+            <Typography variant="subtitle2" align="left">Click on an student to add it to the route! Click on that student again to remove it.</Typography>
+            <Typography variant="subtitle2" align="left">Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>
           </Stack>
         </Stack>
 
-        { toggleSelection=="stops" ? <Stack id="stop-stable-stack" spacing={0} justifyContent="center">
-          <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
-            Current Stops in Route: 
-          </Typography>
-          <Typography variant="subtitle2" align="left">
-            (Click on a stop name or ordering to start editing it)
-          </Typography>
-          <div style={{ height: 350, width: 1000 }}>
-            <div style={{ display: 'flex', height: '100%' }}>
-              <div style={{ flexGrow: 1 }}>
-                <DataGrid
-                  components={{
-                    NoRowsOverlay: NoStopsOverlay,
-                  }}
-                  rows={stopRows}
-                  columns={stopColumns}
-                  getRowId={(row) => row.id}
-                  autoPageSize
-                  density="compact"
-                  onCellEditCommit = {(row) => handleStopCellEdit(row, stopRows)}
-                />
+        <Stack id="bottom-tables-stack" direction="row" spacing={5} alignItems="center" justifyContent="center">
+          <Stack id="student-table-stack" spacing={0} justifyContent="center">
+            <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
+              Current Students in Route:
+            </Typography>
+            <div style={{ height: 350, width: 600 }}>
+              <div style={{ display: 'flex', height: '100%' }}>
+                <div style={{ flexGrow: 1 }}>
+                  <DataGrid
+                    components={{
+                      NoRowsOverlay: NoStudentsOverlay,
+                    }}
+                    rows={studentRows}
+                    columns={studentColumns}
+                    getRowId={(row) => row.id}
+                    autoPageSize
+                    density="compact"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </Stack> : <Stack id="student-table-stack" spacing={0} justifyContent="center">
-          <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
-            Current Students in Route:
-          </Typography>
-          <div style={{ height: 350, width: 1000 }}>
-            <div style={{ display: 'flex', height: '100%' }}>
-              <div style={{ flexGrow: 1 }}>
-                <DataGrid
-                  components={{
-                    NoRowsOverlay: NoStudentsOverlay,
-                  }}
-                  rows={studentRows}
-                  columns={studentColumns}
-                  getRowId={(row) => row.id}
-                  autoPageSize
-                  density="compact"
-                />
+          </Stack>
+          <Stack id="stop-stable-stack" spacing={0} justifyContent="center">
+            <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
+              Current Stops in Route: 
+            </Typography>
+            <Typography variant="subtitle2" align="left">
+              (Click on a stop name or ordering to start editing it)
+            </Typography>
+            <div style={{ height: 350, width: 600 }}>
+              <div style={{ display: 'flex', height: '100%' }}>
+                <div style={{ flexGrow: 1 }}>
+                  <DataGrid
+                    components={{
+                      NoRowsOverlay: NoStopsOverlay,
+                    }}
+                    rows={stopRows}
+                    columns={stopColumns}
+                    getRowId={(row) => row.id}
+                    autoPageSize
+                    density="compact"
+                    onCellEditCommit = {(row) => handleStopCellEdit(row, stopRows)}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </Stack> }
+          </Stack>
+        </Stack>
 
         <Button variant="contained" color="primary" onClick={handleSubmit} disabled={routeInfo["name"] == ""}>
           {selectionModel.length == 0 ? "Save Route" : "Update Route"}
