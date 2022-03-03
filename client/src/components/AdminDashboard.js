@@ -27,6 +27,7 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import HomeIcon from '@mui/icons-material/Home';
 import EmailIcon from '@mui/icons-material/Email';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -202,6 +203,12 @@ export default function AdminDashboard(props){
               <EmailIcon />
             </ListItemIcon>
             <ListItemText primary="Email" />
+          </ListItemButton>
+          <ListItemButton component={RouterLink} to="/bulkimport">
+            <ListItemIcon>
+              <FileDownloadIcon />
+            </ListItemIcon>
+            <ListItemText primary="Bulk Import" />
           </ListItemButton>
         </div>
           </List>
