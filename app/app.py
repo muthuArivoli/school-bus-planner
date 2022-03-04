@@ -291,15 +291,19 @@ def users_get(user_id=None):
 @cross_origin()
 @admin_required()
 def users(user_id=None):
+    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if request.method == 'DELETE':
         user = User.query.filter_by(id=user_id).first()
         if user is None:
             return {'success':False, 'msg': 'Invalid Email'}
         students = Student.query.filter_by(user_id = user_id)
         
-        curr_user = User.query.filter_by(email = get_jwt_identity()).first()
-        if curr_user.role == RoleEnum.SCHOOL_STAFF: 
-            pass
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            ids = [school.id for school in curr_user.managed_schools]
+            for student in students:
+                if student.school.id not in ids:
+                    return {'success': False, "msg":"User contains students not managed by current user"}
+
         for student in students:
             db.session.delete(student)
         try:
@@ -313,24 +317,32 @@ def users(user_id=None):
         content = request.json
         email = content.get('email', None)
         name = content.get('name', None)
-        admin_flag = content.get('admin_flag', None)
+        role = content.get('role', 0)
         address = content.get('address', None)
         longitude = content.get('longitude', None)
         latitude = content.get('latitude', None)
 
-        if not email or not name or not address or not longitude or not latitude or admin_flag is None:
+        if not email or not name or not address or not longitude or not latitude or role is None:
             logging.debug('MISSING A FIELD')
             return {'success': False, "msg": "Invalid Query Syntax"}
         
-        if type(email) is not str or type(name) is not str or type(admin_flag) is not bool or type(address) is not str or type(latitude) is not float or type(longitude) is not float:
+        if type(email) is not str or type(name) is not str or type(admin_flag) is not bool or type(address) is not str or type(latitude) is not float or type(longitude) is not float or type(role) is not int:
             logging.debug('WRONG FIELD TYPE')
             return {'success': False, "msg": "Invalid Query Syntax"}
         
+        if curr_user.role == RoleEnum.SCHOOL_STAFF and role != 0:
+            return {'success': False, "msg": "Invalid User Permissions"}
+
+        try:
+            enum_role = RoleEnum(role)
+        except:
+            return {'success': False, "msg": "Invalid Query Syntax"}
+
         user = User.query.filter_by(email=email).first()
         if user:
             return {'success': False, 'msg': 'User with this email exists'}
 
-        new_user = User(email=email, full_name=name, uaddress=address, admin_flag=admin_flag, latitude=latitude, longitude=longitude)
+        new_user = User(email=email, full_name=name, uaddress=address, role=enum_role, latitude=latitude, longitude=longitude)
         try:
             db.session.add(new_user)
             db.session.flush()
@@ -364,6 +376,15 @@ def users(user_id=None):
         user = User.query.filter_by(id=user_id).first()
         if user is None:
             return {'success': False, 'msg': 'Invalid User'}
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            access = False
+            for school in curr_user.managed_schools:
+                for student in school.students:
+                    if student.user_id == user_id:
+                        access = True
+            if not access:
+                return {'success': False, "msg": "User does not have permission to modify"}
+    
     
         if 'email' in content:
             email = content.get('email', None)
@@ -389,11 +410,11 @@ def users(user_id=None):
             user.uaddress = address
             user.longitude = longitude
             user.latitude = latitude
-        if 'admin_flag' in content:
-            admin_flag = content.get('admin_flag', None)
-            if type(admin_flag) is not bool:
+        if 'role' in content:
+            role = content.get('role', None)
+            if type(role) is not int or role < 0 or role > 3:
                 return {'success': False, "msg": "Invalid Query Syntax"}
-            user.admin_flag = admin_flag
+            user.role = RoleEnum(role)
         try:
             db.session.commit()
         except SQLAlchemyError:
