@@ -93,7 +93,6 @@ export default function DataTable(props) {
         console.log(result.data);
         setTotalRows(result.data.records);
         let arr = result.data.schools.map((value) => {
-          console.log({name: value.name, id: value.id, address: value.address});
           return {name: {name: value.name, id: value.id}, address: value.address, id: value.id, departure_time: value.departure_time, arrival_time: value.arrival_time};
         });
         setRows(arr);
