@@ -28,7 +28,7 @@ cors = CORS(app)
 api = Blueprint('api', __name__)
 gmaps_key = googlemaps.Client(key="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o")
 
-from models import User, Student, School, Route, Stop, UserFilter, StudentFilter, SchoolFilter, RouteFilter, TokenBlocklist
+from models import User, Student, School, Route, Stop, UserFilter, StudentFilter, SchoolFilter, RouteFilter, TokenBlocklist, RoleEnum
 
 db.create_all()
 
@@ -53,7 +53,7 @@ def admin_required():
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
             user = User.query.filter_by(email = get_jwt_identity()).first()
-            if user.admin_flag:
+            if user.role:
                 return fn(*args, **kwargs)
             else:
                 return jsonify(msg="User not authorized to do this action"), 403
@@ -238,6 +238,16 @@ def user_options(username=None):
 def users_get(user_id=None):
 
     if user_id is not None:
+        curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            access = False
+            for school in curr_user.managed_schools:
+                for student in school.students:
+                    if student.user_id == user_id:
+                        access = True
+            if not access:
+                return {'success': False, "msg": "User does not have permission to view"}
+            
         user = User.query.filter_by(id=user_id).first()
         if user is None:
             return {'success': False, "msg": "Invalid User ID"}
@@ -249,25 +259,30 @@ def users_get(user_id=None):
     sort = args.get('sort', None)
     direction = args.get('dir', None)
     page = args.get('page', None, type=int)
+        
     base_query = User.query
     record_num = None
+
+    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    if curr_user.role == RoleEnum.SCHOOL_STAFF:
+        ids = set()
+        for school in curr_user.managed_schools:
+            for student in school.students:
+                ids.add(student.user.id)
+        base_query = User.query.filter(User.id.in_(ids))
 
     if sort and direction == 'desc':
         sort = '-'+sort
     if page:
-        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}).paginate()
-        base_query = user_filt.get_objects()
+        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}, query=base_query).paginate()
+        users = user_filt.get_objects()
         record_num = user_filt.count
     else:
-        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort})
-        base_query = user_filt.apply()
+        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort}, query=base_query)
+        users = user_filt.apply()
         record_num = base_query.count()
 
-    users = base_query
-
-    all_users = []
-    for user in users:
-        all_users.append(user.as_dict())
+    all_users = [user.as_dict() for user in users]
     return {'success': True, "users": all_users, "records": record_num}
 
 
@@ -281,6 +296,10 @@ def users(user_id=None):
         if user is None:
             return {'success':False, 'msg': 'Invalid Email'}
         students = Student.query.filter_by(user_id = user_id)
+        
+        curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+        if curr_user.role == RoleEnum.SCHOOL_STAFF: 
+            pass
         for student in students:
             db.session.delete(student)
         try:

@@ -41,7 +41,7 @@ export default function UserUpdate(props) {
         }
       );
       if (result.data.success){
-        let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, admin: result.data.user.admin_flag}
+        let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, admin: result.data.user.role}
         setData(newData);
         setLatitude(result.data.user.latitude);
         setLongitude(result.data.user.longitude);

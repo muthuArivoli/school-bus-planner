@@ -49,8 +49,8 @@ function AuthRoute(props) {
       console.log(res.data);
       if(res.data.success){
         setAuth(true);
-        if(props.admin != res.data.user.admin_flag)
-          props.setAdmin(res.data.user.admin_flag);
+        if(props.admin != res.data.user.role)
+          props.setAdmin(res.data.user.role);
         setLoading(false);
       }
     }).catch((res) => {
@@ -131,7 +131,7 @@ function PrivateRoute({ children }) {
         console.log(res.data);
         if(res.data.success){
           setAuth(true);
-          setAdmin(res.data.user.admin_flag);
+          setAdmin(res.data.user.role);
           setLoading(false);
         }
       }).catch((res) => {

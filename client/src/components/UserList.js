@@ -96,8 +96,8 @@ export default function DataTable(props) {
         console.log(result.data);
         setTotalRows(result.data.records);
         let arr = result.data.users.map((value) => {
-          console.log({name: value.full_name, id: value.id, address: value.uaddress, email: value.email, admin: value.admin_flag});
-          return {name: {name: value.full_name, id: value.id}, id: value.id, address: value.uaddress, email: value.email, admin: value.admin_flag};
+          console.log({name: value.full_name, id: value.id, address: value.uaddress, email: value.email, admin: value.role});
+          return {name: {name: value.full_name, id: value.id}, id: value.id, address: value.uaddress, email: value.email, admin: value.role};
         });
         setRows(arr);
       }
