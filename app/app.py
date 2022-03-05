@@ -53,7 +53,7 @@ def admin_required():
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
             user = User.query.filter_by(email = get_jwt_identity()).first()
-            if user.role:
+            if user.role == RoleEnum.ADMIN or user.role == RoleEnum.SCHOOL_STAFF:
                 return fn(*args, **kwargs)
             else:
                 return jsonify(msg="User not authorized to do this action"), 403
@@ -236,9 +236,9 @@ def user_options(username=None):
 @cross_origin()
 @admin_required()
 def users_get(user_id=None):
+    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
 
     if user_id is not None:
-        curr_user = User.query.filter_by(email = get_jwt_identity()).first()
         if curr_user.role == RoleEnum.SCHOOL_STAFF:
             access = False
             for school in curr_user.managed_schools:
@@ -263,7 +263,6 @@ def users_get(user_id=None):
     base_query = User.query
     record_num = None
 
-    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if curr_user.role == RoleEnum.SCHOOL_STAFF:
         ids = set()
         for school in curr_user.managed_schools:
@@ -299,6 +298,8 @@ def users(user_id=None):
         students = Student.query.filter_by(user_id = user_id)
         
         if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            if user.role != RoleEnum.UNPRIVILEGED:
+                return {'success': False, 'msg': 'User has elevated permissions'}
             ids = [school.id for school in curr_user.managed_schools]
             for student in students:
                 if student.school.id not in ids:
@@ -326,23 +327,18 @@ def users(user_id=None):
             logging.debug('MISSING A FIELD')
             return {'success': False, "msg": "Invalid Query Syntax"}
         
-        if type(email) is not str or type(name) is not str or type(admin_flag) is not bool or type(address) is not str or type(latitude) is not float or type(longitude) is not float or type(role) is not int:
+        if type(email) is not str or type(name) is not str or type(admin_flag) is not bool or type(address) is not str or type(latitude) is not float or type(longitude) is not float or type(role) is not int or role < 0 or role > 3:
             logging.debug('WRONG FIELD TYPE')
             return {'success': False, "msg": "Invalid Query Syntax"}
         
         if curr_user.role == RoleEnum.SCHOOL_STAFF and role != 0:
             return {'success': False, "msg": "Invalid User Permissions"}
 
-        try:
-            enum_role = RoleEnum(role)
-        except:
-            return {'success': False, "msg": "Invalid Query Syntax"}
-
         user = User.query.filter_by(email=email).first()
         if user:
             return {'success': False, 'msg': 'User with this email exists'}
 
-        new_user = User(email=email, full_name=name, uaddress=address, role=enum_role, latitude=latitude, longitude=longitude)
+        new_user = User(email=email, full_name=name, uaddress=address, role=RoleEnum(role), latitude=latitude, longitude=longitude)
         try:
             db.session.add(new_user)
             db.session.flush()
@@ -412,7 +408,7 @@ def users(user_id=None):
             user.latitude = latitude
         if 'role' in content:
             role = content.get('role', None)
-            if type(role) is not int or role < 0 or role > 3:
+            if type(role) is not int or role < 0 or role > 3 or curr_user.role == RoleEnum.SCHOOL_STAFF:
                 return {'success': False, "msg": "Invalid Query Syntax"}
             user.role = RoleEnum(role)
         try:
@@ -435,11 +431,17 @@ def student_options(student_uid=None):
 @cross_origin()
 @admin_required()
 def students_get(student_uid=None):
+    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
 
     if student_uid is not None:
         student = Student.query.filter_by(id=student_uid).first()
         if student is None:
             return {'success': False, 'msg': 'Invalid Student Id'}
+
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            ids = [school.id for school in curr_user.managed_schools]
+            if student.school.id not in ids:
+                return {'success': False, "msg": "User does not have permission to view"}
         return {'success': True, 'student': student.as_dict()}
 
     args = request.args
@@ -451,29 +453,43 @@ def students_get(student_uid=None):
     base_query = Student.query
     record_num = None
 
+    if curr_user.role == RoleEnum.SCHOOL_STAFF:
+        ids = set()
+        for school in curr_user.managed_schools:
+            for student in school.students:
+                ids.add(student.id)
+        base_query = Student.query.filter(Student.id.in_(ids))
+
     if sort and direction == 'desc':
         sort = '-'+sort
     if page:
-        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}).paginate()
-        base_query = student_filt.get_objects()
+        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}, query=base_query).paginate()
+        students = student_filt.get_objects()
         record_num = student_filt.count
     else:
-        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort})
-        base_query = student_filt.apply()
+        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort}, query=base_query)
+        students = student_filt.apply()
         record_num = base_query.count()
 
-    students = [student.as_dict() for student in base_query]
-    return {'success':True, "students": students, "records": record_num}
+    all_students = [student.as_dict() for student in students]
+    return {'success':True, "students": all_students, "records": record_num}
 
 @app.route('/student/<student_uid>', methods = ['PATCH', 'DELETE'])
 @app.route('/student', methods = ['POST'])
 @cross_origin()
 @admin_required()
 def students(student_uid = None):
+    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if request.method == 'DELETE':
         student = Student.query.filter_by(id=student_uid).first()
         if student is None:
             return {'sucess': False, 'msg': 'Invalid Student Id'}
+
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            ids = [school.id for school in curr_user.managed_schools]
+            if student.school.id not in ids:
+                return {'success': False, "msg":"Invalid User Permissions"}
+
         db.session.delete(student)
         db.session.commit()
         return {'success': True}
@@ -493,8 +509,15 @@ def students(student_uid = None):
         user = User.query.filter_by(id=user_id).first()
         if user is None:
             return {'success': False, 'msg': 'Student doesn\'t belong to a user'}
-        if user.uaddress is None:
-            return {'success': False, 'msg': 'User must have an address to create a student'}
+
+        school = School.query.filter_by(id=school_id).first()
+        if school is None:
+            return {'success': False, 'msg': 'Student doesn\'t belong to a school'}
+
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            ids = [mschool.id for mschool in curr_user.managed_schools]
+            if school_id not in ids:
+                return {'success': False, "msg":"Invalid User Permissions"}
 
         new_student = Student(name=name, school_id=school_id, user_id=user_id)
         try:
@@ -540,6 +563,16 @@ def students(student_uid = None):
             school_id = content.get('school_id', None)
             if type(school_id) is not int:
                 return {'success': False, "msg": "Invalid Query Syntax"}
+            
+            school = School.query.filter_by(id=school_id).first()
+            if school is None:
+                return {'success': False, 'msg': 'Student doesn\'t belong to a school'}
+
+            if curr_user.role == RoleEnum.SCHOOL_STAFF:
+                ids = [mschool.id for mschool in curr_user.managed_schools]
+                if school_id not in ids:
+                    return {'success': False, "msg":"Invalid User Permissions"}
+
             student.school_id = school_id
         if 'route_id' in content:
             route_id = content.get('route_id', None)
@@ -571,8 +604,14 @@ def schools_options(school_uid=None):
 @cross_origin()
 @admin_required()
 def schools_get(school_uid=None):
-
+    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if school_uid is not None:
+
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            ids = [mschool.id for mschool in curr_user.managed_schools]
+            if school_uid not in ids:
+                return {'success': False, "msg": "User does not have permission to view"}
+
         school = School.query.filter_by(id=school_uid).first()
         if school is None:
             return {'success': False, 'msg': 'Invalid School Id'}
@@ -586,18 +625,22 @@ def schools_get(school_uid=None):
     base_query = School.query
     record_num = None
 
+    if curr_user.role == RoleEnum.SCHOOL_STAFF:
+        ids = [mschool.id for mschool in curr_user.managed_schools]
+        base_query = School.query.filter(School.id.in_(ids))
+
     if sort and direction == 'desc':
         sort = '-'+sort
     if page:
-        school_filt = SchoolFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
-        base_query = school_filt.get_objects()
+        school_filt = SchoolFilter(data={'name': name_search, 'order_by': sort, 'page': page}, query=base_query).paginate()
+        schools = school_filt.get_objects()
         record_num = school_filt.count
     else:
-        school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort})
-        base_query = school_filt.apply()
+        school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort}, query=base_query)
+        schools = school_filt.apply()
         record_num = base_query.count()
 
-    all_schools = [school.as_dict() for school in base_query]
+    all_schools = [school.as_dict() for school in schools]
     return {'success':True, "schools": all_schools, "records": record_num}
      
 
@@ -606,7 +649,10 @@ def schools_get(school_uid=None):
 @admin_required()
 @cross_origin()
 def schools(school_uid = None):  
+    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if request.method == 'DELETE':
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            return {'success': False, "msg":"Invalid User Permissions"}
         school = School.query.filter_by(id=school_uid).first()
         if school is None:
             return {'success': False, "msg": 'Invalid School Id'}
@@ -630,6 +676,9 @@ def schools(school_uid = None):
         return {'success': True}
     
     if request.method == 'POST':
+
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            return {'success': False, "msg":"Invalid User Permissions"}
         content = request.json
         name = content.get('name', None)
         address = content.get('address', None)
@@ -665,12 +714,12 @@ def schools(school_uid = None):
         school = School.query.filter_by(id=school_uid).first()
         if school is None:
             return {'success': False, 'msg': 'Invalid School Id'}
-        if 'name' in content:
+        if 'name' in content and curr_user.role == RoleEnum.ADMIN:
             name = content.get('name', None)
             if type(name) is not str:
                 return {'success': False, "msg": "Invalid Query Syntax"}
             school.name = name
-        if 'address' in content:
+        if 'address' in content and curr_user.role == RoleEnum.ADMIN:
             address = content.get('address', None)
             longitude = content.get('longitude', None)
             latitude = content.get('latitude', None)
@@ -719,11 +768,16 @@ def route_options(route_uid=None):
 @cross_origin()
 @admin_required()
 def routes_get(route_uid=None):
-    
+    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if route_uid is not None:
         route = Route.query.filter_by(id=route_uid).first()
         if route is None:
             return {'success': False, 'msg': 'Invalid Route Id'}
+
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            ids = [school.id for school in curr_user.managed_schools]
+            if route.school.id not in ids:
+                return {'success': False, "msg": "User does not have permission to view"}
         return {'success': True, 'route': route.as_dict()}
 
     args = request.args
@@ -734,18 +788,25 @@ def routes_get(route_uid=None):
     base_query = Route.query
     record_num = None
 
+    if curr_user.role == RoleEnum.SCHOOL_STAFF:
+        ids = set()
+        for school in curr_user.managed_schools:
+            for route in school.routes:
+                ids.add(route.id)
+        base_query = Route.query.filter(Route.id.in_(ids))
+
     if sort and direction == 'desc':
         sort = '-'+sort
     if page:
-        route_filt = RouteFilter(data={'name': name_search, 'order_by': sort, 'page': page}).paginate()
-        base_query = route_filt.get_objects()
+        route_filt = RouteFilter(data={'name': name_search, 'order_by': sort, 'page': page}, query=base_query).paginate()
+        routes = route_filt.get_objects()
         record_num = route_filt.count
     else:
-        route_filt = RouteFilter(data={'name': name_search, 'order_by': sort})
-        base_query = route_filt.apply()
+        route_filt = RouteFilter(data={'name': name_search, 'order_by': sort}, query=base_query)
+        routes = route_filt.apply()
         record_num = base_query.count()
 
-    all_routes = [route.as_dict() for route in base_query]
+    all_routes = [route.as_dict() for route in routes]
     return {'success':True, "routes": all_routes, "records": record_num}
 
 
@@ -754,10 +815,17 @@ def routes_get(route_uid=None):
 @cross_origin()
 @admin_required()
 def routes(route_uid = None):
+    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if request.method == 'DELETE':
         route = Route.query.filter_by(id=route_uid).first()
         if route is None:
             return {'success': False, 'msg': 'Invalid Route Id'}
+
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            ids = [mschool.id for mschool in curr_user.managed_schools]
+            if route.school_id not in ids:
+                return {'success': False, "msg":"Invalid User Permissions"}
+
         students = Student.query.filter_by(route_id=route.id)
         stops = Stop.query.filter_by(route_id=route.id)
         for student in students:
@@ -787,6 +855,11 @@ def routes(route_uid = None):
         school = School.query.filter_by(id=school_id).first()
         if school is None:
             return {'success': False, "msg": "Invalid Query"}
+
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            ids = [mschool.id for mschool in curr_user.managed_schools]
+            if school_id not in ids:
+                return {'success': False, "msg":"Invalid User Permissions"}
 
         new_route = Route(name = name, school_id = school_id)
         try:
@@ -826,6 +899,10 @@ def routes(route_uid = None):
         route = Route.query.filter_by(id=route_uid).first()
         if route is None:
             return {'success': False, 'msg': 'Invalid Route Id'}
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            ids = [mschool.id for mschool in curr_user.managed_schools]
+            if route.school_id not in ids:
+                return {'success': False, "msg":"Invalid User Permissions"}
         if 'students' in content:
             students = content.get('students',[])
             if type(students) is not list or not all(isinstance(x, int) for x in students):
@@ -883,6 +960,10 @@ def email_options(uid=None):
 @cross_origin()
 @admin_required()
 def send_email_system():
+    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    if curr_user.role == RoleEnum.SCHOOL_STAFF:
+        return {'success': False, "msg":"Invalid User Permissions"}
+
     content = request.json
     email_type = content.get("email_type", None)
     subject = content.get("subject", None)
@@ -949,6 +1030,12 @@ def send_email_system():
 @cross_origin()
 @admin_required()
 def send_email_school(school_uid=None):
+    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    if curr_user.role == RoleEnum.SCHOOL_STAFF:
+        ids = [mschool.id for mschool in curr_user.managed_schools]
+        if school_uid not in ids:
+            return {'success': False, "msg":"Invalid User Permissions"}
+
     content = request.json
     email_type = content.get("email_type", None)
     subject = content.get("subject", None)
@@ -1020,6 +1107,13 @@ def send_email_school(school_uid=None):
 @cross_origin()
 @admin_required()
 def send_email_route(route_uid=None):
+    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    route = Route.query.filter_by(id=route_uid)
+    if curr_user.role == RoleEnum.SCHOOL_STAFF:
+        ids = [mschool.id for mschool in curr_user.managed_schools]
+        if route.school_id not in ids:
+            return {'success': False, "msg":"Invalid User Permissions"}
+
     content = request.json
     email_type = content.get("email_type", None)
     subject = content.get("subject", None)
