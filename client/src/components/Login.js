@@ -55,7 +55,8 @@ export default function SignIn() {
               alignItems: 'center',
             }}
           >
-            <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }} src="/HTLogo128.png"/>
+            {/* <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }} src="/HTLogo128.png"/> */}
+            <img src="/HTLogo128_fixed.png" height={64} width={64}/>
             <Typography component="h1" variant="h5">
               Sign in to 
             </Typography>

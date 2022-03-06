@@ -83,7 +83,20 @@ export default function DataTable(props) {
       }
     }
     fetchData();
-  }, [])
+  }, []);
+
+  function tConvert(time) {
+    time = time.match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
+    if (time.length > 1) { // If time format correct
+      time = time.slice(1);  // Remove full string match value
+      time[5] = +time[0] < 12 ? 'AM' : 'PM'; // Set AM/PM
+      time[0] = +time[0] % 12 || 12; // Adjust hours
+    }
+    let newTime = time.join('');
+    let front = newTime.slice(0, -5);
+    let back = newTime.slice(-2);
+    return front+" "+back;
+  }
 
   React.useEffect(()=> {
     const fetchData = async() => {
@@ -116,7 +129,7 @@ export default function DataTable(props) {
       if (result.data.success){
         setTotalRows(result.data.records);
         let arr = result.data.schools.map((value) => {
-          return {name: {name: value.name, id: value.id}, address: value.address, id: value.id, departure_time: value.departure_time, arrival_time: value.arrival_time};
+          return {name: {name: value.name, id: value.id}, address: value.address, id: value.id, departure_time: tConvert(value.departure_time), arrival_time: tConvert(value.arrival_time)};
         });
         setRows(arr);
       }

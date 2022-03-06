@@ -64,7 +64,20 @@ export default function RouteDetail(props) {
       }
     }
     fetchData();
-  }, []) 
+  }, []);
+ 
+  function tConvert(time) {
+    time = time.match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
+    if (time.length > 1) { // If time format correct
+      time = time.slice(1);  // Remove full string match value
+      time[5] = +time[0] < 12 ? 'AM' : 'PM'; // Set AM/PM
+      time[0] = +time[0] % 12 || 12; // Adjust hours
+    }
+    let newTime = time.join('');
+    let front = newTime.slice(0, -5);
+    let back = newTime.slice(-2);
+    return front+" "+back;
+  }
 
   const handleDelete = () => {
       axios.delete(process.env.REACT_APP_BASE_URL+`/route/${id}`, {
@@ -114,7 +127,7 @@ export default function RouteDetail(props) {
     setMap(map);
   }, [])
 
-React.useEffect(() => {
+  React.useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
         process.env.REACT_APP_BASE_URL+`/route/${id}`, {
@@ -127,13 +140,13 @@ React.useEffect(() => {
         setData(result.data.route);
 
         let newStops = result.data.route.stops.map((value)=>{
-          return {...value, loc: {lat: value.latitude, lng: value.longitude}}
+          return {...value, dropoff_time: tConvert(value.dropoff_time), pickup_time: tConvert(value.pickup_time), loc: {lat: value.latitude, lng: value.longitude}}
         })
         setStops(newStops);
 
         setSchool(result.data.route.school.name);
         setSchoolLocation({lat: result.data.route.school.latitude, lng: result.data.route.school.longitude})
-        let newStopRows = [{name: result.data.route.school.name, pickup_time: result.data.route.school.arrival_time, dropoff_time: result.data.route.school.departure_time, id: -1}, ...newStops]
+        let newStopRows = [{name: result.data.route.school.name, pickup_time: tConvert(result.data.route.school.arrival_time), dropoff_time: tConvert(result.data.route.school.departure_time), id: -1}, ...newStops]
         setStopRows(newStopRows);
 
         console.log(result.data.route);
