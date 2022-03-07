@@ -12,6 +12,8 @@ import Grid from '@mui/material/Grid';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
+const roles = ["Parent", "Admin", "School Staff", "Driver"]
+
 const columns = [
   { field: 'name', headerName: 'Full Name', width: 250, filterable: false,
   renderCell: (params) => (
@@ -24,17 +26,15 @@ const columns = [
   { field: 'email', headerName: 'Email', width: 250, filterable: false},
   { field: 'address', headerName: 'Address', width: 400, sortable: false, filterable: false},
   { 
-    field: 'admin',
-    headerName: 'Admin',
+    field: 'role',
+    headerName: 'Role',
     width: 200,
     sortable: false,
     filterable: false,
     renderCell: (params) => (
       <>
       {
-        params.value ? 
-        <CheckIcon/> : 
-        <CloseIcon/>
+        roles[params.value] 
       }
       </>
     )
@@ -96,8 +96,8 @@ export default function DataTable(props) {
         console.log(result.data);
         setTotalRows(result.data.records);
         let arr = result.data.users.map((value) => {
-          console.log({name: value.full_name, id: value.id, address: value.uaddress, email: value.email, admin: value.role});
-          return {name: {name: value.full_name, id: value.id}, id: value.id, address: value.uaddress, email: value.email, admin: value.role};
+          console.log({name: value.full_name, id: value.id, address: value.uaddress, email: value.email, role: value.role});
+          return {name: {name: value.full_name, id: value.id}, id: value.id, address: value.uaddress, email: value.email, role: value.role};
         });
         setRows(arr);
       }
