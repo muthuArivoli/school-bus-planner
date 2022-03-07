@@ -1,10 +1,11 @@
 from app import db
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine, CheckConstraint
+from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine, CheckConstraint, Enum
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import inspect, select, func
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
+import enum
 from sqlalchemy_filters import Filter, StringField, Field, TimestampField
 from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator
 from datetime import datetime
@@ -17,6 +18,16 @@ def get_distance(lat1, long1, lat2, long2):
     coords_2 = (lat2, long2)
     return geopy.distance.geodesic(coords_1, coords_2).miles 
 
+class RoleEnum(enum.IntEnum):
+    UNPRIVILEGED = 0
+    ADMIN = 1
+    SCHOOL_STAFF = 2
+    DRIVER = 3
+
+managed_school_table = db.Table('managed_schools',
+    db.Column('user_id', ForeignKey('users.id'), primary_key=True),
+    db.Column('school_id', ForeignKey('schools.id'), primary_key=True),
+)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -26,7 +37,8 @@ class User(db.Model):
     full_name = db.Column(db.String())
     uaddress = db.Column(db.String())
     pswd = db.Column(db.String())
-    admin_flag = db.Column(db.Boolean())
+    managed_schools = relationship("School", secondary=managed_school_table, back_populates="school_managers")
+    role = db.Column(db.Enum(RoleEnum))
     children = relationship("Student", back_populates="user", cascade="all, delete-orphan")
     longitude = db.Column(db.Float())
     latitude = db.Column(db.Float())
@@ -38,9 +50,8 @@ class User(db.Model):
         return main
 
     def __repr__(self):
-        return "<User(email='{}', uaddress='{}',full_name='{}', pswd='{}', admin_flag={}, latitude={}, longitude={})>"\
-            .format(self.email, self.uaddress, self.full_name, self.pswd, self.admin_flag, self.latitude, self.longitude)
-  
+        return "<User(email='{}', uaddress='{}',full_name='{}', pswd='{}', role={}, latitude={}, longitude={})>"\
+            .format(self.email, self.uaddress, self.full_name, self.pswd, self.role, self.latitude, self.longitude)
 
 class School(db.Model):
     __tablename__ = 'schools'
@@ -50,6 +61,7 @@ class School(db.Model):
     address = db.Column(db.String())
     routes = relationship("Route", back_populates='school', cascade="all, delete-orphan")
     students = relationship("Student", back_populates='school', cascade="all, delete-orphan")
+    school_managers = relationship("User", secondary=managed_school_table, back_populates="managed_schools")
     longitude = db.Column(db.Float())
     latitude = db.Column(db.Float())
     arrival_time = db.Column(db.Time())
@@ -178,7 +190,6 @@ class UserFilter(Filter):
 
     class Meta:
         model = User
-        session = db.session
         page_size = 10
 
 class StudentFilter(Filter):
@@ -188,7 +199,6 @@ class StudentFilter(Filter):
 
     class Meta:
         model = Student
-        session = db.session
         page_size = 10
 
 class SchoolFilter(Filter):
@@ -198,7 +208,6 @@ class SchoolFilter(Filter):
 
     class Meta:
         model = School
-        session = db.session
         page_size = 10
 
 class RouteFilter(Filter):
@@ -207,5 +216,4 @@ class RouteFilter(Filter):
 
     class Meta:
         model = Route
-        session = db.session
         page_size = 10

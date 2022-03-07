@@ -34,6 +34,30 @@ export default function SchoolForm(props) {
 
   let navigate = useNavigate();
 
+  const [role, setRole] = React.useState(0);
+
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success){
+        setRole(result.data.user.role);
+      }
+      else{
+        props.setSnackbarMsg(`Current user could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/");
+      }
+    }
+    fetchData();
+  }, [])
+  
   React.useEffect(()=>{
     const fetchSchoolList = async() => {
       const result = await axios.get(
@@ -115,6 +139,7 @@ export default function SchoolForm(props) {
                           helperText={(name!=props.name && nameList.includes(name)) ? "Name already taken" : ""}
                           autoFocus
                           required
+                          disabled={role != 1}
                           label="Name"
                           id="name"
                           value={name}
@@ -149,7 +174,7 @@ export default function SchoolForm(props) {
                 </LocalizationProvider>
               </Grid>
               <Grid item md={12} sx={{ height: 450 }} >
-                <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
+                <GoogleMap address={address} disabled={role != 1} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
               </Grid>
 
               <Grid item xs={12}>

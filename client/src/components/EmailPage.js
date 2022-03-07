@@ -32,6 +32,32 @@ export default function EmailPage(props) {
 
     let [query, setQuery] = useSearchParams();
     let navigate = useNavigate();
+    const [currRole, setCurrRole] = React.useState(0);
+
+    React.useEffect(()=>{
+      const fetchData = async() => {
+        const result = await axios.get(
+          process.env.REACT_APP_BASE_URL+`/current_user`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        )
+        if(result.data.success){
+          setCurrRole(result.data.user.role);
+          if(result.data.user.role != 1){
+            setUserType("school");
+          }
+        }
+        else{
+          props.setSnackbarMsg(`Current user could not be loaded`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("error");
+          navigate("/");
+        }
+      }
+      fetchData();
+    }, [])
 
     const fetchOptionsData=async()=>{
         console.log(userType);
@@ -242,7 +268,10 @@ export default function EmailPage(props) {
                     value={userType}
                     onChange={(e)=>setUserType(e.target.value)}
                 >
+                  {
+                    currRole == 1 &&
                     <FormControlLabel value="system" control={<Radio />} label="All Users within system" />
+                  }
                     <FormControlLabel value="school" control={<Radio />} label="All Users with students from same School" />
                     <FormControlLabel value="route" control={<Radio />} label="All Users with students from same Route" />
                 </RadioGroup>

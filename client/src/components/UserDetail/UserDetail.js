@@ -15,6 +15,7 @@ export default function UserDetail(props) {
   const [error, setError] = React.useState(false);
   const [data, setData] = React.useState({});
   const [rows, setRows] = React.useState([]);
+  const [errorMsg, setErrorMsg] = React.useState("")
   let { id } = useParams();
   let navigate = useNavigate();
 
@@ -31,6 +32,7 @@ export default function UserDetail(props) {
         navigate("/users");
       }
       else {
+        setErrorMsg("Failed to delete: " + res.data.msg);
         setError(true);
       }
     }).catch((err) => {
@@ -81,7 +83,7 @@ export default function UserDetail(props) {
     <>
     <Snackbar open={error} onClose={handleClose}>
       <Alert onClose={handleClose} severity="error">
-        Failed to delete user.
+        {errorMsg}
       </Alert>
     </Snackbar>
 

@@ -22,6 +22,30 @@ export default function SchoolDetail(props) {
   const [students, setStudents] = React.useState([]);
   const [routes, setRoutes] = React.useState([]);
 
+  const [role, setRole] = React.useState(0);
+
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success){
+        setRole(result.data.user.role);
+      }
+      else{
+        props.setSnackbarMsg(`Current user could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/");
+      }
+    }
+    fetchData();
+  }, [])  
+
   React.useEffect(() => {
     const fetchData = async() => {
       setLoading(true);
@@ -44,10 +68,10 @@ export default function SchoolDetail(props) {
 
       }
       else{
-        props.setSnackbarMsg(`Route could not be loaded`);
+        props.setSnackbarMsg(`School could not be loaded`);
         props.setShowSnackbar(true);
         props.setSnackbarSeverity("error");
-        navigate("/routes");
+        navigate("/schools");
       }
       setLoading(false);
     };
@@ -137,7 +161,10 @@ export default function SchoolDetail(props) {
               style={{  }}>
               Modify
           </Button>
+          {
+          role == 1 &&
           <SchoolDeleteDialog schoolName={data.name} handleDelete={handleDelete}/>
+          }
           <Button component={RouterLink}
               to={`/email?school=${id}`}
               color="primary"

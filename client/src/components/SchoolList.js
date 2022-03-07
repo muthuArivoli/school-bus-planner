@@ -61,6 +61,30 @@ export default function DataTable(props) {
   const [showAll, setShowAll] = React.useState(false);
   let navigate = useNavigate();
 
+  const [role, setRole] = React.useState(0);
+
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success){
+        setRole(result.data.user.role);
+      }
+      else{
+        props.setSnackbarMsg(`Current user could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/");
+      }
+    }
+    fetchData();
+  }, [])
+
   React.useEffect(()=> {
     const fetchData = async() => {
       setLoading(true);
@@ -159,6 +183,8 @@ export default function DataTable(props) {
         disableSelectionOnClick
         loading={loading}
       />
+      {
+      role == 1 &&
       <Button
       component={RouterLink}
       to={"/schools/create"}
@@ -169,6 +195,7 @@ export default function DataTable(props) {
       >
         Create School
       </Button>
+      }
     </div>
     </>
   );
