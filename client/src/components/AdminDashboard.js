@@ -27,6 +27,7 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import HomeIcon from '@mui/icons-material/Home';
 import EmailIcon from '@mui/icons-material/Email';
+import {buttontheme} from './ButtonColor';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -144,9 +145,11 @@ export default function AdminDashboard(props){
               {props.titleText}
             </Typography>
             <Grid container justifyContent="flex-end">
-            <Button variant="contained" onClick={handleLogout}>
+            <ThemeProvider theme = {buttontheme}>
+            <Button variant="contained" color = "neutral" onClick={handleLogout}>
               Logout
             </Button>
+            </ThemeProvider>
             </Grid>
 
           </Toolbar>

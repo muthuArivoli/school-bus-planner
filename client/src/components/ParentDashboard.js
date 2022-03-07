@@ -23,6 +23,7 @@ import ButtonBase from '@mui/material/ButtonBase';
 import {Link as RouterLink, Navigate, useNavigate} from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
+import {buttontheme} from './ButtonColor';
 
 const theme = createTheme();
 const drawerWidth = 240;
@@ -56,9 +57,11 @@ export default function ParentDashboard(props){
             <Button variant="contained" component={RouterLink} to="/">
               Home
             </Button>
-            <Button variant="contained" onClick={handleLogout}>
+            <ThemeProvider theme = {buttontheme}>
+            <Button variant="contained" color = "neutral" onClick={handleLogout}>
               Logout
             </Button>
+            </ThemeProvider>
             </Grid>
             </Toolbar>
         </AppBar>
