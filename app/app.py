@@ -312,7 +312,7 @@ def users(user_id=None):
             ids = [school.id for school in curr_user.managed_schools]
             for student in students:
                 if student.school.id not in ids:
-                    return {'success': False, "msg":"User contains students not managed by current user"}
+                    return {'success': False, "msg":"User contains students not managed by you"}
 
         for student in students:
             db.session.delete(student)
