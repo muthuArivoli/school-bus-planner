@@ -50,8 +50,8 @@ class User(db.Model):
         return main
 
     def __repr__(self):
-        return "<User(email='{}', uaddress='{}',full_name='{}', pswd='{}', admin_flag={}, latitude={}, longitude={})>"\
-            .format(self.email, self.uaddress, self.full_name, self.pswd, self.admin_flag, self.latitude, self.longitude)
+        return "<User(email='{}', uaddress='{}',full_name='{}', pswd='{}', role={}, latitude={}, longitude={})>"\
+            .format(self.email, self.uaddress, self.full_name, self.pswd, self.role, self.latitude, self.longitude)
 
 class School(db.Model):
     __tablename__ = 'schools'

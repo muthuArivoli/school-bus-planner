@@ -44,10 +44,10 @@ export default function SchoolDetail(props) {
 
       }
       else{
-        props.setSnackbarMsg(`Route could not be loaded`);
+        props.setSnackbarMsg(`School could not be loaded`);
         props.setShowSnackbar(true);
         props.setSnackbarSeverity("error");
-        navigate("/routes");
+        navigate("/schools");
       }
       setLoading(false);
     };

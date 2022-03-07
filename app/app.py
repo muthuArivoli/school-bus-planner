@@ -239,19 +239,28 @@ def users_get(user_id=None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
 
     if user_id is not None:
-        if curr_user.role == RoleEnum.SCHOOL_STAFF:
-            access = False
-            for school in curr_user.managed_schools:
-                for student in school.students:
-                    if student.user_id == user_id:
-                        access = True
-            if not access:
-                return {'success': False, "msg": "User does not have permission to view"}
             
         user = User.query.filter_by(id=user_id).first()
         if user is None:
             return {'success': False, "msg": "Invalid User ID"}
-        return {'success': True, 'user': user.as_dict()}
+
+        user_dict = user.as_dict()
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            access = False
+            for school in curr_user.managed_schools:
+                for student in school.students:
+                    if student.user_id == user.id:
+                        access = True
+            if not access:
+                return {'success': False, "msg": "User does not have permission to view"}
+            children = []
+            ids = [mschool.id for mschool in curr_user.managed_schools]
+            for child in user.children:
+                if child.school.id in ids:
+                    children.append(child.as_dict())
+            user_dict['children'] = children
+
+        return {'success': True, 'user': user_dict}
 
     args = request.args
     name_search = args.get('name', '')
@@ -327,7 +336,7 @@ def users(user_id=None):
             logging.debug('MISSING A FIELD')
             return {'success': False, "msg": "Invalid Query Syntax"}
         
-        if type(email) is not str or type(name) is not str or type(admin_flag) is not bool or type(address) is not str or type(latitude) is not float or type(longitude) is not float or type(role) is not int or role < 0 or role > 3:
+        if type(email) is not str or type(name) is not str or type(address) is not str or type(latitude) is not float or type(longitude) is not float or type(role) is not int or role < 0 or role > 3:
             logging.debug('WRONG FIELD TYPE')
             return {'success': False, "msg": "Invalid Query Syntax"}
         
@@ -339,6 +348,14 @@ def users(user_id=None):
             return {'success': False, 'msg': 'User with this email exists'}
 
         new_user = User(email=email, full_name=name, uaddress=address, role=RoleEnum(role), latitude=latitude, longitude=longitude)
+        if new_user.role == RoleEnum.SCHOOL_STAFF:
+            managed_schools = content.get('managed_schools', [])
+            if type(managed_schools) is not list:
+                return {'success': False, "msg": "Invalid Query Syntax"}
+            for school_id in managed_schools:
+                school = School.query.filter_by(id=school_id).first()
+                new_user.managed_schools.append(school)
+
         try:
             db.session.add(new_user)
             db.session.flush()
@@ -410,7 +427,15 @@ def users(user_id=None):
             role = content.get('role', None)
             if type(role) is not int or role < 0 or role > 3 or curr_user.role == RoleEnum.SCHOOL_STAFF:
                 return {'success': False, "msg": "Invalid Query Syntax"}
+            user.managed_schools = []
             user.role = RoleEnum(role)
+            if user.role == RoleEnum.SCHOOL_STAFF:
+                managed_schools = content.get('managed_schools', [])
+                if type(managed_schools) is not list:
+                    return {'success': False, "msg": "Invalid Query Syntax"}
+                for school_id in managed_schools:
+                    school = School.query.filter_by(id=school_id).first()
+                    user.managed_schools.append(school)
         try:
             db.session.commit()
         except SQLAlchemyError:
@@ -607,14 +632,14 @@ def schools_get(school_uid=None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if school_uid is not None:
 
-        if curr_user.role == RoleEnum.SCHOOL_STAFF:
-            ids = [mschool.id for mschool in curr_user.managed_schools]
-            if school_uid not in ids:
-                return {'success': False, "msg": "User does not have permission to view"}
-
         school = School.query.filter_by(id=school_uid).first()
         if school is None:
             return {'success': False, 'msg': 'Invalid School Id'}
+
+        if curr_user.role == RoleEnum.SCHOOL_STAFF:
+            ids = [mschool.id for mschool in curr_user.managed_schools]
+            if school.id not in ids:
+                return {'success': False, "msg": "User does not have permission to view"}
         return {'success': True, 'school': school.as_dict()}
 
     args = request.args

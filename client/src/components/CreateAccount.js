@@ -19,9 +19,18 @@ import Autocomplete from '@mui/material/Autocomplete';
 import axios from 'axios';
 import GoogleMap from './GoogleMap'
 import Geocode from "react-geocode";
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
 Geocode.setApiKey('AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o');
 
 const theme = createTheme();
+const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+const checkedIcon = <CheckBoxIcon fontSize="small" />;
+
 
 export default function SignUp(props) {
 
@@ -38,7 +47,8 @@ export default function SignUp(props) {
   const [latitude, setLatitude] = React.useState(null);
   const [longitude, setLongitude] = React.useState(null);
   const [email, setEmail] = React.useState("");
-  let [adminChecked, setAdminChecked] = React.useState(false);
+  const [role, setRole] = React.useState(0);
+  const [managedSchools, setManagedSchools] = React.useState([]);
 
   const [disable, setDisable] = React.useState(true);
 
@@ -108,23 +118,22 @@ export default function SignUp(props) {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
+    let req = {
       email: data.get('email'),
       name: data.get('name'),
       address: address,
-      admin_flag: adminChecked,
+      role: role,
       latitude: latitude,
       longitude: longitude
-    });
-    console.log(process.env.REACT_APP_BASE_URL);
-    axios.post(process.env.REACT_APP_BASE_URL+"/user", {
-      email: data.get('email'),
-      name: data.get('name'),
-      address: address,
-      latitude: latitude ,
-      longitude: longitude,
-      admin_flag: adminChecked
-    }, {
+    };
+
+    if(role == 2){
+      req.managed_schools = managedSchools.map((value)=>{return value.id});
+    }
+
+    console.log(req);
+    
+    axios.post(process.env.REACT_APP_BASE_URL+"/user", req, {
       headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -288,13 +297,50 @@ export default function SignUp(props) {
                 <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
               </Grid>
               <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Checkbox value="admin" color="primary" />}
-                  label="Admin"
-                  id="admin"
-                  name="admin"
-                  onChange={(e)=>{setAdminChecked(e.target.checked)}}
+              <FormControl>
+                <FormLabel id="role-group-label">Role</FormLabel>
+                <RadioGroup
+                  aria-labelledby="role-group-label"
+                  value={role}
+                  onChange={(e)=>{
+                    setManagedSchools([]);
+                    setRole(parseInt(e.target.value));
+                  }}
+                  name="role-group"
+                >
+                  <FormControlLabel value={0} control={<Radio />} label="No Role" />
+                  <FormControlLabel value={1} control={<Radio />} label="Admin" />
+                  <FormControlLabel value={2} control={<Radio />} label="School Staff" />
+                </RadioGroup>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                {
+                  role == 2 &&
+                  <Autocomplete
+                  multiple
+                  id="managed-schools"
+                  value={managedSchools}
+                  onChange={(e, value)=>setManagedSchools(value)}
+                  options={schools}
+                  disableCloseOnSelect
+                  renderOption={(props, option, { selected }) => (
+                    <li {...props}>
+                      <Checkbox
+                        icon={icon}
+                        checkedIcon={checkedIcon}
+                        style={{ marginRight: 8 }}
+                        checked={selected}
+                      />
+                      {option.label}
+                    </li>
+                  )}
+                  fullWidth
+                  renderInput={(params) => (
+                    <TextField {...params} label="Schools Managed" placeholder="Schools" />
+                  )}
                 />
+                }
               </Grid>
               {students.map((element, index) => (
                   <React.Fragment key={index}>
