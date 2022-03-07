@@ -288,7 +288,7 @@ def users_get(user_id=None):
     else:
         user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort}, query=base_query)
         users = user_filt.apply()
-        record_num = base_query.count()
+        record_num = users.count()
 
     all_users = [user.as_dict() for user in users]
     return {'success': True, "users": all_users, "records": record_num}
@@ -494,7 +494,7 @@ def students_get(student_uid=None):
     else:
         student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort}, query=base_query)
         students = student_filt.apply()
-        record_num = base_query.count()
+        record_num = students.count()
 
     all_students = [student.as_dict() for student in students]
     return {'success':True, "students": all_students, "records": record_num}
@@ -663,7 +663,7 @@ def schools_get(school_uid=None):
     else:
         school_filt  = SchoolFilter(data={'name': name_search, 'order_by': sort}, query=base_query)
         schools = school_filt.apply()
-        record_num = base_query.count()
+        record_num = schools.count()
 
     all_schools = [school.as_dict() for school in schools]
     return {'success':True, "schools": all_schools, "records": record_num}
@@ -829,7 +829,7 @@ def routes_get(route_uid=None):
     else:
         route_filt = RouteFilter(data={'name': name_search, 'order_by': sort}, query=base_query)
         routes = route_filt.apply()
-        record_num = base_query.count()
+        record_num = routes.count()
 
     all_routes = [route.as_dict() for route in routes]
     return {'success':True, "routes": all_routes, "records": record_num}
