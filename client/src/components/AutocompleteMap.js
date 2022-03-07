@@ -99,6 +99,7 @@ export default function GoogleMaps(props) {
       filterOptions={(x) => x}
       options={options}
       autoComplete
+      disabled={props.disabled}
       includeInputInList
       filterSelectedOptions
       value={props.address}

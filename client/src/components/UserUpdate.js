@@ -41,6 +41,30 @@ export default function UserUpdate(props) {
 
   let navigate = useNavigate();
 
+  const [currRole, setCurrRole] = React.useState(0);
+
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success){
+        setCurrRole(result.data.user.role);
+      }
+      else{
+        props.setSnackbarMsg(`Current user could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/");
+      }
+    }
+    fetchData();
+  }, [])
+
   React.useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
@@ -234,6 +258,8 @@ export default function UserUpdate(props) {
                 <GoogleMap address={data.address} setAddress={handleAddressChange} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
               </Grid>
               <Grid item xs={12}>
+              {
+              currRole == 1 &&
               <FormControl>
                 <FormLabel id="role-group-label">Role</FormLabel>
                 <RadioGroup
@@ -247,10 +273,11 @@ export default function UserUpdate(props) {
                   <FormControlLabel value={2} control={<Radio />} label="School Staff" />
                 </RadioGroup>
                 </FormControl>
+              }
               </Grid>
               <Grid item xs={12}>
                 {
-                  data.role == 2 &&
+                  currRole == 1 && data.role == 2 &&
                   <Autocomplete
                   multiple
                   id="managed-schools"

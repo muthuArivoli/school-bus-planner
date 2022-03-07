@@ -393,7 +393,7 @@ def users(user_id=None):
             access = False
             for school in curr_user.managed_schools:
                 for student in school.students:
-                    if student.user_id == user_id:
+                    if student.user_id == user.id:
                         access = True
             if not access:
                 return {'success': False, "msg": "User does not have permission to modify"}
@@ -425,7 +425,7 @@ def users(user_id=None):
             user.latitude = latitude
         if 'role' in content:
             role = content.get('role', None)
-            if type(role) is not int or role < 0 or role > 3 or curr_user.role == RoleEnum.SCHOOL_STAFF:
+            if type(role) is not int or role < 0 or role > 3 or (curr_user.role == RoleEnum.SCHOOL_STAFF and role != 0):
                 return {'success': False, "msg": "Invalid Query Syntax"}
             user.managed_schools = []
             user.role = RoleEnum(role)
@@ -1056,9 +1056,10 @@ def send_email_system():
 @admin_required()
 def send_email_school(school_uid=None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    school = School.query.filter_by(id=school_uid).first()
     if curr_user.role == RoleEnum.SCHOOL_STAFF:
         ids = [mschool.id for mschool in curr_user.managed_schools]
-        if school_uid not in ids:
+        if school.id not in ids:
             return {'success': False, "msg":"Invalid User Permissions"}
 
     content = request.json
@@ -1133,7 +1134,7 @@ def send_email_school(school_uid=None):
 @admin_required()
 def send_email_route(route_uid=None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
-    route = Route.query.filter_by(id=route_uid)
+    route = Route.query.filter_by(id=route_uid).first()
     if curr_user.role == RoleEnum.SCHOOL_STAFF:
         ids = [mschool.id for mschool in curr_user.managed_schools]
         if route.school_id not in ids:

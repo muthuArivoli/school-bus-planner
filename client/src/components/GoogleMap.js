@@ -94,7 +94,7 @@ class GoogleMap extends Component {
             <Wrapper>
                 {mapApiLoaded && (
                     <div>
-                        <AutoComplete map={mapInstance} mapApi={mapApi} addplace={this.addPlace} address={this.props.address}/>
+                        <AutoComplete disabled={this.props.disabled || false} map={mapInstance} mapApi={mapApi} addplace={this.addPlace} address={this.props.address}/>
                     </div>
                 )}
                 <GoogleMapReact

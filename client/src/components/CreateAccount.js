@@ -54,6 +54,30 @@ export default function SignUp(props) {
 
   const [emailList, setEmailList] = React.useState([]);
 
+  const [currRole, setCurrRole] = React.useState(0);
+
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success){
+        setCurrRole(result.data.user.role);
+      }
+      else{
+        props.setSnackbarMsg(`Current user could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/");
+      }
+    }
+    fetchData();
+  }, [])
+
   const deleteStudent = (index) => {
     setStudents(students.filter((value, ind) => ind !== index));
     setRoutes(routes.filter((value, ind) => ind !== index));
@@ -297,6 +321,8 @@ export default function SignUp(props) {
                 <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
               </Grid>
               <Grid item xs={12}>
+               {
+               currRole == 1 && 
               <FormControl>
                 <FormLabel id="role-group-label">Role</FormLabel>
                 <RadioGroup
@@ -313,10 +339,11 @@ export default function SignUp(props) {
                   <FormControlLabel value={2} control={<Radio />} label="School Staff" />
                 </RadioGroup>
                 </FormControl>
+                }
               </Grid>
               <Grid item xs={12}>
                 {
-                  role == 2 &&
+                  currRole == 1 && role == 2 &&
                   <Autocomplete
                   multiple
                   id="managed-schools"
