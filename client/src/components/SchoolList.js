@@ -114,7 +114,7 @@ export default function DataTable(props) {
         }
       );
       if (result.data.success){
-        console.log(result.data);
+        //console.log(result.data);
         setTotalRows(result.data.records);
         let arr = result.data.schools.map((value) => {
           return {name: {name: value.name, id: value.id}, address: value.address, id: value.id, departure_time: value.departure_time, arrival_time: value.arrival_time};
