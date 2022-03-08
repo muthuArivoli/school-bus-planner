@@ -4,10 +4,11 @@ from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, creat
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import inspect, select, func
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.sql.operators import contains_op
 
 import enum
 from sqlalchemy_filters import Filter, StringField, Field, TimestampField
-from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator
+from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator, BaseOperator, register_operator
 from datetime import datetime
 import logging
 import geopy.distance
@@ -183,10 +184,16 @@ class Stop(db.Model):
         return "<Stop(name='{}', route_id={}, latitude={}, longitude={}, index={}, pickup_time={}, dropoff_time={})>"\
             .format(self.name, self.route_id, self.latitude, self.longitude, self.index, self.pickup_time, self.dropoff_time)
 
+@register_operator(sql_operator=contains_op)
+class CaseContainsOperator(BaseOperator):
+    def to_sql(self):
+        return self.operator(
+            func.lower(self.get_sql_expression()), func.lower(*self.params)
+        )
 
 class UserFilter(Filter):
-    email = StringField(lookup_operator=ContainsOperator)
-    full_name = StringField(lookup_operator=ContainsOperator)
+    email = StringField(lookup_operator=CaseContainsOperator)
+    full_name = StringField(lookup_operator=CaseContainsOperator)
 
     class Meta:
         model = User
@@ -195,14 +202,14 @@ class UserFilter(Filter):
 class StudentFilter(Filter):
     student_id = Field(lookup_operator = EqualsOperator)
     school_id = Field(lookup_operator = EqualsOperator)
-    name = StringField(lookup_operator = ContainsOperator)
+    name = StringField(lookup_operator = CaseContainsOperator)
 
     class Meta:
         model = Student
         page_size = 10
 
 class SchoolFilter(Filter):
-    name = StringField(lookup_operator=ContainsOperator)
+    name = StringField(lookup_operator=CaseContainsOperator)
     arrival_time = TimestampField()
     departure_time = TimestampField()
 
@@ -211,7 +218,7 @@ class SchoolFilter(Filter):
         page_size = 10
 
 class RouteFilter(Filter):
-    name = StringField(lookup_operator=ContainsOperator)
+    name = StringField(lookup_operator=CaseContainsOperator)
     school_id = Field()
 
     class Meta:
