@@ -271,6 +271,7 @@ export default function UserUpdate(props) {
                   <FormControlLabel value={0} control={<Radio />} label="No Role" />
                   <FormControlLabel value={1} control={<Radio />} label="Admin" />
                   <FormControlLabel value={2} control={<Radio />} label="School Staff" />
+                  <FormControlLabel value={3} control={<Radio />} label="Driver" />
                 </RadioGroup>
                 </FormControl>
               }

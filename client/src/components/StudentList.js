@@ -86,6 +86,29 @@ export default function DataTable(props) {
 
   const [showAll, setShowAll] = React.useState(false);
 
+  const [role, setRole] = React.useState(0);
+
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success){
+        setRole(result.data.user.role);
+      }
+      else{
+        props.setSnackbarMsg(`Current user could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/");
+      }
+    }
+    fetchData();
+  }, []) 
 
   React.useEffect(()=> {
     const fetchData = async() => {
@@ -125,45 +148,6 @@ export default function DataTable(props) {
         console.log(rows)
         setTotalRows(result.data.records);
         setRows(rows);
-
-        /*for (let i=0;i<data.length; i++){
-          const getRes = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/school/${data[i].school_id}`, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if (getRes.data.success){
-            arr = [...arr, {name: {name: data[i].name, id: data[i].id}, student_id: data[i].student_id, school: getRes.data.school.name, route: null, id: data[i].id, in_range: data[i].in_range}]
-          }
-          else{
-            props.setSnackbarMsg(`Students could not be loaded`);
-            props.setShowSnackbar(true);
-            props.setSnackbarSeverity("error");
-            navigate("/students");
-          }
-          if(data[i].route_id != null){
-            const getRouteRes = await axios.get(
-              process.env.REACT_APP_BASE_URL+`/route/${data[i].route_id}`, {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-                }
-              }
-            );
-            if (getRouteRes.data.success){
-              arr[arr.length - 1].route = {name: getRouteRes.data.route.name, id: data[i].route_id};
-            }
-            else{
-              props.setSnackbarMsg(`Students could not be loaded`);
-              props.setShowSnackbar(true);
-              props.setSnackbarSeverity("error");
-              navigate("/students");
-            }
-          }
-
-        }
-        setRows(arr);*/
       }
       else{
         props.setSnackbarMsg(`Students could not be loaded`);
@@ -233,6 +217,8 @@ export default function DataTable(props) {
         loading={loading}
       />
     </div>
+    {
+    (role == 1 || role == 2) &&
     <Button
       component={RouterLink}
       to={"/students/create"}
@@ -243,6 +229,7 @@ export default function DataTable(props) {
       >
         Create Student
       </Button>
+    }
       </>
   );
 }

@@ -47,13 +47,13 @@ def check_if_token_revoked(jwt_header, jwt_payload):
     return token is not None
 
 # custom decorator 
-def admin_required():
+def admin_required(roles):
     def cust_wrapper(fn):
         @wraps(fn)
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
             user = User.query.filter_by(email = get_jwt_identity()).first()
-            if user.role == RoleEnum.ADMIN or user.role == RoleEnum.SCHOOL_STAFF:
+            if user.role in roles:
                 return fn(*args, **kwargs)
             else:
                 return jsonify(msg="User not authorized to do this action"), 403
@@ -203,7 +203,7 @@ def check_comp_options():
 
 
 @app.route('/check_complete', methods = ['POST'])
-@admin_required()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 @cross_origin()
 def check_comp():
     content = request.json
@@ -234,7 +234,7 @@ def user_options(username=None):
 @app.route('/user/<user_id>', methods = ['GET'])
 @app.route('/user', methods = ['GET'])
 @cross_origin()
-@admin_required()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
 def users_get(user_id=None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
 
@@ -297,7 +297,7 @@ def users_get(user_id=None):
 @app.route('/user/<user_id>', methods = ['PATCH','DELETE'])
 @app.route('/user', methods = ['POST'])
 @cross_origin()
-@admin_required()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 def users(user_id=None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if request.method == 'DELETE':
@@ -423,9 +423,9 @@ def users(user_id=None):
             user.uaddress = address
             user.longitude = longitude
             user.latitude = latitude
-        if 'role' in content:
+        if 'role' in content and curr_user.role == RoleEnum.ADMIN:
             role = content.get('role', None)
-            if type(role) is not int or role < 0 or role > 3 or (curr_user.role == RoleEnum.SCHOOL_STAFF and role != 0):
+            if type(role) is not int or role < 0 or role > 3:
                 return {'success': False, "msg": "Invalid Query Syntax"}
             user.managed_schools = []
             user.role = RoleEnum(role)
@@ -454,7 +454,7 @@ def student_options(student_uid=None):
 @app.route('/student/<student_uid>', methods = ['GET'])
 @app.route('/student', methods = ['GET'])
 @cross_origin()
-@admin_required()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
 def students_get(student_uid=None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
 
@@ -502,7 +502,7 @@ def students_get(student_uid=None):
 @app.route('/student/<student_uid>', methods = ['PATCH', 'DELETE'])
 @app.route('/student', methods = ['POST'])
 @cross_origin()
-@admin_required()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 def students(student_uid = None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if request.method == 'DELETE':
@@ -627,7 +627,7 @@ def schools_options(school_uid=None):
 @app.route('/school/<school_uid>', methods = ['GET'])
 @app.route('/school', methods = ['GET'])
 @cross_origin()
-@admin_required()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
 def schools_get(school_uid=None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if school_uid is not None:
@@ -671,7 +671,7 @@ def schools_get(school_uid=None):
 
 @app.route('/school/<school_uid>', methods = ['PATCH', 'DELETE'])
 @app.route('/school', methods = ['POST'])
-@admin_required()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 @cross_origin()
 def schools(school_uid = None):  
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
@@ -791,7 +791,7 @@ def route_options(route_uid=None):
 @app.route('/route/<route_uid>', methods = ['GET'])
 @app.route('/route', methods = ['GET'])
 @cross_origin()
-@admin_required()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
 def routes_get(route_uid=None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if route_uid is not None:
@@ -838,7 +838,7 @@ def routes_get(route_uid=None):
 @app.route('/route/<route_uid>', methods = ['PATCH','DELETE'])
 @app.route('/route', methods = ['POST'])
 @cross_origin()
-@admin_required()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 def routes(route_uid = None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if request.method == 'DELETE':
@@ -983,11 +983,9 @@ def email_options(uid=None):
 
 @app.route('/email/system', methods = ['POST'])
 @cross_origin()
-@admin_required()
+@admin_required(roles=[RoleEnum.ADMIN])
 def send_email_system():
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
-    if curr_user.role == RoleEnum.SCHOOL_STAFF:
-        return {'success': False, "msg":"Invalid User Permissions"}
 
     content = request.json
     email_type = content.get("email_type", None)
@@ -1053,7 +1051,7 @@ def send_email_system():
 
 @app.route('/email/school/<school_uid>', methods = ['POST'])
 @cross_origin()
-@admin_required()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 def send_email_school(school_uid=None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     school = School.query.filter_by(id=school_uid).first()
@@ -1131,7 +1129,7 @@ def send_email_school(school_uid=None):
 
 @app.route('/email/route/<route_uid>', methods = ['POST'])
 @cross_origin()
-@admin_required()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 def send_email_route(route_uid=None):
     curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     route = Route.query.filter_by(id=route_uid).first()

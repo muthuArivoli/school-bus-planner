@@ -27,6 +27,7 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import HomeIcon from '@mui/icons-material/Home';
 import EmailIcon from '@mui/icons-material/Email';
+import axios from 'axios';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -86,6 +87,30 @@ export default function AdminDashboard(props){
   const [severity, setSeverity] = React.useState("error");
 
   let navigate = useNavigate();
+
+  const [role, setRole] = React.useState(0);
+
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success){
+        setRole(result.data.user.role);
+      }
+      else{
+        props.setSnackbarMsg(`Current user could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/");
+      }
+    }
+    fetchData();
+  }, []) 
 
   const toggleDrawer = () => {
     setOpen(!open);
@@ -197,12 +222,15 @@ export default function AdminDashboard(props){
             </ListItemIcon>
             <ListItemText primary="Routes" />
           </ListItemButton>
+          {
+          (role == 1 || role == 2) &&
           <ListItemButton component={RouterLink} to="/email">
             <ListItemIcon>
               <EmailIcon />
             </ListItemIcon>
             <ListItemText primary="Email" />
           </ListItemButton>
+          }
         </div>
           </List>
         </Drawer>
