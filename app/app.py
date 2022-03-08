@@ -1,6 +1,7 @@
 from flask import *
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from sqlalchemy.orm import Query
 from sqlalchemy.exc import SQLAlchemyError
 from flask_cors import CORS, cross_origin
@@ -152,14 +153,14 @@ def login():
 
     if not email or not password:
         return {'success': False, "msg": "Invalid Query Syntax"}
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter(func.lower(User.email) == func.lower(email)).first()
     if not user:
         return {"success": False, "msg": "There is no account associated with that email"}
     if user.pswd is None:
         return {"success": False, "msg": "Password has not been set"} 
     if not bcrypt.checkpw(password.encode('utf-8'), user.pswd.encode('utf-8')):
         return {"success": False, "msg": "Invalid password"}
-    access_token = create_access_token(identity=email)
+    access_token = create_access_token(identity=user.email)
     return {"success": True, "access_token": access_token}
 
 @app.route('/logout', methods = ['POST'])

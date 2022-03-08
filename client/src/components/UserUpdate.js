@@ -105,7 +105,7 @@ export default function UserUpdate(props) {
       );
       if (result.data.success){
         let arr = result.data.users.map((value) => {
-          return value.email;
+          return value.email.toLowerCase();
         })
         setEmailList(arr);
       }
@@ -117,7 +117,7 @@ export default function UserUpdate(props) {
       }
     };
     fetchEmailList();
-  }, [data])
+  }, [])
 
   React.useEffect(()=>{
     const fetchSchoolList = async() => {
@@ -242,8 +242,8 @@ export default function UserUpdate(props) {
               </Grid>
             <Grid item xs={12}>
                 <TextField
-                  error={data.email!=oldEmail && emailList.includes(data.email)}
-                  helperText={(data.email!=oldEmail && emailList.includes(data.email)) ? "Email already taken" : ""}
+                  error={data.email.toLowerCase()!=oldEmail.toLowerCase() && emailList.includes(data.email.toLowerCase())}
+                  helperText={(data.email.toLowerCase()!=oldEmail.toLowerCase() && emailList.includes(data.email.toLowerCase())) ? "Email already taken" : ""}
                   name="email"
                   label="Email"
                   type="email"
@@ -309,7 +309,7 @@ export default function UserUpdate(props) {
                   variant="contained"
                   fullWidth
                   sx={{ mt: 3, mb: 2 }}
-                  disabled={data.email == "" || data.address == "" || data.name == "" || (data.email!=oldEmail && emailList.includes(data.email))}
+                  disabled={data.email == "" || data.address == "" || data.name == "" || (data.email.toLowerCase()!=oldEmail.toLowerCase() && emailList.includes(data.email.toLowerCase()))}
                   >
                     Submit
                 </Button>
