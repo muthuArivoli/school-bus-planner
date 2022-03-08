@@ -99,7 +99,7 @@ export default function SignUp(props) {
       );
       if (result.data.success){
         let arr = result.data.users.map((value) => {
-          return value.email;
+          return value.email.toLowerCase();
         })
         setEmailList(arr);
       }
@@ -111,7 +111,7 @@ export default function SignUp(props) {
       }
     };
     fetchEmailList();
-  }, [email])
+  }, [])
 
   React.useEffect(() => {
     const fetchData = async() => {
@@ -271,7 +271,7 @@ export default function SignUp(props) {
     for (let i=0; i<students.length; i++){
       disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "";
     }
-    disabled = disabled || emailList.includes(email);
+    disabled = disabled || emailList.includes(email.toLowerCase());
     setDisable(disabled);
   }, [email, name, address, students])
 
@@ -307,8 +307,8 @@ export default function SignUp(props) {
               <Grid item xs={12}>
                 <TextField
                   required
-                  error={emailList.includes(email)}
-                  helperText={emailList.includes(email) ? "Email already taken":""}
+                  error={emailList.includes(email.toLowerCase())}
+                  helperText={emailList.includes(email.toLowerCase()) ? "Email already taken":""}
                   fullWidth
                   onChange={(e) => setEmail(e.target.value)}
                   id="email"
