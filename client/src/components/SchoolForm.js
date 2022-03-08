@@ -69,7 +69,7 @@ export default function SchoolForm(props) {
       );
       if (result.data.success){
         let arr = result.data.schools.map((value) => {
-          return value.name;
+          return value.name.toLowerCase();
         })
         setNameList(arr);
       }
@@ -135,8 +135,8 @@ export default function SchoolForm(props) {
           <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
-                          error={name!=props.name && nameList.includes(name)}
-                          helperText={(name!=props.name && nameList.includes(name)) ? "Name already taken" : ""}
+                          error={name.toLowerCase()!=props.name.toLowerCase() && nameList.includes(name.toLowerCase())}
+                          helperText={(name.toLowerCase()!=props.name.toLowerCase() && nameList.includes(name.toLowerCase())) ? "Name already taken" : ""}
                           autoFocus
                           required
                           disabled={role != 1}
@@ -181,7 +181,7 @@ export default function SchoolForm(props) {
                 <Button type="submit"
                   variant="contained"
                   fullWidth
-                  disabled={name=="" || address == "" || departureTime == "" || arrivalTime == "" ||(name != props.name && nameList.includes(name))}
+                  disabled={name=="" || address == "" || departureTime == "" || arrivalTime == "" ||(name.toLowerCase() != props.name.toLowerCase() && nameList.includes(name.toLowerCase()))}
                   sx={{ mt: 3, mb: 2 }}
                   >
                     Submit
