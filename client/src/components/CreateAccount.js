@@ -396,11 +396,15 @@ export default function SignUp(props) {
                     </Grid>
                     <Grid item xs={12}>
                     <TextField
-                        autoFocus
                         label="Student ID"
-                        type="number"
+                        type="text"
                         value={element["id"] || ""}
-                        onChange={(e) => handleStudentChange(index, "id", e.target.value)}
+                        onChange={(e) => {
+                          let input = e.target.value;
+                          if( !input || input.match('^[0-9]+$')){
+                            handleStudentChange(index, "id", input);
+                          }
+                        }}
                         fullWidth
                     />
                     </Grid>
