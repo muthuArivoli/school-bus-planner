@@ -19,6 +19,30 @@ export default function UserDetail(props) {
   let { id } = useParams();
   let navigate = useNavigate();
 
+  const [role, setRole] = React.useState(0);
+
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success){
+        setRole(result.data.user.role);
+      }
+      else{
+        props.setSnackbarMsg(`Current user could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/");
+      }
+    }
+    fetchData();
+  }, [])  
+
   const handleDelete = () => {
     axios.delete(process.env.REACT_APP_BASE_URL+`/user/${id}`, {
       headers: {
@@ -104,6 +128,8 @@ export default function UserDetail(props) {
         <UserDetailMid rows={rows}/>
 
         <Stack direction="row" spacing={3} justifyContent="center">
+          {
+          (role == 1 || role == 2) &&
           <Button component={RouterLink}
               to={"/users/" + id +"/update"}
               color="primary"
@@ -112,7 +138,11 @@ export default function UserDetail(props) {
               style={{ }}>
               Modify
           </Button>
+          }
+          {
+          (role == 1 || role == 2) &&
           <DeleteDialog dialogTitle="Delete User?" dialogDesc={`Please confirm you would like to delete user ${data.full_name}`} onAccept={handleDelete}/>
+          }
         </Stack>
       </Stack>
     </Grid>

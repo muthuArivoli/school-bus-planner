@@ -145,6 +145,8 @@ export default function SchoolDetail(props) {
         <SchoolDetailMid students={students} routes={routes} loading={loading}/>
 
         <Stack direction="row" spacing={3} justifyContent="center">
+          {
+          (role == 1 || role == 2) &&
           <Button component={RouterLink}
                 to={"/schools/" + id + "/routes"}
                 color="primary"
@@ -153,6 +155,9 @@ export default function SchoolDetail(props) {
                 style={{  }}>
                   Route Planner
           </Button>
+          }
+          {
+          (role == 1 || role == 2) &&  
           <Button component={RouterLink}
               to={"/schools/" + id +"/update"}
               color="primary"
@@ -161,10 +166,13 @@ export default function SchoolDetail(props) {
               style={{  }}>
               Modify
           </Button>
+          }
           {
           role == 1 &&
           <SchoolDeleteDialog schoolName={data.name} handleDelete={handleDelete}/>
           }
+          {
+          (role == 1 || role == 2) &&
           <Button component={RouterLink}
               to={`/email?school=${id}`}
               color="primary"
@@ -173,6 +181,7 @@ export default function SchoolDetail(props) {
               style={{ }}>
               Email
           </Button>
+          }
         </Stack>
       </Stack>
     </Grid>
