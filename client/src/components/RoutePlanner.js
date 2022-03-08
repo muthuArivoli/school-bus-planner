@@ -235,8 +235,9 @@ export default function RoutePlanner(props) {
 
   // update route completeness on a change
   React.useEffect(()=>{
+    let active = true;
     const fetchData = async() => {
-      if (selectionModel.length != 0) {
+      if (selectionModel.length != 0 || routeInfo["name"] != "" ) {
         const result = await axios.post(process.env.REACT_APP_BASE_URL+`/check_complete`, {
           students: studentRows.map((value)=>{return value.id}),
           stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
@@ -247,10 +248,10 @@ export default function RoutePlanner(props) {
           });
         if(result.data.success){
           let isComplete = result.data.completion;
-          if (isComplete) {
+          if (isComplete && active) {
             setCompleteness("Complete");
           }
-          else {
+          else if(active){
             setCompleteness("Incomplete");
           }
         }
@@ -258,12 +259,16 @@ export default function RoutePlanner(props) {
           console.log("Completeness check failed.")
         }
       }
-      else {
+      else if (active){
         setCompleteness("No Route");
       }
     }
     fetchData(); 
-  }, [selectionModel, stopRows, studentRows, students]);
+
+    return () => {
+      active = false;
+    };
+  }, [selectionModel, stopRows, studentRows, students, routeInfo]);
 
   // function on snackbar close
   const handleClose = (event, reason) => {
