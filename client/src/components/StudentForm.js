@@ -28,7 +28,7 @@ export default function StudentForm(props) {
                   headers: {
                       Authorization: `Bearer ${localStorage.getItem('token')}`
                   },
-                  params: {sort: "name", dir: "asc"}
+                  params: {sort: "email", dir: "asc"}
                 }
               );
               if (result.data.success){
@@ -90,7 +90,7 @@ export default function StudentForm(props) {
           axios.get(process.env.REACT_APP_BASE_URL+`/school/${value.id}`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
-            },
+            }
           }).then((result) => {
             console.log(result.data);
             if (result.data.success){
