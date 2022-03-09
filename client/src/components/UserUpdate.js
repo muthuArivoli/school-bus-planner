@@ -81,8 +81,6 @@ export default function UserUpdate(props) {
         if(newData.role == 2){
           newData.managedSchools = result.data.user.managed_schools.map((value)=>{return {label: value.name, id: value.id}});
         }
-        console.log(result.data)
-        console.log(newData);
         setData(newData);
         setLatitude(result.data.user.latitude);
         setLongitude(result.data.user.longitude);
