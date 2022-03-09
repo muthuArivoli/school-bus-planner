@@ -125,7 +125,8 @@ export default function UserUpdate(props) {
         process.env.REACT_APP_BASE_URL+'/school', {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
+          },
+          params: {sort: "name", dir: "asc"}
         }
       );
       if (result.data.success){
@@ -303,6 +304,7 @@ export default function UserUpdate(props) {
                   value={data.managedSchools}
                   onChange={handleManagedSchoolChange}
                   options={schoolList}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
                   disableCloseOnSelect
                   renderOption={(props, option, { selected }) => (
                     <li {...props}>
