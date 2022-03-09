@@ -27,7 +27,8 @@ export default function StudentForm(props) {
                 process.env.REACT_APP_BASE_URL+'/user', {
                   headers: {
                       Authorization: `Bearer ${localStorage.getItem('token')}`
-                  }
+                  },
+                  params: {sort: "email", dir: "asc"}
                 }
               );
               if (result.data.success){
@@ -54,7 +55,8 @@ export default function StudentForm(props) {
                 process.env.REACT_APP_BASE_URL+'/school', {
                   headers: {
                       Authorization: `Bearer ${localStorage.getItem('token')}`
-                  }
+                  },
+                  params: {sort: "name", dir: "asc"}
                 }
               );
               if (result.data.success){

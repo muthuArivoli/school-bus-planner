@@ -68,7 +68,8 @@ export default function EmailPage(props) {
                 process.env.REACT_APP_BASE_URL+'/school', {
                   headers: {
                       Authorization: `Bearer ${localStorage.getItem('token')}`
-                  }
+                  },
+                  params: {sort: "name", dir: "asc"}
                 }
               );
               if (result.data.success){
@@ -92,7 +93,8 @@ export default function EmailPage(props) {
                 process.env.REACT_APP_BASE_URL+'/route', {
                   headers: {
                       Authorization: `Bearer ${localStorage.getItem('token')}`
-                  }
+                  },
+                  params: {sort: "name", dir: "asc"}
                 }
               );
               if (result.data.success){
