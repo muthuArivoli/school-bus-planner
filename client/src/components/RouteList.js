@@ -87,6 +87,7 @@ export default function DataTable(props) {
   const mappings = {'name': 'name', 'school': 'school_id', 'students': 'student_count'}
 
   React.useEffect(()=> {
+    let active = true;
     const fetchData = async() => {
       setLoading(true);
       let params = {}
@@ -118,8 +119,10 @@ export default function DataTable(props) {
         let newRows = result.data.routes.map((value)=>{
           return {...value, name: {name: value.name, id: value.id}, students: value.students.length}
         })
-        setTotalRows(result.data.records);
-        setRows(newRows);
+        if(active){
+          setTotalRows(result.data.records);
+          setRows(newRows);
+        }
       }
       else{
         // console.log(result.data)
@@ -131,6 +134,9 @@ export default function DataTable(props) {
       setLoading(false);
     };
     fetchData();
+    return () => {
+      active = false;
+    };
   }, [page, sortModel, filterStr, filterType, showAll])
 
   return (

@@ -84,6 +84,7 @@ export default function DataTable(props) {
   }, []) 
 
   React.useEffect(()=> {
+    let active = true;
     const fetchData = async() => {
 
       setLoading(true);
@@ -115,14 +116,13 @@ export default function DataTable(props) {
         }
       );
       if (result.data.success){
-        console.log(result.data.users);
-        console.log(result.data);
-        setTotalRows(result.data.records);
         let arr = result.data.users.map((value) => {
-          console.log({name: value.full_name, id: value.id, address: value.uaddress, email: value.email, role: value.role});
           return {name: {name: value.full_name, id: value.id}, id: value.id, address: value.uaddress, email: value.email, role: value.role, phone: value.phone};
         });
-        setRows(arr);
+        if(active){
+          setTotalRows(result.data.records);
+          setRows(arr);
+        }
       }
       else{
         props.setSnackbarMsg(`Users could not be loaded`);
@@ -133,6 +133,9 @@ export default function DataTable(props) {
       setLoading(false);
     };
     fetchData();
+    return () => {
+      active = false;
+    };
   }, [page, sortModel, filterStr, filterType, showAll])
 
   return (

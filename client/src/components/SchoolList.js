@@ -92,6 +92,7 @@ export default function DataTable(props) {
   }
 
   React.useEffect(()=> {
+    let active = true;
     const fetchData = async() => {
       setLoading(true);
       let params = {}
@@ -120,11 +121,13 @@ export default function DataTable(props) {
         }
       );
       if (result.data.success){
-        setTotalRows(result.data.records);
         let arr = result.data.schools.map((value) => {
           return {name: {name: value.name, id: value.id}, address: value.address, id: value.id, departure_time: tConvert(value.departure_time), arrival_time: tConvert(value.arrival_time)};
         });
-        setRows(arr);
+        if(active){
+          setTotalRows(result.data.records);
+          setRows(arr);
+        }
       }
       else{
         props.setSnackbarMsg(`Schools could not be loaded`);
@@ -135,6 +138,9 @@ export default function DataTable(props) {
       setLoading(false);
     };
     fetchData();
+    return () => {
+      active = false;
+    };
   }, [page, sortModel, filterStr, filterType, showAll])
 
   return (

@@ -133,6 +133,7 @@ export default function DataTable(props) {
   }, []) 
 
   React.useEffect(()=> {
+    let active = true;
     const fetchData = async() => {
       setLoading(true);
       let params = {}
@@ -167,9 +168,10 @@ export default function DataTable(props) {
         let rows = result.data.students.map((value)=>{
           return {...value, name: {name: value.name, id: value.id}, parent_name: {name: value.user.full_name, id: value.user.id}, parent_phone: value.user.phone}
         })
-        console.log(rows)
-        setTotalRows(result.data.records);
-        setRows(rows);
+        if(active){
+          setTotalRows(result.data.records);
+          setRows(rows);
+        }
       }
       else{
         props.setSnackbarMsg(`Students could not be loaded`);
@@ -180,6 +182,9 @@ export default function DataTable(props) {
       setLoading(false);
     };
     fetchData();
+    return () => {
+      active = false;
+    };
   }, [page, sortModel, filterType, filterStr, showAll])
 
   const handleRowClick = (row) => {
