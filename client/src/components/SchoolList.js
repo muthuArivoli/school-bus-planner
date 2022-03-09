@@ -9,6 +9,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
+import { DateTime } from "luxon";
 
 const columns = [
   { field: 'name', headerName: 'School Name', width: 250, filterable: false, 
@@ -83,7 +84,12 @@ export default function DataTable(props) {
       }
     }
     fetchData();
-  }, [])
+  }, []);
+
+  function tConvert(time) {
+    let date_time = DateTime.fromISO(time);
+    return date_time.toLocaleString(DateTime.TIME_SIMPLE);
+  }
 
   React.useEffect(()=> {
     const fetchData = async() => {
@@ -116,7 +122,7 @@ export default function DataTable(props) {
       if (result.data.success){
         setTotalRows(result.data.records);
         let arr = result.data.schools.map((value) => {
-          return {name: {name: value.name, id: value.id}, address: value.address, id: value.id, departure_time: value.departure_time, arrival_time: value.arrival_time};
+          return {name: {name: value.name, id: value.id}, address: value.address, id: value.id, departure_time: tConvert(value.departure_time), arrival_time: tConvert(value.arrival_time)};
         });
         setRows(arr);
       }

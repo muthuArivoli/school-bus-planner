@@ -14,6 +14,7 @@ import MuiAlert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Link from '@mui/material/Link';
+import { DateTime } from 'luxon';
 
 const containerStyle = {
   height: "400px",
@@ -64,7 +65,12 @@ export default function RouteDetail(props) {
       }
     }
     fetchData();
-  }, []) 
+  }, []);
+ 
+  function tConvert(time) {
+    let date_time = DateTime.fromISO(time);
+    return date_time.toLocaleString(DateTime.TIME_SIMPLE);
+  }
 
   const handleDelete = () => {
       axios.delete(process.env.REACT_APP_BASE_URL+`/route/${id}`, {
@@ -114,7 +120,7 @@ export default function RouteDetail(props) {
     setMap(map);
   }, [])
 
-React.useEffect(() => {
+  React.useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
         process.env.REACT_APP_BASE_URL+`/route/${id}`, {
@@ -127,13 +133,13 @@ React.useEffect(() => {
         setData(result.data.route);
 
         let newStops = result.data.route.stops.map((value)=>{
-          return {...value, loc: {lat: value.latitude, lng: value.longitude}}
+          return {...value, dropoff_time: tConvert(value.dropoff_time), pickup_time: tConvert(value.pickup_time), loc: {lat: value.latitude, lng: value.longitude}}
         })
         setStops(newStops);
 
         setSchool(result.data.route.school.name);
         setSchoolLocation({lat: result.data.route.school.latitude, lng: result.data.route.school.longitude})
-        let newStopRows = [{name: result.data.route.school.name, pickup_time: result.data.route.school.arrival_time, dropoff_time: result.data.route.school.departure_time, id: -1}, ...newStops]
+        let newStopRows = [{name: result.data.route.school.name, pickup_time: tConvert(result.data.route.school.arrival_time), dropoff_time: tConvert(result.data.route.school.departure_time), id: -1}, ...newStops]
         setStopRows(newStopRows);
 
         console.log(result.data.route);
