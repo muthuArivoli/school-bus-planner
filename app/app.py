@@ -332,12 +332,13 @@ def users(user_id=None):
         address = content.get('address', None)
         longitude = content.get('longitude', None)
         latitude = content.get('latitude', None)
+        phone = content.get('phone', None)
 
-        if not email or not name or not address or not longitude or not latitude or role is None:
+        if not email or not name or not address or not longitude or not latitude or role is None or phone is None:
             logging.debug('MISSING A FIELD')
             return {'success': False, "msg": "Invalid Query Syntax"}
         
-        if type(email) is not str or type(name) is not str or type(address) is not str or type(latitude) is not float or type(longitude) is not float or type(role) is not int or role < 0 or role > 3:
+        if type(email) is not str or type(name) is not str or type(address) is not str or type(latitude) is not float or type(longitude) is not float or type(role) is not int or role < 0 or role > 3 or type(phone) is not str:
             logging.debug('WRONG FIELD TYPE')
             return {'success': False, "msg": "Invalid Query Syntax"}
         
@@ -348,7 +349,7 @@ def users(user_id=None):
         if user:
             return {'success': False, 'msg': 'User with this email exists'}
 
-        new_user = User(email=email, full_name=name, uaddress=address, role=RoleEnum(role), latitude=latitude, longitude=longitude)
+        new_user = User(email=email, full_name=name, uaddress=address, role=RoleEnum(role), latitude=latitude, longitude=longitude, phone=phone)
         if new_user.role == RoleEnum.SCHOOL_STAFF:
             managed_schools = content.get('managed_schools', [])
             if type(managed_schools) is not list:
@@ -437,6 +438,11 @@ def users(user_id=None):
                 for school_id in managed_schools:
                     school = School.query.filter_by(id=school_id).first()
                     user.managed_schools.append(school)
+        if 'phone' in content:
+            phone = content.get('phone', None)
+            if type(phone) is not str:
+                return {'success': False, "msg": "Invalid Query Syntax"}
+            user.phone = phone
         try:
             db.session.commit()
         except SQLAlchemyError:

@@ -43,6 +43,7 @@ class User(db.Model):
     children = relationship("Student", back_populates="user", cascade="all, delete-orphan")
     longitude = db.Column(db.Float())
     latitude = db.Column(db.Float())
+    phone = db.Column(db.String())
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}

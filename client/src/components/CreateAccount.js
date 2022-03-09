@@ -49,6 +49,7 @@ export default function SignUp(props) {
   const [email, setEmail] = React.useState("");
   const [role, setRole] = React.useState(0);
   const [managedSchools, setManagedSchools] = React.useState([]);
+  const [phone, setPhone] = React.useState("");
 
   const [disable, setDisable] = React.useState(true);
 
@@ -148,7 +149,8 @@ export default function SignUp(props) {
       address: address,
       role: role,
       latitude: latitude,
-      longitude: longitude
+      longitude: longitude,
+      phone: phone
     };
 
     if(role == 2){
@@ -267,13 +269,13 @@ export default function SignUp(props) {
   }
 
   React.useEffect(() => {
-    let disabled = email == "" || name == "" || address == "";
+    let disabled = email == "" || name == "" || address == "" || phone == "";
     for (let i=0; i<students.length; i++){
       disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "";
     }
     disabled = disabled || emailList.includes(email.toLowerCase());
     setDisable(disabled);
-  }, [email, name, address, students])
+  }, [email, name, address, students, phone])
 
   return (
     <ThemeProvider theme={theme}>
@@ -319,6 +321,17 @@ export default function SignUp(props) {
               </Grid>
               <Grid item xs={12} sx={{ height: 450 }} >
                 <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
+              </Grid>
+              <Grid item xs={12} sx={{ mt: 2}}>
+                <TextField
+                  required
+                  fullWidth
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  id="phone"
+                  label="Phone Number"
+                  name="phone"
+                />
               </Grid>
               <Grid item xs={12}>
                {

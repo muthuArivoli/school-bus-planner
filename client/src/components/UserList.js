@@ -15,7 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 const roles = ["Parent", "Admin", "School Staff", "Driver"]
 
 const columns = [
-  { field: 'name', headerName: 'Full Name', width: 250, filterable: false,
+  { field: 'name', headerName: 'Full Name', width: 200, filterable: false,
   renderCell: (params) => (
     <>
     <Link component={RouterLink} to={"/users/" + params.value.id}>
@@ -23,12 +23,13 @@ const columns = [
     </Link>
     </>
   )},
-  { field: 'email', headerName: 'Email', width: 250, filterable: false},
-  { field: 'address', headerName: 'Address', width: 400, sortable: false, filterable: false},
+  { field: 'email', headerName: 'Email', width: 300, filterable: false},
+  { field: 'address', headerName: 'Address', width: 350, sortable: false, filterable: false},
+  { field: 'phone', headerName: 'Phone Number', width: 150, sortable: false, filterable: false},
   { 
     field: 'role',
     headerName: 'Role',
-    width: 200,
+    width: 100,
     sortable: false,
     filterable: false,
     renderCell: (params) => (
@@ -121,7 +122,7 @@ export default function DataTable(props) {
         setTotalRows(result.data.records);
         let arr = result.data.users.map((value) => {
           console.log({name: value.full_name, id: value.id, address: value.uaddress, email: value.email, role: value.role});
-          return {name: {name: value.full_name, id: value.id}, id: value.id, address: value.uaddress, email: value.email, role: value.role};
+          return {name: {name: value.full_name, id: value.id}, id: value.id, address: value.uaddress, email: value.email, role: value.role, phone: value.phone};
         });
         setRows(arr);
       }
