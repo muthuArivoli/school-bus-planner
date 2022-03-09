@@ -1,10 +1,7 @@
 import * as React from 'react';
-import Typography from '@mui/material/Typography';
 import SchoolForm from './SchoolForm';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
-
 
 export default function CreateSchool(props) {
 
@@ -46,8 +43,6 @@ export default function CreateSchool(props) {
 
 
     return(
-        <>
         <SchoolForm handleSubmit={handleSubmit} name="" address="" latitude={null} longitude={null} arrivalTime="" departureTime="" title="Create School" />
-        </>
     )
 }

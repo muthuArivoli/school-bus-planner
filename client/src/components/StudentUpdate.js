@@ -1,15 +1,7 @@
 import * as React from 'react'
-import CssBaseline from '@mui/material/CssBaseline';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import StudentForm from './StudentForm';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
-const theme = createTheme();
 
 export default function UserUpdate(props) {
 
@@ -99,21 +91,19 @@ export default function UserUpdate(props) {
     }, []);
 
     return(
-        <>
-                  <StudentForm 
-                    name={name} 
-                    updateName={setName}
-                    studentId={studentId}
-                    updateStudentId={setStudentId}
-                    user={user}
-                    updateUser={setUser}
-                    school={school}
-                    updateSchool={setSchool}
-                    route={route}
-                    updateRoute={setRoute}
-                    handleSubmit={handleSubmit}
-                    title="Update Student"
-                    />
-        </>
+      <StudentForm 
+        name={name} 
+        updateName={setName}
+        studentId={studentId}
+        updateStudentId={setStudentId}
+        user={user}
+        updateUser={setUser}
+        school={school}
+        updateSchool={setSchool}
+        route={route}
+        updateRoute={setRoute}
+        handleSubmit={handleSubmit}
+        title="Update Student"
+      />
     )
 }

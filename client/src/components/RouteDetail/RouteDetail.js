@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
@@ -28,17 +28,17 @@ export default function RouteDetail(props) {
 
   let { id } = useParams();
 
-  const [error, setError] = useState(false);
-  const [data, setData] = useState({});
+  const [error, setError] = React.useState(false);
+  const [data, setData] = React.useState({});
   const [schoolLocation, setSchoolLocation] = React.useState({lat: 0, lng:0});
   const [students, setStudents] = React.useState([]);
 
-  const [school, setSchool] = useState("");
-  const [rows, setRows] = useState([]);
+  const [school, setSchool] = React.useState("");
+  const [rows, setRows] = React.useState([]);
 
   const [map, setMap] = React.useState(null);
-  const [stops, setStops] = useState([]);
-  const [stopRows, setStopRows] = useState([]);
+  const [stops, setStops] = React.useState([]);
+  const [stopRows, setStopRows] = React.useState([]);
 
   let navigate = useNavigate();
 
@@ -114,9 +114,7 @@ export default function RouteDetail(props) {
     setMap(map);
   }, [])
 
-//NEED TO GET STOP INFO FOR STOP DATAGRID
-
-  useEffect(() => {
+React.useEffect(() => {
     const fetchData = async() => {
       const result = await axios.get(
         process.env.REACT_APP_BASE_URL+`/route/${id}`, {

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import Typography from '@mui/material/Typography';
 import SchoolForm from '../SchoolForm';
 import axios from 'axios';
 import {Link as RouterLink, useParams, useNavigate} from 'react-router-dom';
