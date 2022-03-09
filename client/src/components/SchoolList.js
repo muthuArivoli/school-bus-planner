@@ -9,6 +9,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
+import { DateTime } from "luxon";
 
 const columns = [
   { field: 'name', headerName: 'School Name', width: 250, filterable: false, 
@@ -86,16 +87,8 @@ export default function DataTable(props) {
   }, []);
 
   function tConvert(time) {
-    time = time.match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
-    if (time.length > 1) { // If time format correct
-      time = time.slice(1);  // Remove full string match value
-      time[5] = +time[0] < 12 ? 'AM' : 'PM'; // Set AM/PM
-      time[0] = +time[0] % 12 || 12; // Adjust hours
-    }
-    let newTime = time.join('');
-    let front = newTime.slice(0, -5);
-    let back = newTime.slice(-2);
-    return front+" "+back;
+    let date_time = DateTime.fromISO(time);
+    return date_time.toLocaleString(DateTime.TIME_SIMPLE);
   }
 
   React.useEffect(()=> {

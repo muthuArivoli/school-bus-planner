@@ -9,6 +9,7 @@ import SchoolDeleteDialog from './SchoolDeleteDialog';
 import SchoolDetailMid from './SchoolDetailMid'
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
+import { DateTime } from 'luxon';
 
 export default function SchoolDetail(props) {
 
@@ -23,6 +24,11 @@ export default function SchoolDetail(props) {
   const [routes, setRoutes] = React.useState([]);
 
   const [role, setRole] = React.useState(0);
+
+  function tConvert(time) {
+    let date_time = DateTime.fromISO(time);
+    return date_time.toLocaleString(DateTime.TIME_SIMPLE);
+  }
 
   React.useEffect(()=>{
     const fetchData = async() => {
@@ -58,7 +64,10 @@ export default function SchoolDetail(props) {
       );
       if (result.data.success){
         console.log(result.data);
-        setData(result.data.school);
+        let newSchool = result.data.school;
+        newSchool.arrival_time = tConvert(result.data.school.arrival_time);
+        newSchool.departure_time = tConvert(result.data.school.departure_time);
+        setData(newSchool);
         let newRows = result.data.school.students.map((value)=>{
           return {...value, name: {name: value.name, id: value.id}}
         })
