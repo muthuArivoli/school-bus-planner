@@ -14,7 +14,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
 const columns = [
-  { field: 'name', headerName: 'Full Name', width: 250, filterable: false,
+  { field: 'name', headerName: 'Full Name', width: 200, filterable: false,
   renderCell: (params) => (
     <>
     <Link component={RouterLink} to={"/students/" + params.value.id}>
@@ -23,11 +23,11 @@ const columns = [
     </>
   )
   },
-  { field: 'student_id', headerName: 'Student ID', width: 150, filterable: false},
+  { field: 'student_id', headerName: 'Student ID', width: 125, filterable: false},
   { 
     field: 'school',
     headerName: 'School',
-    width: 250,
+    width: 175,
     filterable: false,
     renderCell: (params) => (
       <>
@@ -40,7 +40,7 @@ const columns = [
   {
     field: 'route',
     headerName: 'Route',
-    width: 250,
+    width: 175,
     sortable: false,
     filterable: false,
     renderCell: (params) => (
@@ -54,7 +54,9 @@ const columns = [
   {
     field: 'in_range',
     headerName: 'Has a Stop?',
-    width: 150,
+    width: 125,
+    sortable: false,
+    filterable: false,
     renderCell: (params) => (
       <>
       {
@@ -65,6 +67,27 @@ const columns = [
       </>
     )
   },
+  {
+    field: 'parent_name',
+    headerName: "Parent Name",
+    width: 175,
+    sortable: false,
+    filterable: false,
+    renderCell: (params) => (
+      <>
+      <Link component={RouterLink} to={"/users/" + params.value.id}>
+        {params.value.name}
+      </Link>
+      </>
+    ),
+  },
+  {
+    field: 'parent_phone',
+    headerName: "Parent Phone",
+    width: 150,
+    sortable: false,
+    filterable: false
+  }
 ];
 
 export default function DataTable(props) {
@@ -143,7 +166,7 @@ export default function DataTable(props) {
       );
       if (result.data.success){
         let rows = result.data.students.map((value)=>{
-          return {...value, name: {name: value.name, id: value.id}}
+          return {...value, name: {name: value.name, id: value.id}, parent_name: {name: value.user.full_name, id: value.user.id}, parent_phone: value.user.phone}
         })
         console.log(rows)
         setTotalRows(result.data.records);

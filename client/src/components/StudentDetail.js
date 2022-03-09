@@ -9,6 +9,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import axios from 'axios';
 import Link from '@mui/material/Link';
+import Divider from '@mui/material/Divider';
 
 export default function StudentDetail(props) {
 
@@ -17,7 +18,7 @@ export default function StudentDetail(props) {
   const [error, setError] = React.useState(false);
 
   const [data, setData] = React.useState({});
-
+  const [user, setUser] = React.useState({});
   const [school, setSchool] = React.useState("");
 
   const [route, setRoute] = React.useState("No Route");
@@ -88,24 +89,10 @@ export default function StudentDetail(props) {
       );
       if (result.data.success){
         setData(result.data.student);
-
+        setSchool(result.data.student.school.name);
+        setUser(result.data.student.user);
         if(result.data.student.route_id != null){
-          const routRes = await axios.get(
-            process.env.REACT_APP_BASE_URL+`/route/${result.data.student.route_id}`, {
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            }
-          );
-          if (routRes.data.success){
-            setRoute(routRes.data.route.name);
-          }
-          else{
-            props.setSnackbarMsg(`Student could not be loaded`);
-            props.setShowSnackbar(true);
-            props.setSnackbarSeverity("error");
-            navigate("/students");
-          }
+          setRoute(result.data.student.route.name);
         }
         else {
           setRoute("No Route");
@@ -116,23 +103,6 @@ export default function StudentDetail(props) {
         }
         else{
           setInRange("No");
-        }
-
-        const schoolRes = await axios.get(
-          process.env.REACT_APP_BASE_URL+`/school/${result.data.student.school_id}`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-          }
-        );
-        if (schoolRes.data.success){
-          setSchool(schoolRes.data.school.name);
-        }
-        else{
-          props.setSnackbarMsg(`Student could not be loaded`);
-          props.setShowSnackbar(true);
-          props.setSnackbarSeverity("error");
-          navigate("/students");
         }
 
       }
@@ -156,6 +126,12 @@ export default function StudentDetail(props) {
     </Alert>
   </Snackbar>
     <Grid container justifyContent="center" pt={5}>
+    <Stack spacing={2} justifyContent="center">
+        <Typography variant="h4" align="center">
+                Student Info
+              </Typography>
+        </Stack>
+
       <Stack spacing={4} sx={{ width: '100%'}}>
         <Stack direction="row" spacing={15} justifyContent="center">
           <Typography variant="h5" align="center">
@@ -200,6 +176,37 @@ export default function StudentDetail(props) {
 
           </Stack>
         </Stack>
+
+        <Divider id="divider" variant="fullWidth" style={{width:'100%'}}/>
+
+        <Stack spacing={2} justifyContent="center">
+        <Typography variant="h4" align="center">
+                Parent Info
+              </Typography>
+        </Stack>
+
+          <Stack spacing={2} justifyContent="center">
+            <Stack direction="row" spacing={20} justifyContent="center">
+              <Typography variant="h5" align="center">
+                {"Name: "} 
+                <Link component={RouterLink} to={"/users/" + user.id}>
+                  {user.full_name}
+                </Link>
+              </Typography>
+              <Typography variant="h5" align="center">
+                Email: {user.email}
+              </Typography>
+            </Stack>
+            <Stack direction="row" spacing={20} justifyContent="center">
+              <Typography variant="h5" align="center">
+                Address: {user.uaddress}
+              </Typography>
+              <Typography variant="h5" align="center">
+                Phone: {user.phone}
+              </Typography>
+            </Stack>
+          </Stack>
+        
 
         <Stack direction="row" spacing={3} justifyContent="center">
           {
