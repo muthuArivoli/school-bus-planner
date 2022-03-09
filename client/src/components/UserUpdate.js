@@ -29,7 +29,7 @@ const checkedIcon = <CheckBoxIcon fontSize="small" />;
 export default function UserUpdate(props) {
 
   const { id } = useParams();
-  const [data, setData] = React.useState({email:"", name:"", address: "", role: 0, managedSchools: []});
+  const [data, setData] = React.useState({email:"", name:"", address: "", role: 0, managedSchools: [], phone: ""});
   const [emailList, setEmailList] = React.useState([]);
   const [oldEmail, setOldEmail] = React.useState("");
   
@@ -75,7 +75,7 @@ export default function UserUpdate(props) {
         }
       );
       if (result.data.success){
-        let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, role: result.data.user.role}
+        let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, role: result.data.user.role, phone: result.data.user.phone}
         if(newData.role == 2){
           newData.managedSchools = result.data.user.managed_schools;
         }
@@ -175,6 +175,12 @@ export default function UserUpdate(props) {
       setData(newData);      
     }
 
+    const handlePhoneChange = (event) => {
+      let newData = JSON.parse(JSON.stringify(data));
+      newData.phone = event.target.value;
+      setData(newData);
+    }
+
     const handleSubmit = (event) => {
       event.preventDefault();
       let req = {
@@ -183,7 +189,8 @@ export default function UserUpdate(props) {
         address: data.address,
         role: data.role,
         latitude: latitude,
-        longitude: longitude
+        longitude: longitude,
+        phone: data.phone
       }
       if(data.role == 2) {
         req.managed_schools = data.managedSchools.map((value)=>{return value.id});
@@ -256,6 +263,17 @@ export default function UserUpdate(props) {
               </Grid>
               <Grid item xs={12} sx={{ height: 450 }} >
                 <GoogleMap address={data.address} setAddress={handleAddressChange} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  value={data.phone}
+                  onChange={handlePhoneChange}
+                  id="phone"
+                  label="Phone Number"
+                  name="phone"
+                />
               </Grid>
               <Grid item xs={12}>
               {

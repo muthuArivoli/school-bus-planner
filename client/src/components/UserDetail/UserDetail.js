@@ -120,10 +120,15 @@ export default function UserDetail(props) {
           <Typography variant="h5" align="center">
             Email: {data.email}
           </Typography>
+        </Stack>
+          <Stack direction="row" spacing={25} justifyContent="center"> 
           <Typography variant="h5" align="center">
             Address: {data.uaddress}
           </Typography>
-        </Stack>
+          <Typography variant="h5" align="center">
+            Phone Number: {data.phone}
+          </Typography>
+          </Stack>
         
         <UserDetailMid rows={rows}/>
 

@@ -25,7 +25,7 @@ def seed_db_admin():
     addr = '401 Chapel Dr, Durham, NC 27705'
     lat,lng = geocode_address(addr)
     encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-    new_user = User(email='admin@example.com', full_name='Admin', uaddress = addr, pswd=encrypted_pswd.decode('utf-8'), role=RoleEnum.ADMIN, latitude=lat, longitude=lng)
+    new_user = User(email='admin@example.com', full_name='Admin', uaddress = addr, pswd=encrypted_pswd.decode('utf-8'), role=RoleEnum.ADMIN, latitude=lat, longitude=lng, phone="919-555-5555")
     db.session.add(new_user)
     db.session.commit()
 
@@ -63,7 +63,7 @@ def seed_db():
 
     for f in range(0, len(names)):
         lat,lng = geocode_address(addresses[f])
-        new_user = User(email=emails[f], full_name=names[f], uaddress = addresses[f], pswd=encrypted_pswd.decode('utf-8'), role=RoleEnum.UNPRIVILEGED, latitude=lat, longitude=lng)
+        new_user = User(email=emails[f], full_name=names[f], uaddress = addresses[f], pswd=encrypted_pswd.decode('utf-8'), role=RoleEnum.UNPRIVILEGED, latitude=lat, longitude=lng, phone="919-555-5555")
         db.session.add(new_user)
         db.session.flush()
         db.session.refresh(new_user)
