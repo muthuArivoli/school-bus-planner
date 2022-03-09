@@ -42,6 +42,7 @@ export default function UserUpdate(props) {
   let navigate = useNavigate();
 
   const [currRole, setCurrRole] = React.useState(0);
+  const [currId, setCurrId] = React.useState(0);
 
   React.useEffect(()=>{
     const fetchData = async() => {
@@ -54,6 +55,7 @@ export default function UserUpdate(props) {
       )
       if(result.data.success){
         setCurrRole(result.data.user.role);
+        setCurrId(result.data.user.id);
       }
       else{
         props.setSnackbarMsg(`Current user could not be loaded`);
@@ -77,7 +79,7 @@ export default function UserUpdate(props) {
       if (result.data.success){
         let newData = {email: result.data.user.email, name: result.data.user.full_name, address: result.data.user.uaddress, role: result.data.user.role, phone: result.data.user.phone}
         if(newData.role == 2){
-          newData.managedSchools = result.data.user.managed_schools;
+          newData.managedSchools = result.data.user.managed_schools.map((value)=>{return {label: value.name, id: value.id}});
         }
         setData(newData);
         setLatitude(result.data.user.latitude);
@@ -264,7 +266,7 @@ export default function UserUpdate(props) {
               <Grid item xs={12} sx={{ height: 450 }} >
                 <GoogleMap address={data.address} setAddress={handleAddressChange} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} sx={{ mt: 2 }}>
                 <TextField
                   required
                   fullWidth
@@ -277,7 +279,7 @@ export default function UserUpdate(props) {
               </Grid>
               <Grid item xs={12}>
               {
-              currRole == 1 &&
+              currRole == 1 && currId != id &&
               <FormControl>
                 <FormLabel id="role-group-label">Role</FormLabel>
                 <RadioGroup

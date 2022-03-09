@@ -49,6 +49,8 @@ class User(db.Model):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
         main.pop('pswd')
         main['children'] = [child.as_dict() for child in self.children]
+        if self.role == RoleEnum.SCHOOL_STAFF:
+            main['managed_schools'] = [school.as_dict() for school in self.managed_schools]
         return main
 
     def __repr__(self):
