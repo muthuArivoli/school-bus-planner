@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import { DataGrid , getGridStringOperators} from '@mui/x-data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import SearchIcon from '@mui/icons-material/Search';
@@ -114,7 +114,6 @@ export default function DataTable(props) {
         }
       );
       if (result.data.success){
-        //console.log(result.data);
         setTotalRows(result.data.records);
         let arr = result.data.schools.map((value) => {
           return {name: {name: value.name, id: value.id}, address: value.address, id: value.id, departure_time: value.departure_time, arrival_time: value.arrival_time};

@@ -1,5 +1,5 @@
 import './App.css';
-import React, {useState} from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import Login from './Login';
 import CreateAccount from './CreateAccount';
@@ -29,8 +29,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 
 function AuthRoute(props) {
-  const [loading, setLoading] = useState(true);
-  const [auth, setAuth] = useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [auth, setAuth] = React.useState(false);
 
   React.useEffect( () => {
     if (localStorage.getItem('token') == null){
@@ -70,8 +70,8 @@ function AuthRoute(props) {
 }
 
 function LoginRoute(props) {
-  const [loading, setLoading] = useState(true);
-  const [auth, setAuth] = useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [auth, setAuth] = React.useState(false);
 
   React.useEffect( () => {
     if (localStorage.getItem('token') == null){
@@ -110,9 +110,9 @@ function LoginRoute(props) {
 
 function PrivateRoute({ roles = [1,2,3], children }) {
 
-  const [loading, setLoading] = useState(true);
-  const [auth, setAuth] = useState(false);
-  const [role, setRole] = useState(0);
+  const [loading, setLoading] = React.useState(true);
+  const [auth, setAuth] = React.useState(false);
+  const [role, setRole] = React.useState(0);
 
   React.useEffect( () => {
       if (localStorage.getItem('token') == null){
@@ -152,7 +152,7 @@ function PrivateRoute({ roles = [1,2,3], children }) {
 
 export default function App () {
 
-    const [admin, setAdmin] = useState(0);
+    const [admin, setAdmin] = React.useState(0);
 
     return (
       <BrowserRouter>

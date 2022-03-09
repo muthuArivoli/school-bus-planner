@@ -1,7 +1,4 @@
 import * as React from 'react';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
 import StudentForm from './StudentForm';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -58,23 +55,19 @@ export default function CreateSchool(props) {
     }
 
     return(
-        <>
-
-        <StudentForm 
-          name={name} 
-          updateName={setName}
-          studentId={studentId}
-          updateStudentId={setStudentId}
-          user={user}
-          updateUser={setUser}
-          school={school}
-          updateSchool={setSchool}
-          route={route}
-          updateRoute={setRoute}
-          handleSubmit={handleSubmit}
-          title="Create Student"
-          />
-
-        </>
+      <StudentForm 
+        name={name} 
+        updateName={setName}
+        studentId={studentId}
+        updateStudentId={setStudentId}
+        user={user}
+        updateUser={setUser}
+        school={school}
+        updateSchool={setSchool}
+        route={route}
+        updateRoute={setRoute}
+        handleSubmit={handleSubmit}
+        title="Create Student"
+      />
     )
 }
