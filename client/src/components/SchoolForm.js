@@ -148,10 +148,10 @@ export default function SchoolForm(props) {
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DesktopTimePicker
                     required
-                    label="Departure Time"
-                    value={departureTime}
+                    label="Arrival Time"
+                    value={arrivalTime}
                     onChange={(newValue) => {
-                    setDepartureTime(newValue);
+                    setArrivalTime(newValue);
                   }}
                   renderInput={(params) => <TextField {...params} />}
                   />
@@ -161,10 +161,10 @@ export default function SchoolForm(props) {
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DesktopTimePicker
                     required
-                    label="Arrival Time"
-                    value={arrivalTime}
+                    label="Departure Time"
+                    value={departureTime}
                     onChange={(newValue) => {
-                    setArrivalTime(newValue);
+                    setDepartureTime(newValue);
                   }}
                   renderInput={(params) => <TextField {...params} />}
                   />
@@ -178,7 +178,7 @@ export default function SchoolForm(props) {
                 <Button type="submit"
                   variant="contained"
                   fullWidth
-                  disabled={name=="" || address == "" || departureTime == "" || arrivalTime == "" ||(name.toLowerCase() != props.name.toLowerCase() && nameList.includes(name.toLowerCase()))}
+                  disabled={name=="" || address == "" || departureTime == "" || departureTime == "Invalid Date" || arrivalTime == "Invalid Date" || arrivalTime == "" ||(name.toLowerCase() != props.name.toLowerCase() && nameList.includes(name.toLowerCase()))}
                   sx={{ mt: 3, mb: 2 }}
                   >
                     Submit
