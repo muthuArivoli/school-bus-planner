@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from sqlalchemy.orm import Query
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy_filters.operators import OrOperator
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager, verify_jwt_in_request
 from datetime import datetime, timedelta, timezone, date
@@ -283,11 +284,11 @@ def users_get(user_id=None):
     if sort and direction == 'desc':
         sort = '-'+sort
     if page:
-        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}, query=base_query).paginate()
+        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
         users = user_filt.get_objects()
         record_num = user_filt.count
     else:
-        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort}, query=base_query)
+        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort}, query=base_query, operator=OrOperator)
         users = user_filt.apply()
         record_num = users.count()
 
@@ -495,11 +496,11 @@ def students_get(student_uid=None):
     if sort and direction == 'desc':
         sort = '-'+sort
     if page:
-        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}, query=base_query).paginate()
+        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
         students = student_filt.get_objects()
         record_num = student_filt.count
     else:
-        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort}, query=base_query)
+        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort}, query=base_query, operator=OrOperator)
         students = student_filt.apply()
         record_num = students.count()
 

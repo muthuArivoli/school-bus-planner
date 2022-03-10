@@ -53,10 +53,6 @@ export default function DataTable(props) {
   const [showAll, setShowAll] = React.useState(false);
   const [loading , setLoading] = React.useState(true);
 
-
-  const [filterType, setFilterType] = React.useState(null);
-  const filterValues = ['name', 'email'];
-
   const mappings = {"name": "full_name", "email": "email"}
 
   const [role, setRole] = React.useState(0);
@@ -96,16 +92,8 @@ export default function DataTable(props) {
         params.sort = mappings[sortModel[0].field];
         params.dir = sortModel[0].sort;
       }
-
-      if(filterType == 'name'){
-        params.name = filterStr;
-      }
-      else if(filterType == 'email'){
-        params.email = filterStr;
-      }
-      else if(filterStr != "") {
-        setFilterStr("");
-      }
+      params.name = filterStr;
+      params.email = filterStr;
 
       const result = await axios.get(
         process.env.REACT_APP_BASE_URL+'/user', {
@@ -136,30 +124,18 @@ export default function DataTable(props) {
     return () => {
       active = false;
     };
-  }, [page, sortModel, filterStr, filterType, showAll])
+  }, [page, sortModel, filterStr, showAll])
 
   return (
     <>
     <Grid container>
-      <Grid item md={3} lg={3}>
-    <Autocomplete
-      options={filterValues}
-      value={filterType}
-      autoSelect
-      onChange={(e, new_value) => setFilterType(new_value)}
-      renderInput={(params) => (
-        <TextField {...params} label="Filter By..." />
-      )}
-    />
-    </Grid>
-    <Grid item md={9} lg={9}>
+    <Grid item md={12} lg={12}>
     <TextField
           label="Search"
           name="Search"
           type="search"
           fullWidth
           id="outlined-start-adornment"
-          disabled={filterType == null}
           InputProps={{
             startAdornment: <InputAdornment position="start"><SearchIcon/></InputAdornment>,
           }}

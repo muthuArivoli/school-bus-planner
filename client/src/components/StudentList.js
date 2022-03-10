@@ -98,12 +98,7 @@ export default function DataTable(props) {
   const [page, setPage] = React.useState(0);
   const [sortModel, setSortModel] = React.useState([]);
   const [filterStr, setFilterStr] = React.useState("");
-
   const [loading , setLoading] = React.useState(true);
-
-  const [filterType, setFilterType] = React.useState(null);
-  const filterValues = ['name', 'id'];
-
   const mappings = {"name": "name", "student_id": "student_id", "school": "school_id"} 
 
   const [showAll, setShowAll] = React.useState(false);
@@ -139,22 +134,12 @@ export default function DataTable(props) {
       let params = {}
       params.page = showAll ? null : page + 1;
 
-      console.log(sortModel);
       if(sortModel.length > 0) {
         params.sort = mappings[sortModel[0].field];
         params.dir = sortModel[0].sort;
       }
-
-
-      if(filterType == 'name'){
-        params.name = filterStr;
-      }
-      else if(filterType == 'id'){
-        params.id = parseInt(filterStr);
-      }
-      else if(filterStr != "") {
-        setFilterStr("");
-      }
+      params.name = filterStr;
+      params.id = parseInt(filterStr);
 
       const result = await axios.get(
         process.env.REACT_APP_BASE_URL+'/student', {
@@ -185,7 +170,7 @@ export default function DataTable(props) {
     return () => {
       active = false;
     };
-  }, [page, sortModel, filterType, filterStr, showAll])
+  }, [page, sortModel, filterStr, showAll])
 
   const handleRowClick = (row) => {
     console.log(row);
@@ -194,25 +179,13 @@ export default function DataTable(props) {
   return (
     <>
     <Grid container>
-      <Grid item md={3} lg={3}>
-    <Autocomplete
-      options={filterValues}
-      value={filterType}
-      autoSelect
-      onChange={(e, new_value) => setFilterType(new_value)}
-      renderInput={(params) => (
-        <TextField {...params} label="Filter By..." />
-      )}
-    />
-    </Grid>
-    <Grid item md={9} lg={9}>
+    <Grid item md={12} lg={12}>
     <TextField
           label="Search"
           name="Search"
           type="search"
           fullWidth
           id="outlined-start-adornment"
-          disabled={filterType == null}
           InputProps={{
             startAdornment: <InputAdornment position="start"><SearchIcon/></InputAdornment>,
           }}
