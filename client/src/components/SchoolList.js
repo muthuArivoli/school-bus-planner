@@ -7,7 +7,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
-import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
 import { DateTime } from "luxon";
 
