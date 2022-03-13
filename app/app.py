@@ -40,7 +40,7 @@ logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(ascti
 YOUR_DOMAIN_NAME="mail.hypotheticaltransportfive.email"
 API_KEY = open('email_api.key', 'r').read().strip().replace('\n', '')
 
-DOMAIN = os.getenv("DOMAIN", "https://hypotheticaltransportfive.colab.duke.edu")
+DOMAIN = os.getenv("DOMAIN", "https://htfive.colab.duke.edu")
 
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload):

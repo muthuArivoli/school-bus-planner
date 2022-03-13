@@ -10,7 +10,7 @@ Make docker-compose executable --> sudo chmod +x /usr/local/bin/docker-compose
 
 Start up docker engine --> sudo systemctl status docker
 
-GENERATE SSL --> sudo certbot certonly --standalone --email cac146@duke.edu --agree-tos --no-eff-email -d https://hypotheticaltransportfive.colab.duke.edu/
+GENERATE SSL --> sudo certbot certonly --standalone --email cac146@duke.edu --agree-tos --no-eff-email -d https://htfive.colab.duke.edu/
 
 This will place SSL keys in /etc/letsencrypt folder
 
