@@ -17,6 +17,6 @@ r = requests.post(
     f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
     auth=("api", API_KEY),
     data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
-        "to": "ma381@duke.edu",
+        "to": "kurisil00@gmail.com",
         "subject": f"Database Backup {sys.argv[1]}",
         "text": body})

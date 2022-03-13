@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+export SSH_REMOTE_USER=ma381
+export SSH_REMOTE_HOST=vcm-25270.vm.duke.edu
 export POSTGRES_DB_CONTAINER_NAME=postgres-db
 export POSTGRES_DB=db
 export POSTGRES_USER=postgres
