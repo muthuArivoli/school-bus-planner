@@ -31,7 +31,7 @@ services:
     environment:
       - SQL_HOST=db
       - SQL_PORT=5432
-      - DOMAIN=https://hypotheticaltransportfive.colab.duke.edu
+      - DOMAIN=https://htfive.colab.duke.edu
       
 
   client: 
