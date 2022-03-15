@@ -27,8 +27,14 @@ import Grid from '@mui/material/Grid';
 import HomeIcon from '@mui/icons-material/Home';
 import EmailIcon from '@mui/icons-material/Email';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Alert from '@mui/material/Alert';
+import TextField from '@mui/material/TextField';
+import Stack from '@mui/material/Stack';
 
-const Alert = React.forwardRef(function Alert(props, ref) {
+const TAlert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
@@ -85,9 +91,60 @@ export default function AdminDashboard(props){
   const [barOpen, setbarOpen] = React.useState(false);
   const [severity, setSeverity] = React.useState("error");
 
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const menuOpen = Boolean(anchorEl);
+
+  const [password, setPassword] = React.useState("");
+  const [conPassword, setConPassword] = React.useState("");
+
+  const [error, setError] = React.useState(false);
+  const [snackbarMsg, setSnackbarMsg] = React.useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState("error");
+
   let navigate = useNavigate();
 
   const [role, setRole] = React.useState(0);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setPassword("");
+    setConPassword("");
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log("PATCH current user");
+    axios.patch(process.env.REACT_APP_BASE_URL+`/current_user`, {
+      password: password,
+    }, {
+      headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }).then((res) => {
+      if (res.data.success){
+        setSnackbarMsg(`Password successfully updated`);
+        setError(true);
+        setSnackbarSeverity("success");
+      }
+      else{
+        setSnackbarMsg(`Password not successfully updated`);
+        setError(true);
+        setSnackbarSeverity("error");
+      }
+      setPassword("");
+      setConPassword("");
+    }).catch((err) => {
+      setSnackbarMsg(`Password not successfully updated`);
+      setError(true);
+      setSnackbarSeverity("error");
+      setPassword("");
+      setConPassword("");
+    });
+  };
 
   React.useEffect(()=>{
     const fetchData = async() => {
@@ -134,10 +191,75 @@ export default function AdminDashboard(props){
   const handleLogout = (event) => {
     localStorage.clear();
     navigate("/login");
-  }
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setError(false);
+  };
 
   return (
     <ThemeProvider theme={theme}>
+      <Snackbar open={error} onClose={handleClose}>
+        <Alert onClose={handleClose} severity={snackbarSeverity}>
+          {snackbarMsg}
+        </Alert>
+      </Snackbar>
+      
+      <Helmet>
+        <title>
+          Dashboard
+        </title>
+      </Helmet>
+
+      <Menu
+        id="basic-menu"
+        anchorEl={anchorEl}
+        open={menuOpen}
+        onClose={handleMenuClose}
+        MenuListProps={{
+          'aria-labelledby': 'basic-button',
+        }}
+      >
+        <Stack spacing={1} sx={{ p: 2 }} justifyContent="center" alignItems="center">
+          <Typography variant="h6" align="left">
+            Change Password:
+          </Typography>
+
+          <TextField
+            fullWidth
+            onChange={(e) => setPassword(e.target.value)}
+            value={password}
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="new-password"
+          />
+          <TextField
+            onChange={(e) => setConPassword(e.target.value)}
+            value={conPassword}
+            error={password != conPassword}
+            helperText={password != conPassword ? "Passwords do not match" : ""}
+            fullWidth
+            name="confirm-password"
+            label="Confirm Password"
+            type="password"
+            id="confirm-password"
+          />
+            <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={password == "" || password != conPassword}
+            >
+              Submit
+          </Button>
+        </Stack>
+      </Menu>
+
       <Box sx={{ display: 'flex' }}>
         <CssBaseline />
         <AppBar position="absolute" open={open}>
@@ -167,7 +289,13 @@ export default function AdminDashboard(props){
             >
               {props.titleText}
             </Typography>
-            <Grid container justifyContent="flex-end">
+            <Grid container spacing={2} justifyContent="flex-end">
+            <Button
+              variant="contained"
+              onClick={handleClick}
+            >
+              Change Password
+            </Button>
             <Button variant="contained" onClick={handleLogout}>
               Logout
             </Button>
@@ -248,7 +376,7 @@ export default function AdminDashboard(props){
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Snackbar open={barOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
-            <Alert severity={severity} onClose={handleSnackbarClose}>{msg}</Alert>
+            <TAlert severity={severity} onClose={handleSnackbarClose}>{msg}</TAlert>
           </Snackbar>
           {childrenWithExtraProp}
           </Container>

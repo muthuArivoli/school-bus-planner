@@ -10,6 +10,10 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const columns = [
   { field: 'name', headerName: 'Full Name', width: 250},
@@ -69,52 +73,52 @@ export default function ParentView() {
     fetchData();
   }, []);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log("PATCH current user");
-    axios.patch(process.env.REACT_APP_BASE_URL+`/current_user`, {
-      password: password,
-    }, {
-      headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    }).then((res) => {
-      if (res.data.success){
-        setSnackbarMsg(`Password successfully updated`);
-        setError(true);
-        setSnackbarSeverity("success");
-      }
-      else{
-        setSnackbarMsg(`Password not successfully updated`);
-        setError(true);
-        setSnackbarSeverity("error");
-      }
-      setPassword("");
-      setConPassword("");
-    }).catch((err) => {
-      setSnackbarMsg(`Password not successfully updated`);
-      setError(true);
-      setSnackbarSeverity("error");
-      setPassword("");
-      setConPassword("");
-    });
-  };
+  // const handleSubmit = (event) => {
+  //   event.preventDefault();
+  //   console.log("PATCH current user");
+  //   axios.patch(process.env.REACT_APP_BASE_URL+`/current_user`, {
+  //     password: password,
+  //   }, {
+  //     headers: {
+  //         Authorization: `Bearer ${localStorage.getItem('token')}`
+  //     }
+  //   }).then((res) => {
+  //     if (res.data.success){
+  //       setSnackbarMsg(`Password successfully updated`);
+  //       setError(true);
+  //       setSnackbarSeverity("success");
+  //     }
+  //     else{
+  //       setSnackbarMsg(`Password not successfully updated`);
+  //       setError(true);
+  //       setSnackbarSeverity("error");
+  //     }
+  //     setPassword("");
+  //     setConPassword("");
+  //   }).catch((err) => {
+  //     setSnackbarMsg(`Password not successfully updated`);
+  //     setError(true);
+  //     setSnackbarSeverity("error");
+  //     setPassword("");
+  //     setConPassword("");
+  //   });
+  // };
 
-  const handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+  // const handleClose = (event, reason) => {
+  //   if (reason === 'clickaway') {
+  //     return;
+  //   }
 
-    setError(false);
-  };
+  //   setError(false);
+  // };
 
   return (
     <>
-    <Snackbar open={error} onClose={handleClose}>
+    {/* <Snackbar open={error} onClose={handleClose}>
     <Alert onClose={handleClose} severity={snackbarSeverity}>
       {snackbarMsg}
     </Alert>
-    </Snackbar>
+    </Snackbar> */}
     <Grid container alignItems="center" justifyContent="center" pt={5}>
         <Stack spacing={4} sx={{ width: '100%'}}>
           <Stack direction="row" spacing={25} justifyContent="center">
@@ -130,7 +134,7 @@ export default function ParentView() {
           </Stack>
         </Stack>
 
-        <Stack spacing={1} justifyContent="center" alignItems="center" sx={{ width: '100%'}}>
+        <Stack spacing={10} justifyContent="center" alignItems="center" sx={{ width: '100%'}}>
           <div style={{ height: 400, width: '100%' }}>
             <div style={{ display: 'flex', height: '100%' }}>
               <div style={{ flexGrow: 1 }}>
@@ -147,40 +151,42 @@ export default function ParentView() {
                 />
               </div>
             </div>
-          </div>
+          </div>  
 
-          <Typography variant="h5" align="left">
-            Change Password:
-          </Typography>
+          {/* <Stack spacing={1} justifyContent="center" alignItems="center">
+            <Typography variant="h6" align="left">
+              Change Password:
+            </Typography>
 
-          <TextField
-            fullWidth
-            onChange={(e) => setPassword(e.target.value)}
-            value={password}
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="new-password"
-          />
-          <TextField
-            onChange={(e) => setConPassword(e.target.value)}
-            value={conPassword}
-            error={password != conPassword}
-            helperText={password != conPassword ? "Passwords do not match" : ""}
-            fullWidth
-            name="confirm-password"
-            label="Confirm Password"
-            type="password"
-            id="confirm-password"
-          />
-            <Button
-            variant="contained"
-            onClick={handleSubmit}
-            disabled={password == "" || password != conPassword}
-            >
-              Submit
-          </Button>
+            <TextField
+              fullWidth
+              onChange={(e) => setPassword(e.target.value)}
+              value={password}
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="new-password"
+            />
+            <TextField
+              onChange={(e) => setConPassword(e.target.value)}
+              value={conPassword}
+              error={password != conPassword}
+              helperText={password != conPassword ? "Passwords do not match" : ""}
+              fullWidth
+              name="confirm-password"
+              label="Confirm Password"
+              type="password"
+              id="confirm-password"
+            />
+              <Button
+              variant="contained"
+              onClick={handleSubmit}
+              disabled={password == "" || password != conPassword}
+              >
+                Submit
+            </Button>
+          </Stack> */}
         </Stack>
 
       </Grid>

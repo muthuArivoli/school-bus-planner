@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import { Helmet } from 'react-helmet';
 
 export default function UserDetail(props) {
 
@@ -105,6 +106,11 @@ export default function UserDetail(props) {
 
   return (
     <>
+    <Helmet>
+      <title>
+        {data.full_name + " - Detail"}
+      </title>
+    </Helmet>
     <Snackbar open={error} onClose={handleClose}>
       <Alert onClose={handleClose} severity="error">
         {errorMsg}

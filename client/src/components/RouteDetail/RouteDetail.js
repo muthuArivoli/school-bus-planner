@@ -15,6 +15,7 @@ import TextField from '@mui/material/TextField';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Link from '@mui/material/Link';
 import { DateTime } from 'luxon';
+import { Helmet } from 'react-helmet';
 
 const containerStyle = {
   height: "400px",
@@ -167,6 +168,11 @@ export default function RouteDetail(props) {
 
   return (
     <>
+    <Helmet>
+      <title>
+        {data.name + " - Detail"}
+      </title>
+    </Helmet>
     <Snackbar open={error} onClose={handleClose}>
       <Alert onClose={handleClose} severity="error">
         Failed to delete route.

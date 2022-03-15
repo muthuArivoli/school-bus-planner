@@ -25,6 +25,7 @@
     "react-geocode": "^0.2.3",
     "react-geocoder": "^2.5.0",
     "react-google-autocomplete": "^2.6.1",
+    "react-helmet": "^6.1.0",
     "react-places-autocomplete": "^7.3.0",
     "react-router": "^6.2.1",
     "react-router-dom": "^6.2.1",

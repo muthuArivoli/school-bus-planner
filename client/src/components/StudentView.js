@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { DateTime } from 'luxon';
+import { Helmet } from 'react-helmet';
 
 export default function StudentDetail() {
 
@@ -88,6 +89,12 @@ const mapOptions = {
   }, []);
 
   return (
+    <>
+    <Helmet>
+      <title>
+        {data.name + " - Detail"}
+      </title>
+    </Helmet>
     <Grid container alignItems="center" justifyContent="center" pt={5}>
       <Stack spacing={4}>
         <Typography variant="h5" align="center">Name: {data.name}</Typography>
@@ -135,5 +142,6 @@ const mapOptions = {
 
       </Stack>
     </Grid>
+    </>
   );
 }

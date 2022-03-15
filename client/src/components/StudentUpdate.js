@@ -2,6 +2,7 @@ import * as React from 'react'
 import StudentForm from './StudentForm';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
 
 export default function UserUpdate(props) {
 
@@ -91,6 +92,12 @@ export default function UserUpdate(props) {
     }, []);
 
     return(
+      <>
+      <Helmet>
+        <title>
+          Update Student
+        </title>
+      </Helmet>
       <StudentForm 
         name={name} 
         updateName={setName}
@@ -105,5 +112,6 @@ export default function UserUpdate(props) {
         handleSubmit={handleSubmit}
         title="Update Student"
       />
+      </>
     )
 }

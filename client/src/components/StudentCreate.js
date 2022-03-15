@@ -2,6 +2,7 @@ import * as React from 'react';
 import StudentForm from './StudentForm';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
 
 
 export default function CreateSchool(props) {
@@ -55,6 +56,12 @@ export default function CreateSchool(props) {
     }
 
     return(
+      <>
+      <Helmet>
+        <title>
+          Create Student
+        </title>
+      </Helmet>
       <StudentForm 
         name={name} 
         updateName={setName}
@@ -69,5 +76,6 @@ export default function CreateSchool(props) {
         handleSubmit={handleSubmit}
         title="Create Student"
       />
+      </>
     )
 }

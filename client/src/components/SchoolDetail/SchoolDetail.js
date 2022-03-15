@@ -10,6 +10,7 @@ import SchoolDetailMid from './SchoolDetailMid'
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import { DateTime } from 'luxon';
+import { Helmet } from 'react-helmet';
 
 export default function SchoolDetail(props) {
 
@@ -120,6 +121,11 @@ export default function SchoolDetail(props) {
 
   return (
     <>
+    <Helmet>
+      <title>
+        {data.name + " - Detail"}
+      </title>
+    </Helmet>
     <Snackbar open={error} onClose={handleClose}>
     <Alert onClose={handleClose} severity="error">
       Failed to delete school.
@@ -127,8 +133,8 @@ export default function SchoolDetail(props) {
   </Snackbar>
     <Grid container justifyContent="center" pt={5}>
       <Stack spacing={4} sx={{ width: '100%'}}>
-        <Stack direction="row" spacing={50} justifyContent="center">
-        <Typography variant="h5" align="center">
+        <Stack direction="row" spacing={25} justifyContent="center">
+        <Typography variant="h5" align="center" /*sx={{ width: 150 }}*/>
           School Name: {data.name}
         </Typography>
         <Typography variant="h5" align="center">

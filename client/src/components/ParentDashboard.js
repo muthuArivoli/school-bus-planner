@@ -9,6 +9,7 @@ import Container from '@mui/material/Container';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
+import { Helmet } from 'react-helmet';
 
 const theme = createTheme();
 const drawerWidth = 240;
@@ -21,10 +22,17 @@ export default function ParentDashboard(props){
   const handleLogout = (event) => {
     localStorage.clear();
     navigate("/login");
-  }
+  };
+
 
   return (
     <ThemeProvider theme={theme}>
+      <Helmet>
+        <title>
+          Dashboard
+        </title>
+      </Helmet>
+
       <Box sx={{ display: 'flex' }}>
         <CssBaseline />
         <AppBar position="absolute">

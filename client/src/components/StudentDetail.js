@@ -10,6 +10,7 @@ import Alert from '@mui/material/Alert';
 import axios from 'axios';
 import Link from '@mui/material/Link';
 import Divider from '@mui/material/Divider';
+import { Helmet } from 'react-helmet';
 
 export default function StudentDetail(props) {
 
@@ -120,6 +121,11 @@ export default function StudentDetail(props) {
   
   return (
     <>
+    <Helmet>
+      <title>
+        {data.name + " - Detail"}
+      </title>
+    </Helmet>
     <Snackbar open={error} onClose={handleClose}>
     <Alert onClose={handleClose} severity="error">
       Failed to delete student.

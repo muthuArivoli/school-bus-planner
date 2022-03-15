@@ -20,6 +20,7 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
+import { Helmet } from 'react-helmet';
 
 const theme = createTheme();
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
@@ -273,6 +274,11 @@ export default function SignUp(props) {
 
   return (
     <ThemeProvider theme={theme}>
+      <Helmet>
+        <title>
+          Create Account
+        </title>
+      </Helmet>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
