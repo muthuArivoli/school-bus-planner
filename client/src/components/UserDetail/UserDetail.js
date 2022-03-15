@@ -151,7 +151,7 @@ export default function UserDetail(props) {
           </Button>
           }
           {
-          (role == 1 || role == 2) &&
+          (role == 1 || role == 2) && !(role == 2 && data.role != 0) &&
           <DeleteDialog dialogTitle="Delete User?" dialogDesc={`Please confirm you would like to delete user ${data.full_name}`} onAccept={handleDelete}/>
           }
         </Stack>
