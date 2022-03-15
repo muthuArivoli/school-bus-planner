@@ -27,14 +27,11 @@ import Grid from '@mui/material/Grid';
 import HomeIcon from '@mui/icons-material/Home';
 import EmailIcon from '@mui/icons-material/Email';
 import axios from 'axios';
-import { Helmet } from 'react-helmet';
 import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 
-const TAlert = React.forwardRef(function Alert(props, ref) {
+const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
@@ -97,10 +94,6 @@ export default function AdminDashboard(props){
   const [password, setPassword] = React.useState("");
   const [conPassword, setConPassword] = React.useState("");
 
-  const [error, setError] = React.useState(false);
-  const [snackbarMsg, setSnackbarMsg] = React.useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = React.useState("error");
-
   let navigate = useNavigate();
 
   const [role, setRole] = React.useState(0);
@@ -126,21 +119,21 @@ export default function AdminDashboard(props){
       }
     }).then((res) => {
       if (res.data.success){
-        setSnackbarMsg(`Password successfully updated`);
-        setError(true);
-        setSnackbarSeverity("success");
+        setMsg(`Password successfully updated`);
+        setbarOpen(true);
+        setSeverity("success");
       }
       else{
-        setSnackbarMsg(`Password not successfully updated`);
-        setError(true);
-        setSnackbarSeverity("error");
+        setMsg(`Password not successfully updated`);
+        setbarOpen(true);
+        setSeverity("error");
       }
       setPassword("");
       setConPassword("");
     }).catch((err) => {
-      setSnackbarMsg(`Password not successfully updated`);
-      setError(true);
-      setSnackbarSeverity("error");
+      setMsg(`Password not successfully updated`);
+      setbarOpen(true);
+      setSeverity("error");
       setPassword("");
       setConPassword("");
     });
@@ -159,9 +152,9 @@ export default function AdminDashboard(props){
         setRole(result.data.user.role);
       }
       else{
-        props.setSnackbarMsg(`Current user could not be loaded`);
-        props.setShowSnackbar(true);
-        props.setSnackbarSeverity("error");
+        setMsg(`Current user could not be loaded`);
+        setbarOpen(true);
+        setSeverity("error");
         navigate("/");
       }
     }
@@ -193,27 +186,8 @@ export default function AdminDashboard(props){
     navigate("/login");
   };
 
-  const handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
-    setError(false);
-  };
-
   return (
     <ThemeProvider theme={theme}>
-      <Snackbar open={error} onClose={handleClose}>
-        <Alert onClose={handleClose} severity={snackbarSeverity}>
-          {snackbarMsg}
-        </Alert>
-      </Snackbar>
-      
-      <Helmet>
-        <title>
-          Dashboard
-        </title>
-      </Helmet>
 
       <Menu
         id="basic-menu"
@@ -376,7 +350,7 @@ export default function AdminDashboard(props){
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Snackbar open={barOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
-            <TAlert severity={severity} onClose={handleSnackbarClose}>{msg}</TAlert>
+            <Alert severity={severity} onClose={handleSnackbarClose}>{msg}</Alert>
           </Snackbar>
           {childrenWithExtraProp}
           </Container>

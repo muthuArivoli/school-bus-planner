@@ -222,7 +222,7 @@ export default function UserUpdate(props) {
         <>
         <Helmet>
           <title>
-            User Update
+            Update User
           </title>
         </Helmet>
         <ThemeProvider theme={theme}>

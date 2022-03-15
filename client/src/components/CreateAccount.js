@@ -276,7 +276,7 @@ export default function SignUp(props) {
     <ThemeProvider theme={theme}>
       <Helmet>
         <title>
-          Create Account
+          Create User
         </title>
       </Helmet>
       <Container component="main" maxWidth="xs">
