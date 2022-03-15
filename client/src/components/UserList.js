@@ -8,6 +8,7 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
+import { Helmet } from 'react-helmet';
 
 const roles = ["Parent", "Admin", "School Staff", "Driver"]
 
@@ -127,6 +128,11 @@ export default function DataTable(props) {
 
   return (
     <>
+    <Helmet>
+      <title>
+        Users
+      </title>
+    </Helmet>
     <Grid container>
     <Grid item md={12} lg={12}>
     <TextField

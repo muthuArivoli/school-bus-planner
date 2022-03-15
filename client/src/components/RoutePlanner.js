@@ -17,6 +17,7 @@ import ListItem from '@mui/material/ListItem';
 import List from '@mui/material/List';
 import { Icon } from "@material-ui/core";
 import ListItemText from '@mui/material/ListItemText';
+import { Helmet } from 'react-helmet';
 
 let api_key = "AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o";
 
@@ -476,6 +477,12 @@ export default function RoutePlanner(props) {
   }, [])
 
   return (
+    <>
+    <Helmet>
+      <title>
+        {schoolTitle + " - Route Planner"}
+      </title>
+    </Helmet>
     <Stack id="container-stack" spacing={5} justifyContent="center" alignItems="center">
       <Typography variant="h2" align="center" sx={titleStyle(36, 1)}>
         {schoolTitle}
@@ -638,5 +645,6 @@ export default function RoutePlanner(props) {
         </Alert>
       </Snackbar>
     </Stack>
+    </>
   )
 } 

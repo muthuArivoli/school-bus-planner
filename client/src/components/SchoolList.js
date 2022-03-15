@@ -9,6 +9,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import { DateTime } from "luxon";
+import { Helmet } from 'react-helmet';
 
 const columns = [
   { field: 'name', headerName: 'School Name', width: 250, filterable: false, 
@@ -134,6 +135,11 @@ export default function DataTable(props) {
 
   return (
     <>
+    <Helmet>
+      <title>
+        Schools
+      </title>
+    </Helmet>
  <Grid container>
     <Grid item md={12} lg={12}>
     <TextField

@@ -10,6 +10,7 @@ import Grid from '@mui/material/Grid';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import CloseIcon from '@mui/icons-material/Close';
+import { Helmet } from 'react-helmet';
 
 const columns = [
   { field: 'name', headerName: 'Route Name', width: 350, filterable: false,
@@ -131,6 +132,11 @@ export default function DataTable(props) {
 
   return (
     <>
+    <Helmet>
+      <title>
+        Routes
+      </title>
+    </Helmet>
  <Grid container>
     <Grid item md={12} lg={12}>
     <TextField

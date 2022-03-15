@@ -18,7 +18,8 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormLabel from '@mui/material/FormLabel';
 import Autocomplete from '@mui/material/Autocomplete';
 import axios from 'axios';
-import GoogleMap from './GoogleMap'
+import GoogleMap from './GoogleMap';
+import { Helmet } from 'react-helmet';
 
 const theme = createTheme();
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
@@ -219,6 +220,11 @@ export default function UserUpdate(props) {
 
     return(
         <>
+        <Helmet>
+          <title>
+            Update User
+          </title>
+        </Helmet>
         <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />

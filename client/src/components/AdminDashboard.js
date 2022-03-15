@@ -27,6 +27,9 @@ import Grid from '@mui/material/Grid';
 import HomeIcon from '@mui/icons-material/Home';
 import EmailIcon from '@mui/icons-material/Email';
 import axios from 'axios';
+import Menu from '@mui/material/Menu';
+import TextField from '@mui/material/TextField';
+import Stack from '@mui/material/Stack';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -85,9 +88,56 @@ export default function AdminDashboard(props){
   const [barOpen, setbarOpen] = React.useState(false);
   const [severity, setSeverity] = React.useState("error");
 
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const menuOpen = Boolean(anchorEl);
+
+  const [password, setPassword] = React.useState("");
+  const [conPassword, setConPassword] = React.useState("");
+
   let navigate = useNavigate();
 
   const [role, setRole] = React.useState(0);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setPassword("");
+    setConPassword("");
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log("PATCH current user");
+    axios.patch(process.env.REACT_APP_BASE_URL+`/current_user`, {
+      password: password,
+    }, {
+      headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }).then((res) => {
+      if (res.data.success){
+        setMsg(`Password successfully updated`);
+        setbarOpen(true);
+        setSeverity("success");
+      }
+      else{
+        setMsg(`Password not successfully updated`);
+        setbarOpen(true);
+        setSeverity("error");
+      }
+      setPassword("");
+      setConPassword("");
+    }).catch((err) => {
+      setMsg(`Password not successfully updated`);
+      setbarOpen(true);
+      setSeverity("error");
+      setPassword("");
+      setConPassword("");
+    });
+  };
 
   React.useEffect(()=>{
     const fetchData = async() => {
@@ -102,9 +152,9 @@ export default function AdminDashboard(props){
         setRole(result.data.user.role);
       }
       else{
-        props.setSnackbarMsg(`Current user could not be loaded`);
-        props.setShowSnackbar(true);
-        props.setSnackbarSeverity("error");
+        setMsg(`Current user could not be loaded`);
+        setbarOpen(true);
+        setSeverity("error");
         navigate("/");
       }
     }
@@ -134,10 +184,56 @@ export default function AdminDashboard(props){
   const handleLogout = (event) => {
     localStorage.clear();
     navigate("/login");
-  }
+  };
 
   return (
     <ThemeProvider theme={theme}>
+
+      <Menu
+        id="basic-menu"
+        anchorEl={anchorEl}
+        open={menuOpen}
+        onClose={handleMenuClose}
+        MenuListProps={{
+          'aria-labelledby': 'basic-button',
+        }}
+      >
+        <Stack spacing={1} sx={{ p: 2 }} justifyContent="center" alignItems="center">
+          <Typography variant="h6" align="left">
+            Change Password:
+          </Typography>
+
+          <TextField
+            fullWidth
+            onChange={(e) => setPassword(e.target.value)}
+            value={password}
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="new-password"
+          />
+          <TextField
+            onChange={(e) => setConPassword(e.target.value)}
+            value={conPassword}
+            error={password != conPassword}
+            helperText={password != conPassword ? "Passwords do not match" : ""}
+            fullWidth
+            name="confirm-password"
+            label="Confirm Password"
+            type="password"
+            id="confirm-password"
+          />
+            <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={password == "" || password != conPassword}
+            >
+              Submit
+          </Button>
+        </Stack>
+      </Menu>
+
       <Box sx={{ display: 'flex' }}>
         <CssBaseline />
         <AppBar position="absolute" open={open}>
@@ -167,7 +263,13 @@ export default function AdminDashboard(props){
             >
               {props.titleText}
             </Typography>
-            <Grid container justifyContent="flex-end">
+            <Grid container spacing={2} justifyContent="flex-end">
+            <Button
+              variant="contained"
+              onClick={handleClick}
+            >
+              Change Password
+            </Button>
             <Button variant="contained" onClick={handleLogout}>
               Logout
             </Button>

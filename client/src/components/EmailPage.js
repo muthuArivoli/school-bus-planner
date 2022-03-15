@@ -15,6 +15,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Autocomplete from '@mui/material/Autocomplete';
 import FormLabel from '@mui/material/FormLabel';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
 
 const theme = createTheme();
 
@@ -227,6 +228,11 @@ export default function EmailPage(props) {
 
     return (
         <ThemeProvider theme={theme}>
+          <Helmet>
+            <title>
+              Email
+            </title>
+          </Helmet>
         <Container component="main" maxWidth="sm">
           <CssBaseline />
           <Box

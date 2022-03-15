@@ -10,6 +10,7 @@ import Alert from '@mui/material/Alert';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate, useSearchParams} from 'react-router-dom';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
 
 const theme = createTheme();
 
@@ -65,6 +66,11 @@ export default function SignIn() {
 
     return (
       <ThemeProvider theme={theme}>
+        <Helmet>
+          <title>
+            Reset Password
+          </title>
+        </Helmet>
         <Container component="main" maxWidth="xs">
           <CssBaseline />
           <Box
@@ -75,7 +81,7 @@ export default function SignIn() {
               alignItems: 'center',
             }}
           >
-            <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }} src="/HTLogo128.png"/>
+            <img src="/HTLogo128_fixed.png" height={64} width={64}/>
             <Typography component="h1" variant="h5">
               Reset Password for
             </Typography>

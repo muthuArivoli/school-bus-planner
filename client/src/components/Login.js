@@ -12,6 +12,7 @@ import Alert from '@mui/material/Alert';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
 
 const theme = createTheme();
 
@@ -45,6 +46,11 @@ export default function SignIn() {
   
     return (
       <ThemeProvider theme={theme}>
+        <Helmet>
+          <title>
+            Login
+          </title>
+        </Helmet>
         <Container component="main" maxWidth="xs">
           <CssBaseline />
           <Box
