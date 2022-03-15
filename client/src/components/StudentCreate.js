@@ -14,6 +14,7 @@ export default function CreateSchool(props) {
   const [route, setRoute] = React.useState({id: "", label: ""});
   const [name, setName] = React.useState("")
   const [studentId, setStudentId] = React.useState(null);
+  const [email, setEmail] = React.useState("");
 
     const handleSubmit = (event) => {
       event.preventDefault();
@@ -69,6 +70,8 @@ export default function CreateSchool(props) {
         updateStudentId={setStudentId}
         user={user}
         updateUser={setUser}
+        email={email}
+        setEmail={setEmail}
         school={school}
         updateSchool={setSchool}
         route={route}

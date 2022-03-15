@@ -21,7 +21,6 @@ export default function StudentForm(props) {
     const [users, setUsers] = React.useState([]);
     const [schools, setSchools] = React.useState([]);
     const [routes, setRoutes] = React.useState([]);
-    const [email, setEmail] = React.useState("");
 
     let navigate = useNavigate()
 
@@ -60,7 +59,7 @@ export default function StudentForm(props) {
                   headers: {
                       Authorization: `Bearer ${localStorage.getItem('token')}`
                   },
-                  params: {email: email}
+                  params: {email: props.email}
                 }
               );
               if (result.data.success){
@@ -79,7 +78,7 @@ export default function StudentForm(props) {
             return () => {
               active = false;
             };
-          }, [email]);
+          }, [props.email]);
 
           React.useEffect(()=> {
             const fetchData = async() => {
@@ -192,8 +191,8 @@ export default function StudentForm(props) {
                             options={users}
                             id="user"
                             required
-                            inputValue={email}
-                            onInputChange={(e, new_value) => setEmail(new_value)}
+                            inputValue={props.email}
+                            onInputChange={(e, new_value) => props.setEmail(new_value)}
                             renderInput={(params) => 
                             <TextField {...params} label="Parent Email" 
                             InputProps={{

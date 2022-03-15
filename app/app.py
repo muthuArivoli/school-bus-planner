@@ -240,7 +240,7 @@ def user_options(username=None):
 def get_user_id():
     args = request.args
     email = args.get('email', '')
-    user = User.query.filter_by(email = email).first()
+    user = User.query.filter(func.lower(User.email) == func.lower(email)).first()
     if user is None:
         return {'success': True, 'id': None}
     return {'success': True, 'id': user.id}
