@@ -48,7 +48,8 @@ export default function SignUp(props) {
 
   const [disable, setDisable] = React.useState(true);
 
-  const [emailList, setEmailList] = React.useState([]);
+  //Represents user id if email already exists, null otherwise
+  const [checkEmail, setCheckEmail] = React.useState(null);
 
   const [currRole, setCurrRole] = React.useState(0);
 
@@ -85,29 +86,33 @@ export default function SignUp(props) {
   }
 
   React.useEffect(()=>{
-    const fetchEmailList = async() => {
+    let active = true;
+    const fetchData = async() => {
       const result = await axios.get(
-        process.env.REACT_APP_BASE_URL+'/user', {
+        process.env.REACT_APP_BASE_URL+'/check_email', {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
+          },
+          params: {email: email}
         }
       );
       if (result.data.success){
-        let arr = result.data.users.map((value) => {
-          return value.email.toLowerCase();
-        })
-        setEmailList(arr);
+        if (active){
+          setCheckEmail(result.data.id);
+        }
       }
       else{
-        props.setSnackbarMsg(`Users could not be loaded`);
+        props.setSnackbarMsg(`Email could not be verified`);
         props.setShowSnackbar(true);
         props.setSnackbarSeverity("error");
-        navigate("/users");
+        props.updateUser(null);
       }
+    }
+    fetchData();
+    return () => {
+      active = false;
     };
-    fetchEmailList();
-  }, [])
+  }, [email]);
 
   React.useEffect(() => {
     const fetchData = async() => {
@@ -264,11 +269,10 @@ export default function SignUp(props) {
   }
 
   React.useEffect(() => {
-    let disabled = email == "" || name == "" || address == "" || phone == "";
+    let disabled = email == "" || name == "" || address == "" || phone == "" || checkEmail != null;
     for (let i=0; i<students.length; i++){
       disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "";
     }
-    disabled = disabled || emailList.includes(email.toLowerCase());
     setDisable(disabled);
   }, [email, name, address, students, phone])
 
@@ -309,8 +313,8 @@ export default function SignUp(props) {
               <Grid item xs={12}>
                 <TextField
                   required
-                  error={emailList.includes(email.toLowerCase())}
-                  helperText={emailList.includes(email.toLowerCase()) ? "Email already taken":""}
+                  error={checkEmail != null}
+                  helperText={checkEmail != null ? "Email already taken":""}
                   fullWidth
                   onChange={(e) => setEmail(e.target.value)}
                   id="email"

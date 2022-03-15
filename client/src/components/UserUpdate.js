@@ -29,7 +29,6 @@ export default function UserUpdate(props) {
 
   const { id } = useParams();
   const [data, setData] = React.useState({email:"", name:"", address: "", role: 0, managedSchools: [], phone: ""});
-  const [emailList, setEmailList] = React.useState([]);
   const [oldEmail, setOldEmail] = React.useState("");
   
   const [schoolList, setSchoolList] = React.useState([]);
@@ -37,6 +36,7 @@ export default function UserUpdate(props) {
   const [latitude, setLatitude] = React.useState(null);
   const [longitude, setLongitude] = React.useState(null);
 
+  const [checkEmail, setCheckEmail] = React.useState(null);
 
   let navigate = useNavigate();
 
@@ -96,29 +96,33 @@ export default function UserUpdate(props) {
   }, []);
 
   React.useEffect(()=>{
-    const fetchEmailList = async() => {
+    let active = true;
+    const fetchData = async() => {
       const result = await axios.get(
-        process.env.REACT_APP_BASE_URL+'/user', {
+        process.env.REACT_APP_BASE_URL+'/check_email', {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
+          },
+          params: {email: data.email}
         }
       );
       if (result.data.success){
-        let arr = result.data.users.map((value) => {
-          return value.email.toLowerCase();
-        })
-        setEmailList(arr);
+        if (active){
+          setCheckEmail(result.data.id);
+        }
       }
       else{
-        props.setSnackbarMsg(`Users could not be loaded`);
+        props.setSnackbarMsg(`Email could not be verified`);
         props.setShowSnackbar(true);
         props.setSnackbarSeverity("error");
-        navigate("/users");
+        props.updateUser(null);
       }
+    }
+    fetchData();
+    return () => {
+      active = false;
     };
-    fetchEmailList();
-  }, [])
+  }, [data.email]);
 
   React.useEffect(()=>{
     const fetchSchoolList = async() => {
@@ -256,8 +260,8 @@ export default function UserUpdate(props) {
               </Grid>
             <Grid item xs={12}>
                 <TextField
-                  error={data.email.toLowerCase()!=oldEmail.toLowerCase() && emailList.includes(data.email.toLowerCase())}
-                  helperText={(data.email.toLowerCase()!=oldEmail.toLowerCase() && emailList.includes(data.email.toLowerCase())) ? "Email already taken" : ""}
+                  error={data.email.toLowerCase()!=oldEmail.toLowerCase() && checkEmail != null}
+                  helperText={(data.email.toLowerCase()!=oldEmail.toLowerCase() && checkEmail != null) ? "Email already taken" : ""}
                   name="email"
                   label="Email"
                   type="email"
@@ -335,7 +339,7 @@ export default function UserUpdate(props) {
                   variant="contained"
                   fullWidth
                   sx={{ mt: 3, mb: 2 }}
-                  disabled={data.email == "" || data.address == "" || data.name == "" || (data.email.toLowerCase()!=oldEmail.toLowerCase() && emailList.includes(data.email.toLowerCase()))}
+                  disabled={data.email == "" || data.address == "" || data.name == "" || (data.email.toLowerCase()!=oldEmail.toLowerCase() && checkEmail != null)}
                   >
                     Submit
                 </Button>
