@@ -10,6 +10,9 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import InputAdornment from '@mui/material/InputAdornment';
 
 const theme = createTheme();
 
@@ -18,6 +21,7 @@ export default function StudentForm(props) {
     const [users, setUsers] = React.useState([]);
     const [schools, setSchools] = React.useState([]);
     const [routes, setRoutes] = React.useState([]);
+    const [email, setEmail] = React.useState("");
 
     let navigate = useNavigate()
 
@@ -34,8 +38,7 @@ export default function StudentForm(props) {
               if (result.data.success){
                 console.log(result.data.users);
                 let arr = result.data.users.map((value) => {
-                  console.log({label: value.email, id: value.id});
-                  return {label: value.email, id: value.id};
+                  return value.email;
                 });
                 setUsers(arr);
               }
@@ -48,6 +51,35 @@ export default function StudentForm(props) {
             };
             fetchData();
           }, []);
+
+          React.useEffect(()=>{
+            let active = true;
+            const fetchData = async() => {
+              const result = await axios.get(
+                process.env.REACT_APP_BASE_URL+'/check_email', {
+                  headers: {
+                      Authorization: `Bearer ${localStorage.getItem('token')}`
+                  },
+                  params: {email: email}
+                }
+              );
+              if (result.data.success){
+                if (active){
+                  props.updateUser(result.data.id);
+                }
+              }
+              else{
+                props.setSnackbarMsg(`Email could not be verified`);
+                props.setShowSnackbar(true);
+                props.setSnackbarSeverity("error");
+                props.updateUser(null);
+              }
+            }
+            fetchData();
+            return () => {
+              active = false;
+            };
+          }, [email]);
 
           React.useEffect(()=> {
             const fetchData = async() => {
@@ -156,14 +188,18 @@ export default function StudentForm(props) {
                             autoFocus
                             required
                             fullWidth
+                            freeSolo
                             options={users}
                             id="user"
-                            autoSelect
                             required
-                            value={props.user}
-                            onChange={(e, new_value) => props.updateUser(new_value)}
-                            isOptionEqualToValue={(option, value) => option.id === value.id}
-                            renderInput={(params) => <TextField {...params} label="Parent Email" />}
+                            inputValue={email}
+                            onInputChange={(e, new_value) => setEmail(new_value)}
+                            renderInput={(params) => 
+                            <TextField {...params} label="Parent Email" 
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: <InputAdornment position="start">{props.user == null ? <CloseIcon/> : <CheckIcon/>}</InputAdornment>,
+                            }}/>}
                         />
                         </Grid>
                     <Grid item xs={12}>
@@ -203,7 +239,7 @@ export default function StudentForm(props) {
                   variant="contained"
                   fullWidth
                   sx={{ mt: 3, mb: 2 }}
-                  disabled={props.school == null || props.school.id == "" || props.user == null || props.user.id == "" || props.name == ""}
+                  disabled={props.school == null || props.school.id == "" || props.user == null || props.name == ""}
                   >
                     Submit
                     </Button>

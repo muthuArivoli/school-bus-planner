@@ -10,7 +10,7 @@ export default function CreateSchool(props) {
   let navigate = useNavigate();
 
   const [school, setSchool] = React.useState({id: "", label: ""});
-  const [user, setUser] = React.useState({id: "", label: ""});
+  const [user, setUser] = React.useState(null);
   const [route, setRoute] = React.useState({id: "", label: ""});
   const [name, setName] = React.useState("")
   const [studentId, setStudentId] = React.useState(null);
@@ -21,7 +21,7 @@ export default function CreateSchool(props) {
       let req = {
         name: name,
         school_id: school.id,
-        user_id: user.id
+        user_id: user
       }
       console.log(req);
       if (studentId != null && studentId != "") {
