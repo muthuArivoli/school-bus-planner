@@ -16,6 +16,15 @@ import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Link from '@mui/material/Link';
 import { DateTime } from 'luxon';
 import { Helmet } from 'react-helmet';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import Dialog from '@mui/material/Dialog';
 
 const containerStyle = {
   height: "400px",
@@ -45,6 +54,12 @@ export default function RouteDetail(props) {
   let navigate = useNavigate();
 
   const [role, setRole] = React.useState(0);
+
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
 
   React.useEffect(()=>{
     const fetchData = async() => {
@@ -166,6 +181,22 @@ export default function RouteDetail(props) {
     fetchData();
   }, []);
 
+  const handleDialog = () => {
+    setDialogOpen(true);
+  };
+
+  const handleDownload = () => {
+    const input = document.getElementById('divToPrint');
+    console.log(input);
+    html2canvas(input)
+      .then((canvas) => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF();
+        pdf.addImage(imgData, 'JPEG', 0, 0);
+        pdf.save("download.pdf");
+      });
+  }
+
   return (
     <>
     <Helmet>
@@ -215,27 +246,27 @@ export default function RouteDetail(props) {
         </Stack>
 
         <Stack direction="row" spacing={3} sx={{ width: '100%'}}>
-        
-        <LoadScript
-          googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
-        >
-          <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad}>
-            <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
-            {students.map((student, index) => (
-                <Marker key={index} title={student.name} position={student.loc} icon="http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"/> ))}
-            {stops.map((stop, index)=> (
-                <Marker key={index} title={stop.name} position={stop.loc} icon="http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"/> ))}
-          </GoogleMap>
-        </LoadScript>   
-      <Stack spacing={1} sx={{ width: '50%'}}>
+          <Stack spacing={2} justifyContent="center" alignItems="center">
+            <LoadScript googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o">
+              <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad}>
+                <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
+                {students.map((student, index) => (
+                    <Marker key={index} title={student.name} position={student.loc} icon="http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"/> ))}
+                {stops.map((stop, index)=> (
+                    <Marker key={index} title={stop.name} position={stop.loc} icon="http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"/> ))}
+              </GoogleMap>
+            </LoadScript>
+            <Button onClick={handleDialog}>Route Printout</Button>
+          </Stack>
+          <Stack spacing={1} sx={{ width: '50%'}}>
     
-      <Typography variant="body1" align="center">
-              Route Students
-          </Typography>
+            <Typography variant="body1" align="center">
+                Route Students
+            </Typography>
 
-        <RouteDetailStudentList rows={rows}/>
-      </Stack>
-    </Stack>
+            <RouteDetailStudentList rows={rows}/>
+          </Stack>
+        </Stack>
              
       <Stack spacing={1} sx={{ width: '100%'}}>
         <Typography variant="body1" align="center">
@@ -274,6 +305,47 @@ export default function RouteDetail(props) {
         </Stack>
       </Stack>
     </Grid>
+
+    <Dialog open={dialogOpen} onClose={handleDialogClose}>
+      <div id="divToPrint">
+        <Stack spacing={10} alignItems="center">
+          <Stack spacing={2} alignItems="center">
+            <Typography variant="h3" align="center">Route Name: {data.name}</Typography>
+            <Typography variant="h5" align="center">School: {school}</Typography>
+          </Stack>
+          <TableContainer>
+            <Table sx={{ width: 'auto' }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Student ID</TableCell>
+                  <TableCell>Address</TableCell>
+                  <TableCell>Parent Name</TableCell>
+                  <TableCell>Parent Email</TableCell>
+                  <TableCell>Parent Phone</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {students.map((student) => (
+                  <TableRow
+                    key={student.name}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell>{student.name}</TableCell>
+                    <TableCell>{student.student_id}</TableCell>
+                    <TableCell>{student.user.uaddress}</TableCell>
+                    <TableCell>{student.user.full_name}</TableCell>
+                    <TableCell>{student.user.email}</TableCell>
+                    <TableCell>{student.user.phone}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Stack>
+      </div>
+      <Button onClick={handleDownload}>Download</Button>
+    </Dialog>
     </>
   );
 }
