@@ -6,70 +6,64 @@ import Dropzone, {useDropzone} from 'react-dropzone';
 import {blue} from '@mui/material/colors';
 import {ThemeProvider} from '@mui/material/styles';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import Papa from "papaparse";
 
 export default function BulkImport(){
-    const maxNum = 3;
+    const maxNum = 2;
     const [filesPreview, setPreview] = React.useState([]);
     const [files, setFiles] = React.useState([]);
+    const [parsedFiles, setParsed] = React.useState([]);
 
     const handleUpload = () => {}
 
-
     const onDrop = React.useCallback(acceptedFiles => {
         var allfiles = files;
-        if(allfiles.length < maxNum){
-            allfiles.push(acceptedFiles);
-            var filesPreview=[];
-            for(var i in allfiles){
-            filesPreview.push(<div>
-                {allfiles[i][0].name}
+        var currParsed = parsedFiles;
+        bigif: if(allfiles.length < maxNum){
+
+          var fileNames=[];
+          var trueNames=[];
+          for(var i in files){
+            fileNames.push(<div>
+                {files[i][0].name}
                 </div>
-            )
-            }
-            setFiles(allfiles);
-            setPreview(filesPreview)
+            );
+            trueNames.push(files[i][0].name);
+          }
+          if(trueNames.includes(acceptedFiles[0].name)){
+              alert("Cannot upload two files with same name");
+              break bigif;
+          }
+          allfiles.push(acceptedFiles);
+          Papa.parse(acceptedFiles[0], {
+            complete: function(results) {
+              console.log("Finished:", results.data);
+              currParsed.push(results.data);
+              console.log(currParsed);
+          }});
+          fileNames.push(<div>{acceptedFiles[0].name}</div> );
+          setFiles(allfiles);
+          setPreview(fileNames);
+          setParsed(currParsed);
         }
         else{
             alert("Only two files should be uploaded")
         }
         }, [])
+
+    const onDropReject = React.useCallback(rejectedFiles => {
+            alert("Invalid File")
+        }, [])
         
     const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
-            // return (
-            //     <div className="BulkImport">
-            //     <div {...getRootProps()}>
-            //     <input {...getInputProps()} />
-            //     {
-            //         isDragActive ?
-            //         <p>Drop the files here ...</p> :
-            //         <p>Drag 'n' drop some files here, or click to select files</p>
-            //     }
-            //     </div>
-            //     <div>
-            //     Files to be uploaded are:
-            //     {filesPreview}
-            //     </div>
-            //     {/* <Button
-            //     variant="contained"
-            //     component="label"
-            //     onClick={handleSubmission}
-            //     >
-            //     Browse Files
-            //     <input
-            //     type="file"
-            //     accept=".csv"
-            //     // onChange={(e) => {onDrop(e.target.files)}}
-            //     hidden
-            //     />
-            //     </Button> */}
-            //     </div>
-            // )
+        
             return (
                 <div className="App">
                   <Dropzone
-                    onDrop={onDrop}
-                    accept=".csv"
-                  >
+                    onDropAccepted={onDrop}
+                    onDropRejected={onDropReject}
+                    accept="text/csv"
+                >
                     {({
                       getRootProps,
                       getInputProps,
@@ -101,7 +95,7 @@ export default function BulkImport(){
                     <strong>Files:</strong>
                     <ul>
                       {filesPreview.map(fileName => (
-                        <li key={fileName}>{fileName}</li>
+                        <li key={fileName.props.children}>{fileName}</li>
                       ))}
                     </ul>
                   </div>
