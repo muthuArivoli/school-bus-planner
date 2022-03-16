@@ -280,6 +280,7 @@ def users_get(user_id=None):
     args = request.args
     name_search = args.get('name', '')
     email_search = args.get('email', '')
+    role_search = args.get('role', None, type=int)
     sort = args.get('sort', None)
     direction = args.get('dir', None)
     page = args.get('page', None, type=int)
@@ -293,6 +294,9 @@ def users_get(user_id=None):
             for student in school.students:
                 ids.add(student.user.id)
         base_query = User.query.filter(User.id.in_(ids))
+
+    if role_search is not None:
+        base_query = base_query.filter_by(role=RoleEnum(role_search))
 
     if sort and direction == 'desc':
         sort = '-'+sort

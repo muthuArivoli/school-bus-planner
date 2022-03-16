@@ -9,6 +9,11 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import { Helmet } from 'react-helmet';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormLabel from '@mui/material/FormLabel';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 const roles = ["Parent", "Admin", "School Staff", "Driver"]
 
@@ -53,6 +58,8 @@ export default function DataTable(props) {
   const [showAll, setShowAll] = React.useState(false);
   const [loading , setLoading] = React.useState(true);
 
+  const [filterRole, setFilterRole] = React.useState(4);
+
   const mappings = {"name": "full_name", "email": "email"}
 
   const [role, setRole] = React.useState(0);
@@ -94,6 +101,10 @@ export default function DataTable(props) {
       }
       params.name = filterStr;
       params.email = filterStr;
+      
+      if (filterRole != 4){
+        params.role = filterRole;
+      }
 
       const result = await axios.get(
         process.env.REACT_APP_BASE_URL+'/user', {
@@ -124,7 +135,7 @@ export default function DataTable(props) {
     return () => {
       active = false;
     };
-  }, [page, sortModel, filterStr, showAll])
+  }, [page, sortModel, filterStr, showAll, filterRole])
 
   return (
     <>
@@ -133,7 +144,7 @@ export default function DataTable(props) {
         Users
       </title>
     </Helmet>
-    <Grid container>
+    <Grid container spacing={2}>
     <Grid item md={12} lg={12}>
     <TextField
           label="Search"
@@ -148,6 +159,24 @@ export default function DataTable(props) {
           onChange={(e)=>setFilterStr(e.target.value)}
         />
         </Grid>
+      <Grid item md={12} lg={12}>
+      <FormControl>
+                <FormLabel id="role-group-label">Filter by Role</FormLabel>
+                <RadioGroup
+                  aria-labelledby="role-group-label"
+                  value={filterRole}
+                  onChange={(e) => setFilterRole(e.target.value)}
+                  name="role-group"
+                  row
+                >
+                  <FormControlLabel value={4} control={<Radio />} label="All" />                  
+                  <FormControlLabel value={0} control={<Radio />} label="Unprivileged" />
+                  <FormControlLabel value={1} control={<Radio />} label="Admin" />
+                  <FormControlLabel value={2} control={<Radio />} label="School Staff" />
+                  <FormControlLabel value={3} control={<Radio />} label="Driver" />
+                </RadioGroup>
+                </FormControl>
+      </Grid>
         </Grid>
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
