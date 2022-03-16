@@ -10,10 +10,11 @@ export default function UserUpdate(props) {
   let navigate = useNavigate();
 
   const [school, setSchool] = React.useState({id: "", label: ""});
-  const [user, setUser] = React.useState({id: "", label: ""});
+  const [user, setUser] = React.useState(null);
   const [route, setRoute] = React.useState({id: null, label: ""});
   const [name, setName] = React.useState("")
   const [studentId, setStudentId] = React.useState(null);
+  const [email, setEmail] = React.useState("");
 
     const handleSubmit = (event) => {
       event.preventDefault();
@@ -21,7 +22,7 @@ export default function UserUpdate(props) {
       let req = {
         name: name,
         school_id: school.id,
-        user_id: user.id
+        user_id: user
       }
       console.log(req);
       if (studentId != null && studentId != "") {
@@ -75,7 +76,8 @@ export default function UserUpdate(props) {
           setName(result.data.student.name);
           setStudentId(result.data.student.student_id);
           setSchool({label: result.data.student.school.name, id: result.data.student.school.id});
-          setUser({label: result.data.student.user.email, id: result.data.student.user.id});
+          setUser(result.data.student.user.id);
+          setEmail(result.data.student.user.email);
           if(result.data.student.route_id != null){
             setRoute({label: result.data.student.route.name, id: result.data.student.route.id})
           }
@@ -105,6 +107,8 @@ export default function UserUpdate(props) {
         updateStudentId={setStudentId}
         user={user}
         updateUser={setUser}
+        email={email}
+        setEmail={setEmail}
         school={school}
         updateSchool={setSchool}
         route={route}

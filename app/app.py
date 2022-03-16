@@ -227,11 +227,24 @@ def check_comp():
 
 #USER CRUD
 
+@app.route('/check_email', methods=['OPTIONS'])
 @app.route('/user/<user_id>', methods = ['OPTIONS'])
 @app.route('/user', methods = ['OPTIONS'])
 @cross_origin()
 def user_options(username=None):
     return {'success':True}
+
+@app.route('/check_email', methods = ['GET'])
+@cross_origin()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
+def get_user_id():
+    args = request.args
+    email = args.get('email', '')
+    user = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+    if user is None:
+        return {'success': True, 'id': None}
+    return {'success': True, 'id': user.id}
+
 
 @app.route('/user/<user_id>', methods = ['GET'])
 @app.route('/user', methods = ['GET'])
