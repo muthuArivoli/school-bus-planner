@@ -25,6 +25,9 @@ import TableRow from '@mui/material/TableRow';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import Box from '@mui/material/Box';
 
 const containerStyle = {
   height: "400px",
@@ -188,12 +191,20 @@ export default function RouteDetail(props) {
   const handleDownload = () => {
     const input = document.getElementById('divToPrint');
     console.log(input);
-    html2canvas(input)
+    html2canvas(input, { scale: 2 })
       .then((canvas) => {
+        const componentWidth = input.offsetWidth
+        const componentHeight = input.offsetHeight
+
+        const orientation = componentWidth >= componentHeight ? 'l' : 'p'
+
         const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF();
-        pdf.addImage(imgData, 'JPEG', 0, 0);
-        pdf.save("download.pdf");
+        const pdf = new jsPDF({orientation, unit: 'px'});
+        pdf.internal.pageSize.width = componentWidth;
+        pdf.internal.pageSize.height = componentHeight;
+        pdf.addImage(imgData, 'PNG', 0, 0, componentWidth, componentHeight);
+        let name = data.name.replace(/ /g, '');
+        pdf.save(`${name}_printout.pdf`);
       });
   }
 
@@ -232,16 +243,12 @@ export default function RouteDetail(props) {
               Route Complete: {data.complete === true ? "Yes" : "No"}  
           </Typography>
 
-
-          <TextField
-          label="Description"
-          value={data.description}
-          InputProps={{
-            readOnly: true,
-          }}
-          multiline
-          focused
-          />
+          <Typography variant="h5" align="center">
+              Description:{(data.description) ? '' : ' None'} 
+          </Typography>
+          {(data.description) ? <Typography variant="body2" align="center">
+              {data.description}  
+          </Typography> : null}
 
         </Stack>
 
@@ -256,7 +263,7 @@ export default function RouteDetail(props) {
                     <Marker key={index} title={stop.name} position={stop.loc} icon="http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"/> ))}
               </GoogleMap>
             </LoadScript>
-            <Button onClick={handleDialog}>Route Printout</Button>
+            <Button onClick={handleDialog} variant='contained'>View Route Printout</Button>
           </Stack>
           <Stack spacing={1} sx={{ width: '50%'}}>
     
@@ -306,45 +313,49 @@ export default function RouteDetail(props) {
       </Stack>
     </Grid>
 
-    <Dialog open={dialogOpen} onClose={handleDialogClose}>
-      <div id="divToPrint">
-        <Stack spacing={10} alignItems="center">
-          <Stack spacing={2} alignItems="center">
-            <Typography variant="h3" align="center">Route Name: {data.name}</Typography>
-            <Typography variant="h5" align="center">School: {school}</Typography>
-          </Stack>
-          <TableContainer>
-            <Table sx={{ width: 'auto' }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Student ID</TableCell>
-                  <TableCell>Address</TableCell>
-                  <TableCell>Parent Name</TableCell>
-                  <TableCell>Parent Email</TableCell>
-                  <TableCell>Parent Phone</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {students.map((student) => (
-                  <TableRow
-                    key={student.name}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell>{student.name}</TableCell>
-                    <TableCell>{student.student_id}</TableCell>
-                    <TableCell>{student.user.uaddress}</TableCell>
-                    <TableCell>{student.user.full_name}</TableCell>
-                    <TableCell>{student.user.email}</TableCell>
-                    <TableCell>{student.user.phone}</TableCell>
+    <Dialog open={dialogOpen} onClose={handleDialogClose} maxWidth="xl" sx={{ disableScrollLock: true }} scroll={'paper'}>
+      <DialogContent dividers={true}>
+        <div id="divToPrint">
+          <Stack spacing={10} alignItems="center" sx={{ p: 8 }}>
+            <Stack spacing={2} alignItems="center">
+              <Typography variant="h3" align="center">Route Name: {data.name}</Typography>
+              <Typography variant="h5" align="center">School: {school}</Typography>
+            </Stack>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Student ID</TableCell>
+                    <TableCell>Address</TableCell>
+                    <TableCell>Parent Name</TableCell>
+                    <TableCell>Parent Email</TableCell>
+                    <TableCell>Parent Phone</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Stack>
-      </div>
-      <Button onClick={handleDownload}>Download</Button>
+                </TableHead>
+                <TableBody>
+                  {students.map((student) => (
+                    <TableRow
+                      key={student.name}
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <TableCell>{student.name}</TableCell>
+                      <TableCell>{student.student_id}</TableCell>
+                      <TableCell>{student.user.uaddress}</TableCell>
+                      <TableCell>{student.user.full_name}</TableCell>
+                      <TableCell>{student.user.email}</TableCell>
+                      <TableCell>{student.user.phone}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Stack>
+        </div>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleDownload} variant="contained" sx={{ maxWidth: '200px' }}>Download</Button>
+      </DialogActions>
     </Dialog>
     </>
   );
