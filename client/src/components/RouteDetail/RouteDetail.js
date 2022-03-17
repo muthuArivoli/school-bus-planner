@@ -178,7 +178,35 @@ export default function RouteDetail(props) {
     if (pdfExportComponent.current) {
       pdfExportComponent.current.save();
     }
-  }
+  };
+
+  const createDirections = () => {
+    console.log("Stops");
+    console.log(stops);
+    console.log("Stop Rows");
+    console.log(stopRows);
+    console.log("Route Info");
+    console.log(data);
+    console.log("School Location");
+    console.log(schoolLocation);
+
+    // if (!data.complete) {
+    //   alert("Route Incomplete");
+    // } 
+    //else {
+    let base_url = "https://www.google.com/maps/dir/?api=1&";
+    base_url += "origin=";
+    base_url += schoolLocation.lat;
+    base_url += "%2C";
+    base_url += schoolLocation.lng;
+
+
+    console.log("URL:");
+    console.log(base_url);
+
+    window.open(base_url, '_blank').focus();
+    //}
+  };
 
   return (
     <>
@@ -235,7 +263,10 @@ export default function RouteDetail(props) {
                     <Marker key={index} title={stop.name} position={stop.loc} icon="http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"/> ))}
               </GoogleMap>
             </LoadScript>
-            <Button onClick={handleDownload} variant='contained'>Download Route Printout</Button>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Button onClick={handleDownload} variant='contained'>Download Route Printout</Button>
+              <Button onClick={createDirections} variant='contained'>Get Directions</Button>
+            </Stack>
           </Stack>
           <Stack spacing={1} sx={{ width: '50%'}}>
     
