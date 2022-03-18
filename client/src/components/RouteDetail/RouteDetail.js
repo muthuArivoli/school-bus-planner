@@ -22,12 +22,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import Box from '@mui/material/Box';
+import { PDFExport } from "@progress/kendo-react-pdf";
 
 const containerStyle = {
   height: "400px",
@@ -46,6 +41,7 @@ export default function RouteDetail(props) {
   const [data, setData] = React.useState({});
   const [schoolLocation, setSchoolLocation] = React.useState({lat: 0, lng:0});
   const [students, setStudents] = React.useState([]);
+  const pdfExportComponent = React.useRef(null);
 
   const [school, setSchool] = React.useState("");
   const [rows, setRows] = React.useState([]);
@@ -57,12 +53,6 @@ export default function RouteDetail(props) {
   let navigate = useNavigate();
 
   const [role, setRole] = React.useState(0);
-
-  const [dialogOpen, setDialogOpen] = React.useState(false);
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-  };
 
   React.useEffect(()=>{
     const fetchData = async() => {
@@ -184,28 +174,10 @@ export default function RouteDetail(props) {
     fetchData();
   }, []);
 
-  const handleDialog = () => {
-    setDialogOpen(true);
-  };
-
   const handleDownload = () => {
-    const input = document.getElementById('divToPrint');
-    console.log(input);
-    html2canvas(input, { scale: 2 })
-      .then((canvas) => {
-        const componentWidth = input.offsetWidth
-        const componentHeight = input.offsetHeight
-
-        const orientation = componentWidth >= componentHeight ? 'l' : 'p'
-
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({orientation, unit: 'px'});
-        pdf.internal.pageSize.width = componentWidth;
-        pdf.internal.pageSize.height = componentHeight;
-        pdf.addImage(imgData, 'PNG', 0, 0, componentWidth, componentHeight);
-        let name = data.name.replace(/ /g, '');
-        pdf.save(`${name}_printout.pdf`);
-      });
+    if (pdfExportComponent.current) {
+      pdfExportComponent.current.save();
+    }
   }
 
   return (
@@ -263,7 +235,7 @@ export default function RouteDetail(props) {
                     <Marker key={index} title={stop.name} position={stop.loc} icon="http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"/> ))}
               </GoogleMap>
             </LoadScript>
-            <Button onClick={handleDialog} variant='contained'>View Route Printout</Button>
+            <Button onClick={handleDownload} variant='contained'>Download Route Printout</Button>
           </Stack>
           <Stack spacing={1} sx={{ width: '50%'}}>
     
@@ -313,9 +285,14 @@ export default function RouteDetail(props) {
       </Stack>
     </Grid>
 
-    <Dialog open={dialogOpen} onClose={handleDialogClose} maxWidth="xl" sx={{ disableScrollLock: true }} scroll={'paper'}>
-      <DialogContent dividers={true}>
-        <div id="divToPrint">
+        <PDFExport           
+          ref={pdfExportComponent}
+          paperSize="Letter"
+          margin={"5"}
+          landscape={true}
+          fileName={`${data.name} Student Roster`}
+          scale={0.5}
+          author="HT Five">
           <Stack spacing={10} alignItems="center" sx={{ p: 8 }}>
             <Stack spacing={2} alignItems="center">
               <Typography variant="h3" align="center">Route Name: {data.name}</Typography>
@@ -325,12 +302,12 @@ export default function RouteDetail(props) {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Student ID</TableCell>
-                    <TableCell>Address</TableCell>
-                    <TableCell>Parent Name</TableCell>
-                    <TableCell>Parent Email</TableCell>
-                    <TableCell>Parent Phone</TableCell>
+                    <TableCell width="15%">Name</TableCell>
+                    <TableCell width="10%">Student ID</TableCell>
+                    <TableCell width="20%">Address</TableCell>
+                    <TableCell width="15%">Parent Name</TableCell>
+                    <TableCell width="25%">Parent Email</TableCell>
+                    <TableCell width="15%">Parent Phone</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -339,24 +316,20 @@ export default function RouteDetail(props) {
                       key={student.name}
                       sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
-                      <TableCell>{student.name}</TableCell>
-                      <TableCell>{student.student_id}</TableCell>
-                      <TableCell>{student.user.uaddress}</TableCell>
-                      <TableCell>{student.user.full_name}</TableCell>
-                      <TableCell>{student.user.email}</TableCell>
-                      <TableCell>{student.user.phone}</TableCell>
+                      <TableCell width="15%">{student.name}</TableCell>
+                      <TableCell width="10%">{student.student_id}</TableCell>
+                      <TableCell width="20%">{student.user.uaddress}</TableCell>
+                      <TableCell width="15%">{student.user.full_name}</TableCell>
+                      <TableCell width="25%">{student.user.email}</TableCell>
+                      <TableCell width="15%">{student.user.phone}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </TableContainer>
           </Stack>
-        </div>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleDownload} variant="contained" sx={{ maxWidth: '200px' }}>Download</Button>
-      </DialogActions>
-    </Dialog>
+        </PDFExport>
+
     </>
   );
 }
