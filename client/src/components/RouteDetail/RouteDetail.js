@@ -180,32 +180,58 @@ export default function RouteDetail(props) {
     }
   };
 
-  const createDirections = () => {
-    console.log("Stops");
-    console.log(stops);
-    console.log("Stop Rows");
-    console.log(stopRows);
-    console.log("Route Info");
-    console.log(data);
-    console.log("School Location");
-    console.log(schoolLocation);
-
-    // if (!data.complete) {
-    //   alert("Route Incomplete");
-    // } 
-    //else {
+  const createDirections = (fromSchool) => {
     let base_url = "https://www.google.com/maps/dir/?api=1&";
-    base_url += "origin=";
-    base_url += schoolLocation.lat;
-    base_url += "%2C";
-    base_url += schoolLocation.lng;
+    let origin = "origin="; 
+    let destination = "&destination=";
+    let waypoints = "&waypoints=";
 
+    if (fromSchool) {
+      origin += schoolLocation.lat;
+      origin += "%2C";
+      origin += schoolLocation.lng;
 
-    console.log("URL:");
-    console.log(base_url);
+      for (var i=0;i<stops.length;i++) {
+        if (stops[i+1] == null) {
+          destination += (''+stops[i].latitude)
+          destination += "%2C"
+          destination += (''+stops[i].longitude)
+        } else {
+          let waypoint = "";
+          waypoint += (''+stops[i].latitude)
+          waypoint += "%2C"
+          waypoint += (''+stops[i].longitude)
+          waypoint += "%7C"
+          waypoints += waypoint;
+        }
+      }
+    }
+    else {
+      destination += schoolLocation.lat;
+      destination += "%2C";
+      destination += schoolLocation.lng;
+
+      for (var i=stops.length-1;i>-1;i--) {
+        if (i-1 == -1) {
+          origin += (''+stops[i].latitude)
+          origin += "%2C"
+          origin += (''+stops[i].longitude)
+        } else {
+          let waypoint = "";
+          waypoint += (''+stops[i].latitude)
+          waypoint += "%2C"
+          waypoint += (''+stops[i].longitude)
+          waypoint += "%7C"
+          waypoints += waypoint;
+        }
+      }
+    }
+    base_url += origin;
+    base_url += destination;
+    base_url += "&travelmode=driving";
+    base_url += waypoints;
 
     window.open(base_url, '_blank').focus();
-    //}
   };
 
   return (
@@ -264,8 +290,9 @@ export default function RouteDetail(props) {
               </GoogleMap>
             </LoadScript>
             <Stack direction="row" spacing={2} alignItems="center">
-              <Button onClick={handleDownload} variant='contained'>Download Route Printout</Button>
-              <Button onClick={createDirections} variant='contained'>Get Directions</Button>
+              <Button style={{ fontSize: '12px' }} size="small" onClick={handleDownload} variant='outlined'>View Route Printout</Button>
+              <Button style={{ fontSize: '12px' }} size="small" onClick={() => createDirections(false)} variant='outlined'>Get Morning Directions (to School)</Button>
+              <Button style={{ fontSize: '12px' }} size="small" onClick={() => createDirections(true)} variant='outlined'>Get Afternoon Directions (from School)</Button>
             </Stack>
           </Stack>
           <Stack spacing={1} sx={{ width: '50%'}}>
