@@ -11,7 +11,6 @@ import RouteDetailStopList from './RouteDetailStopList';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import MuiAlert from '@mui/material/Alert';
-import TextField from '@mui/material/TextField';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Link from '@mui/material/Link';
 import { DateTime } from 'luxon';
@@ -23,6 +22,9 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { PDFExport } from "@progress/kendo-react-pdf";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
 
 const containerStyle = {
   height: "400px",
@@ -53,6 +55,18 @@ export default function RouteDetail(props) {
   let navigate = useNavigate();
 
   const [role, setRole] = React.useState(0);
+
+  const [navDialogOpen, setNavDialogOpen] = React.useState(false);
+  const [navLists, setNavLists] = React.useState([]);
+
+  const handleNavDialogClose = () => {
+    setNavDialogOpen(false);
+  };
+
+  const handleNavDialogOpen = () => {
+    createNavLinks(9);
+    setNavDialogOpen(true);
+  };
 
   React.useEffect(()=>{
     const fetchData = async() => {
@@ -170,7 +184,6 @@ export default function RouteDetail(props) {
       }
 
     };
-
     fetchData();
   }, []);
 
@@ -180,47 +193,68 @@ export default function RouteDetail(props) {
     }
   };
 
-  const createDirections = (fromSchool) => {
+  const createNavLinks = (chunkSize) => {
+    let navLists = [];
+    for (let i = 0; i < stopRows.length; i += chunkSize) {
+      const chunk = stopRows.slice(i, i + chunkSize);
+      navLists.push(chunk);
+    }
+    setNavLists(navLists);
+  };
+
+  const createNavURL = (fromSchool, schoolInRoute, stoplist) => {
     let base_url = "https://www.google.com/maps/dir/?api=1&";
     let origin = "origin="; 
     let destination = "&destination=";
     let waypoints = "&waypoints=";
 
     if (fromSchool) {
-      origin += schoolLocation.lat;
-      origin += "%2C";
-      origin += schoolLocation.lng;
+      if (schoolInRoute){
+        origin += schoolLocation.lat;
+        origin += "%2C";
+        origin += schoolLocation.lng;
+      } else {
+        origin += stoplist[0].latitude;
+        origin += "%2C";
+        origin += stoplist[0].longitude;
+      }
 
-      for (var i=0;i<stops.length;i++) {
-        if (stops[i+1] == null) {
-          destination += (''+stops[i].latitude)
+      for (var i=1;i<stoplist.length;i++) {
+        if (stoplist[i+1] == null) {
+          destination += (''+stoplist[i].latitude)
           destination += "%2C"
-          destination += (''+stops[i].longitude)
+          destination += (''+stoplist[i].longitude)
         } else {
           let waypoint = "";
-          waypoint += (''+stops[i].latitude)
+          waypoint += (''+stoplist[i].latitude)
           waypoint += "%2C"
-          waypoint += (''+stops[i].longitude)
+          waypoint += (''+stoplist[i].longitude)
           waypoint += "%7C"
           waypoints += waypoint;
         }
       }
     }
     else {
-      destination += schoolLocation.lat;
-      destination += "%2C";
-      destination += schoolLocation.lng;
+      if (schoolInRoute) {
+        destination += schoolLocation.lat;
+        destination += "%2C";
+        destination += schoolLocation.lng;
+      } else {
+        destination += stoplist[0].latitude;
+        destination += "%2C";
+        destination += stoplist[0].longitude;
+      }
 
-      for (var i=stops.length-1;i>-1;i--) {
-        if (i-1 == -1) {
-          origin += (''+stops[i].latitude)
+      for (var i=stoplist.length-1;i>0;i--) {
+        if (i-1 == 0) {
+          origin += (''+stoplist[i].latitude)
           origin += "%2C"
-          origin += (''+stops[i].longitude)
+          origin += (''+stoplist[i].longitude)
         } else {
           let waypoint = "";
-          waypoint += (''+stops[i].latitude)
+          waypoint += (''+stoplist[i].latitude)
           waypoint += "%2C"
-          waypoint += (''+stops[i].longitude)
+          waypoint += (''+stoplist[i].longitude)
           waypoint += "%7C"
           waypoints += waypoint;
         }
@@ -231,7 +265,8 @@ export default function RouteDetail(props) {
     base_url += "&travelmode=driving";
     base_url += waypoints;
 
-    window.open(base_url, '_blank').focus();
+    //window.open(base_url, '_blank').focus();
+    return base_url;
   };
 
   return (
@@ -259,10 +294,7 @@ export default function RouteDetail(props) {
               <Link component={RouterLink} to={"/schools/" + data.school_id}>
                 {school}
               </Link>
-
             </Typography>
-
-
           </Stack>
 
           <Typography variant="h5" align="center">
@@ -290,10 +322,35 @@ export default function RouteDetail(props) {
               </GoogleMap>
             </LoadScript>
             <Stack direction="row" spacing={2} alignItems="center">
-              <Button style={{ fontSize: '12px' }} size="small" onClick={handleDownload} variant='outlined'>View Route Printout</Button>
-              <Button style={{ fontSize: '12px' }} size="small" onClick={() => createDirections(false)} variant='outlined'>Get Morning Directions (to School)</Button>
-              <Button style={{ fontSize: '12px' }} size="small" onClick={() => createDirections(true)} variant='outlined'>Get Afternoon Directions (from School)</Button>
+              <Button style={{ fontSize: '12px' }} size="small" onClick={handleDownload} variant='outlined'>Download Student Roster</Button>
+              <Button style={{ fontSize: '12px' }} size="small" onClick={handleNavDialogOpen} variant='outlined'>View Directions</Button>
             </Stack>
+
+            <Dialog open={navDialogOpen} onClose={handleNavDialogClose} maxWidth="xl" sx={{ disableScrollLock: true }} scroll={'paper'}>
+              <DialogContent>
+                <Typography variant="h6" align="center">Links for Directions</Typography>
+                <TableContainer>
+                  <Table>
+                    <TableBody>
+                    {navLists.map((navlist, index) => (
+                        <TableRow
+                          key={navlist[0].id}
+                          sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                          <TableCell>Stops {(index*9)+1} - {(index*9)+(navlist.length)}</TableCell>
+                          <TableCell>
+                            <Link href={createNavURL(false, (navLists[0] == navlist), navlist)} rel="noreferrer" target="_blank">Directions to School</Link>
+                          </TableCell>
+                          <TableCell>
+                            <Link href={createNavURL(true, (navLists[0] == navlist), navlist)} rel="noreferrer" target="_blank">Directions from School</Link>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer> 
+              </DialogContent>
+            </Dialog>        
+            
           </Stack>
           <Stack spacing={1} sx={{ width: '50%'}}>
     
