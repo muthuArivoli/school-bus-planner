@@ -16,6 +16,13 @@ import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Link from '@mui/material/Link';
 import { DateTime } from 'luxon';
 import { Helmet } from 'react-helmet';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import { PDFExport } from "@progress/kendo-react-pdf";
 
 const containerStyle = {
   height: "400px",
@@ -34,6 +41,7 @@ export default function RouteDetail(props) {
   const [data, setData] = React.useState({});
   const [schoolLocation, setSchoolLocation] = React.useState({lat: 0, lng:0});
   const [students, setStudents] = React.useState([]);
+  const pdfExportComponent = React.useRef(null);
 
   const [school, setSchool] = React.useState("");
   const [rows, setRows] = React.useState([]);
@@ -166,6 +174,12 @@ export default function RouteDetail(props) {
     fetchData();
   }, []);
 
+  const handleDownload = () => {
+    if (pdfExportComponent.current) {
+      pdfExportComponent.current.save();
+    }
+  }
+
   return (
     <>
     <Helmet>
@@ -201,41 +215,37 @@ export default function RouteDetail(props) {
               Route Complete: {data.complete === true ? "Yes" : "No"}  
           </Typography>
 
-
-          <TextField
-          label="Description"
-          value={data.description}
-          InputProps={{
-            readOnly: true,
-          }}
-          multiline
-          focused
-          />
+          <Typography variant="h5" align="center">
+              Description:{(data.description) ? '' : ' None'} 
+          </Typography>
+          {(data.description) ? <Typography variant="body2" align="center">
+              {data.description}  
+          </Typography> : null}
 
         </Stack>
 
         <Stack direction="row" spacing={3} sx={{ width: '100%'}}>
-        
-        <LoadScript
-          googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o"
-        >
-          <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad}>
-            <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
-            {students.map((student, index) => (
-                <Marker key={index} title={student.name} position={student.loc} icon="http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"/> ))}
-            {stops.map((stop, index)=> (
-                <Marker key={index} title={stop.name} position={stop.loc} icon="http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"/> ))}
-          </GoogleMap>
-        </LoadScript>   
-      <Stack spacing={1} sx={{ width: '50%'}}>
+          <Stack spacing={2} justifyContent="center" alignItems="center">
+            <LoadScript googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o">
+              <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad}>
+                <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
+                {students.map((student, index) => (
+                    <Marker key={index} title={student.name} position={student.loc} icon="http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"/> ))}
+                {stops.map((stop, index)=> (
+                    <Marker key={index} title={stop.name} position={stop.loc} icon="http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"/> ))}
+              </GoogleMap>
+            </LoadScript>
+            <Button onClick={handleDownload} variant='contained'>Download Route Printout</Button>
+          </Stack>
+          <Stack spacing={1} sx={{ width: '50%'}}>
     
-      <Typography variant="body1" align="center">
-              Route Students
-          </Typography>
+            <Typography variant="body1" align="center">
+                Route Students
+            </Typography>
 
-        <RouteDetailStudentList rows={rows}/>
-      </Stack>
-    </Stack>
+            <RouteDetailStudentList rows={rows}/>
+          </Stack>
+        </Stack>
              
       <Stack spacing={1} sx={{ width: '100%'}}>
         <Typography variant="body1" align="center">
@@ -274,6 +284,52 @@ export default function RouteDetail(props) {
         </Stack>
       </Stack>
     </Grid>
+
+        <PDFExport           
+          ref={pdfExportComponent}
+          paperSize="Letter"
+          margin={"5"}
+          landscape={true}
+          fileName={`${data.name} Student Roster`}
+          scale={0.5}
+          author="HT Five">
+          <Stack spacing={10} alignItems="center" sx={{ p: 8 }}>
+            <Stack spacing={2} alignItems="center">
+              <Typography variant="h3" align="center">Route Name: {data.name}</Typography>
+              <Typography variant="h5" align="center">School: {school}</Typography>
+            </Stack>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell width="15%">Name</TableCell>
+                    <TableCell width="10%">Student ID</TableCell>
+                    <TableCell width="20%">Address</TableCell>
+                    <TableCell width="15%">Parent Name</TableCell>
+                    <TableCell width="25%">Parent Email</TableCell>
+                    <TableCell width="15%">Parent Phone</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {students.map((student) => (
+                    <TableRow
+                      key={student.name}
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <TableCell width="15%">{student.name}</TableCell>
+                      <TableCell width="10%">{student.student_id}</TableCell>
+                      <TableCell width="20%">{student.user.uaddress}</TableCell>
+                      <TableCell width="15%">{student.user.full_name}</TableCell>
+                      <TableCell width="25%">{student.user.email}</TableCell>
+                      <TableCell width="15%">{student.user.phone}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Stack>
+        </PDFExport>
+
     </>
   );
 }
