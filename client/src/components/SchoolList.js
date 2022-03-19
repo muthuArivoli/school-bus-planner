@@ -12,6 +12,12 @@ import Grid from '@mui/material/Grid';
 import tableStyle from './tablestyle.css';
 import { useTable, useSortBy, useFilters, usePagination, ReactTable } from 'react-table';
 import {QueryClient, QueryClientProvider, useQuery} from 'react-query';
+import {Table as rTable} from './ReactTable'; 
+import UnfoldMoreOutlinedIcon from '@mui/icons-material/UnfoldMoreOutlined';
+import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
+import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
+
+import TablePagination from '@mui/material/TablePagination';
 
 const columns = [
   { field: 'name', headerName: 'School Name', width: 250, filterable: false, 
@@ -48,114 +54,75 @@ const columns = [
 
  
 
-function Table({columns,data, manualPagination = false, totalRows, rowsPerPage}){
+function Table({columns,data, setSortModel}){
 
-const{
-  getTableProps,
-  getTableBodyProps,
-  headerGroups,
-  rows,
-  prepareRow,
-  page,
-  canPreviousPage,
-  canNextPage,
-  pageOptions,
-  pageCount,
-  gotoPage,
-  nextPage,
-  previousPage,
-  setPageSize,
-  state: {pageIndex, pageSize},
-} = useTable({columns, data, initialState: {pageIndex: 0}},  useFilters, useSortBy, usePagination,manualPagination);
+  const mappingss = {"name.name": 'name', "arrival_time": "arrival_time", "departure_time": "departure_time"};
+
+  const{
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+    state: {sortBy}
+  } = useTable({columns, data, initialState: {pageIndex: 0}, manualSortBy: true},  useFilters, useSortBy);
+
+  React.useEffect(()=>{
+    console.log(sortBy)
+    if(sortBy.length === 0){
+      setSortModel([]);
+    }
+    else{
+    setSortModel([{field: mappingss[sortBy[0].id], sort: sortBy[0].desc ? 'desc' : 'asc'}])
+    }
+  }, [sortBy])
 
 
-const [currentPage, setCurrentPage] = React.useState(0);
+  return (
+    <>
+    <table {...getTableProps()}>
+      <thead>
+        {headerGroups.map(headerGroup => (
+          < tr {...headerGroup.getHeaderGroupProps()}>
+            {headerGroup.headers.map(column => (
+              < th {...column.getHeaderProps(column.getSortByToggleProps())}                       
+              style={{
+                borderBottom: 'solid 3px red',
+                color: 'black',
+              }}>{column.render('Header')} 
+                     <span>
+                       {column.canSort ? column.isSorted
+                           ? column.isSortedDesc
+                               ? <KeyboardArrowDownOutlinedIcon/>
+                               : <KeyboardArrowUpOutlinedIcon/>
+                           : <UnfoldMoreOutlinedIcon/> : ""}
+                    </span>              
+              
+              </th>
+            ))}
+          </tr>
+        ))}
+      </thead>
+      <tbody {...getTableBodyProps()}>
+        {/* rows to page */}
+        {rows.map((row, i) => {
+          prepareRow(row)
+          return (
+            <tr {...row.getRowProps()}>
+              {row.cells.map(cell => {
+                return <td {...cell.getCellProps()}>
+                  {/* <Link component={RouterLink} to={"/schools/" + params.value.id}>{params.value.name}</Link>*/}
+                  {cell.render('Cell')}</td> 
+              })}
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
 
-//   const {
-//     isLoading,
-//     isError,
-//     error,
-//     data,
-//     isFetching,
-//    isPreviousData,
-//   } = useQuery(,{keepPreviousData: true})
 
-//const pageCount = Math.ceil(totalRows/rowsPerPage);
-
- return (
-   <>
-   <table {...getTableProps()}>
-     <thead>
-       {headerGroups.map(headerGroup => (
-         < tr {...headerGroup.getHeaderGroupProps()}>
-           {headerGroup.headers.map(column => (
-             < th {...column.getHeaderProps()}>{column.render('Header')} </th>
-           ))}
-         </tr>
-       ))}
-     </thead>
-     <tbody {...getTableBodyProps()}>
-       {rows.map((row, i) => {
-         prepareRow(row)
-         return (
-           <tr {...row.getRowProps()}>
-             {row.cells.map(cell => {
-               return <td {...cell.getCellProps()}>
-                 {/* <Link component={RouterLink} to={"/schools/" + params.value.id}>{params.value.name}</Link>*/}
-                 {cell.render('Cell')}</td> 
-             })}
-           </tr>
-         )
-       })}
-     </tbody>
-   </table>
-
-    <div className="pagination">
-    <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-      {'<<'}
-    </button>{' '}
-    <button onClick={() => previousPage()} disabled={!canPreviousPage}>
-      {'<'}
-    </button>{' '}
-    <button onClick={() => nextPage()} disabled={!canNextPage}>
-      {'>'}
-    </button>{' '}
-    <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-      {'>>'}
-    </button>{' '}
-    <span>
-      Page{' '}
-      <strong>
-        {pageIndex + 1} of {pageOptions.length}
-      </strong>{' '}
-    </span>
-    <span>
-      | Go to page:{' '}
-      <input
-        type="number"
-        defaultValue={pageIndex + 1}
-        onChange={e => {
-          const page = e.target.value ? Number(e.target.value) - 1 : 0
-          gotoPage(page)
-        }}
-        style={{ width: '100px' }}
-      />
-    </span>{' '}
-    <select
-      value={pageSize}
-      onChange={e => {
-        setPageSize(Number(e.target.value))
-      }}
-    >
-      {[10, 20, 30, 40, 50].map(pageSize => (
-        <option key={pageSize} value={pageSize}>
-          Show {pageSize}
-        </option>
-      ))}
-    </select>
-    </div>
-  </>
- )
+    </>
+  )
 
 }
 
@@ -164,7 +131,7 @@ const [currentPage, setCurrentPage] = React.useState(0);
 const Pagination = ({ pageIndex, totalRows, rowsPerPage}) => { 
 
   const numPages = Math.ceil(totalRows/rowsPerPage);
-  const pageArr = [...new Array(numPages)];
+  const pageArr = [...new Array(numPages)]; //array holding number of pages
 
   const [page, setPage] = React.useState(0);
   const [canGoPrev, setCanGoPrev] = React.useState(false);
@@ -234,19 +201,6 @@ const Pagination = ({ pageIndex, totalRows, rowsPerPage}) => {
   }
 
 
-
-
-
-/*
-return (
-
-  <>
-  {isLoading ? }
-  </div>
-
-)
-*/
-
 export default function DataTable(props) {
 
   const [data, setData] = React.useState([]);
@@ -256,11 +210,12 @@ export default function DataTable(props) {
        {
         Header: "School Name",
         accessor: "name.name",
-        //Cell: ({name}) => (<Link component={RouterLink} to={"/schools/" + name.id}>{name.name}</Link>)
+        Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/schools/" + row.row.original.name.id}>{row.row.original.name.name}</Link></>)
       }, 
       {
         Header: "Address",
-        accessor: "address"
+        accessor: "address",
+        disableSortBy: true
       },
       {
         Header: "Arrival Time",
@@ -281,6 +236,8 @@ export default function DataTable(props) {
   const [sortModel, setSortModel] = React.useState([]);
   const [filterStr, setFilterStr] = React.useState("");
 
+  const [totalPages, setTotalPages] = React.useState(0);
+
   const [loading , setLoading] = React.useState(true);
 
   const [filterType, setFilterType] = React.useState(null);
@@ -288,6 +245,8 @@ export default function DataTable(props) {
 
   const [showAll, setShowAll] = React.useState(false);
   let navigate = useNavigate();
+
+  
 
   React.useEffect(()=> {
     const fetchData = async() => {
@@ -321,6 +280,7 @@ export default function DataTable(props) {
       if (result.data.success){
         console.log(result.data);
         setTotalRows(result.data.records);
+ 
         let arr = result.data.schools.map((value) => {
           console.log({name: value.name, id: value.id, address: value.address});
           return {name: {name: value.name, id: value.id}, address: value.address, id: value.id, departure_time: value.departure_time, arrival_time: value.arrival_time};
@@ -328,7 +288,7 @@ export default function DataTable(props) {
 
         //
         setData(arr);
-        console.log("data" + arr);
+        console.log(arr);
         //
         setRows(arr);
       }
@@ -338,6 +298,9 @@ export default function DataTable(props) {
         props.setSnackbarSeverity("error");
         navigate("/schools");
       }
+
+
+
       setLoading(false);
     };
     fetchData();
@@ -375,34 +338,21 @@ export default function DataTable(props) {
         </Grid>
         </Grid>
     <div style={{ height: 600, width: '100%' }}>
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
-        pagination
-        paginationMode={totalRows > 100 && pageSize != 10 ? "client" : "server"}
-        rowCount={totalRows}
+      <Table columns = {reactColumns} data = {data} setSortModel={setSortModel}/>
+      <TablePagination
+        component="div"
+        count={totalRows}
         page={page}
-        onPageChange={(page) => setPage(page)}
-        pageSize={pageSize}
-        onPageSizeChange={(pageSize) => {setShowAll(pageSize != 10);
+        onPageChange={(event, page) => setPage(page)}
+        rowsPerPage={pageSize}
+        onRowsPerPageChange={(event) => {
+          let pageSize = event.target.value;
+          setShowAll(pageSize != 10);
           setPageSize(pageSize)
           setPage(0);}}
-        rowsPerPageOptions={[10, totalRows > 100 ? 100 : totalRows]}
-        sortingMode="server"
-        sortModel={sortModel}
-        onSortModelChange={(sortModel) => setSortModel(sortModel)}
-        disableSelectionOnClick
-        loading={loading}
+          rowsPerPageOptions={[10, totalRows]}
       />
-
-      <Table columns = {reactColumns} data = {data} totalRows = {totalRows} rowsPerPage = {10}/>
-
-       <Pagination
-        totalRows={totalRows}
-        pageIndex={page} 
-        rowsPerPage={25}
-      /> 
+        
 
       <Button
       component={RouterLink}
@@ -419,11 +369,3 @@ export default function DataTable(props) {
   );
 }
 
-/* 
-200
-      <ReactTable 
-        reactColumns = {columns}
-        data = {rows}
-      />
-
-*/

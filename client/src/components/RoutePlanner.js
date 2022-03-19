@@ -109,35 +109,32 @@ function NoRoutesOverlay() {
   );
 }
 
-function ReactStopsTable({ columns, data }) {
-  const [records, setRecords] = React.useState(data)
+function ReactStopsTable({ columns, data, setData}) {
+  const [records, setRecords] = React.useState(data);
 
-  const getRowId = React.useCallback(row => {return row.id}, [])
+  const getRowId = React.useCallback(row => {return row.id}, []);
 
-  const {
+  const{
     getTableProps,
     getTableBodyProps,
     headerGroups,
     rows,
     prepareRow,
-  } = useTable({     //useTable error - undefined (reading forEach)
-    columns,
-    data: {records},
-    getRowId,
-  })
+  } = useTable({columns, data, getRowId,});
+ 
 
   //update row index
   const moveRow = (dragIndex, hoverIndex) => {
-    const dragRecord = records[dragIndex]
-    setRecords(
-      update(records, {
+    const dragRecord = data[dragIndex]
+    setData(
+      update(data, {
         $splice: [
           [dragIndex, 1],
           [hoverIndex, 0, dragRecord],
         ],
       })
     )
-  }
+  };
 
   return (
     <>
@@ -173,7 +170,8 @@ function ReactStopsTable({ columns, data }) {
 };
 
 //drag/drop for row in react-table
-const ReactStopRow = ({ row, index, moveRow }) => {
+//const to function
+function ReactStopRow({ row, index, moveRow }) {
   const dropRef = React.useRef(null)
   const dragRef = React.useRef(null)
 
@@ -211,7 +209,8 @@ const ReactStopRow = ({ row, index, moveRow }) => {
     },
   })
   const [{ isDragging }, drag, preview] = useDrag({
-    item: { type: 'row', index },
+    type: "row",
+    item: { index },
     collect: monitor => ({
       isDragging: monitor.isDragging(),
     }),
@@ -248,6 +247,8 @@ export default function RoutePlanner(props) {
   const [schoolLocation, setSchoolLocation] = React.useState({lat: 0, lng:0});
 
   const [stopRows, setStopRows] = React.useState([]);
+
+  const [data, setData] = React.useState([]);
   const reactStopColumns = React.useMemo(
     () => [
      {
@@ -313,6 +314,7 @@ export default function RoutePlanner(props) {
     const fetchStudents = async() => {
         if(selectionModel.length == 0){
             setStopRows([]);
+            setData([]);
             setRouteInfo({"name": "", "description": ""});
             setStudentRows([]);
             return;
@@ -337,6 +339,7 @@ export default function RoutePlanner(props) {
           console.log(newStopRows);
           setStudentRows(newStudentRows);
           setStopRows(newStopRows);
+          setData(newStopRows);
         }
         else{
           props.setSnackbarMsg(`Route could not be loaded`);
@@ -413,6 +416,7 @@ export default function RoutePlanner(props) {
       let newStopRows = [...stopRows, newStopRow];
       console.log(newStopRow);
       setStopRows(newStopRows);
+      setData(newStopRows);
     }
   };
 
@@ -425,6 +429,7 @@ export default function RoutePlanner(props) {
       }
     }
     setStopRows(newStopRows);
+    setData(newStopRows);
   };
 
   const validateStops = (allRows) => {
@@ -475,6 +480,7 @@ export default function RoutePlanner(props) {
                 setRouteInfo({"name": "", "description": ""});
                 setStudentRows([]);
                 setStopRows([]);
+                setData([]);
                 setSnackbarOpen(true);
                 setSnackbarSeverity('success');
                 setSnackbarMsg('Route successfully created');
@@ -507,6 +513,7 @@ export default function RoutePlanner(props) {
                 setRouteInfo({"name": "", "description": ""});
                 setStudentRows([]);
                 setStopRows([]);
+                setData([]);
                 setSnackbarOpen(true);
                 setSnackbarSeverity('success');
                 setSnackbarMsg('Route successfully updated');
@@ -695,7 +702,7 @@ export default function RoutePlanner(props) {
           <div style={{ height: 350, width: 1000 }}>
             <div style={{ display: 'flex', height: '100%' }}>
               <div style={{ flexGrow: 1 }}>
-                <DataGrid
+{/*                 <DataGrid
                   components={{
                     NoRowsOverlay: NoStopsOverlay,
                   }}
@@ -705,11 +712,11 @@ export default function RoutePlanner(props) {
                   autoPageSize
                   density="compact"
                   onCellEditCommit = {(row) => handleStopCellEdit(row, stopRows)}
-                />
-
+                /> */}
+              <ReactStopsTable columns = {reactStopColumns} data = {stopRows} setData={setStopRows}/>   
               </div>
-              
-              {/* <ReactStopsTable columns = {reactStopColumns} rows = {stopRows}/>  */}
+              {/* stopRows */}
+
 
             </div>
           </div>
