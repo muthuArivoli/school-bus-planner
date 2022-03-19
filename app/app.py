@@ -15,6 +15,11 @@ import requests
 import os
 import geopy.distance
 import googlemaps
+import pandas as pd
+from io import TextIOWrapper
+from werkzeug.utils import secure_filename
+import csv
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:bus@db:5432/db'
@@ -39,6 +44,8 @@ YOUR_DOMAIN_NAME="mail.hypotheticaltransportfive.email"
 API_KEY = open('email_api.key', 'r').read().strip().replace('\n', '')
 
 DOMAIN = os.getenv("DOMAIN", "https://hypotheticaltransportfive.colab.duke.edu")
+
+ALLOWED_EXTENSIONS = set(['csv'])
 
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload):
@@ -1043,6 +1050,65 @@ def send_email_route(route_uid=None):
         if r.status_code != 200:
             logging.info(r.json())
             return {"success": False}
+    return {'success': True}
+
+@app.route('/fileValidation', methods = ['POST'])
+@cross_origin()
+def validateFiles():
+    target='/uploadFiles/'
+    logging.debug(os.getcwd())
+    if not os.path.isdir(target):
+        os.mkdir(target)
+  
+    user_file = request.files['parents.csv'] 
+    student_file = request.files['students.csv']
+
+    user_filename = secure_filename(user_file.filename)
+    student_filename = secure_filename(student_file.filename)
+
+    user_file.save("/".join([target, user_filename]))
+    student_file.save("/".join([target, student_filename]))
+    
+    csvreader_user = csv.reader(open('/uploadFiles/parents.csv'))
+    csvreader_student = csv.reader(open('/uploadFiles/students.csv'))
+
+    user_rows = []
+    for row in csvreader_user:
+        #SHOULD HAVE email, name, address, phone number
+        errors = {}
+
+        user_rows.append(row)
+        dup_email = User.query.filter_by(email = row[0]).first()
+        if dup_email:
+            errors['dup_email': dup_email.as_dict()]
+        dup_name = User.query.filter_by(full_name = row[1]).first()
+        if dup_name:
+            errors['dupe_name': dup_name.as_dict()]
+        
+
+
+
+
+    
+    student_rows = []
+    for row in csvreader_student:
+        student_rows.append(row)
+
+
+
+    # userFile = request.files.get('parents.csv')
+    # userFile = request.form.get('parents.csv')
+    # content = request.json
+    # userFile = content.get('parents.csv')
+    # logging.debug(userFile)
+
+    # studentFile = request.files.get('students.csv')
+    # text_stream = TextIOWrapper(userFile.stream, encoding='cp932')
+    # for row in csv.reader(text_stream):
+    #     logging.debug(text_stream)
+
+    # df = pd.read_csv(StringIO(userFile))
+    # logging.debug(userFile)
     return {'success': True}
 
 #HELPER METHODS
