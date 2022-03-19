@@ -195,8 +195,19 @@ export default function RouteDetail(props) {
 
   const createNavLinks = (chunkSize) => {
     let navLists = [];
+    let count = 0;
     for (let i = 0; i < stopRows.length; i += chunkSize) {
-      const chunk = stopRows.slice(i, i + chunkSize);
+      let chunk;
+      console.log(i);
+      if (i == 0) {
+        chunk = stopRows.slice(i, i + chunkSize);
+        console.log(chunk);
+      }
+      else {
+        chunk = stopRows.slice(i - count, (i - count) + chunkSize);
+        console.log(chunk);
+      }
+      count += 1;
       navLists.push(chunk);
     }
     setNavLists(navLists);
@@ -265,7 +276,6 @@ export default function RouteDetail(props) {
     base_url += "&travelmode=driving";
     base_url += waypoints;
 
-    //window.open(base_url, '_blank').focus();
     return base_url;
   };
 
@@ -336,7 +346,7 @@ export default function RouteDetail(props) {
                         <TableRow
                           key={navlist[0].id}
                           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                          <TableCell>Stops {(index*9)+1} - {(index*9)+(navlist.length)}</TableCell>
+                          <TableCell>Stops {(index*9)+(1-index)} - {((index*9)+(1-index))+(navlist.length-1)}</TableCell>
                           <TableCell>
                             <Link href={createNavURL(false, (navLists[0] == navlist), navlist)} rel="noreferrer" target="_blank">Directions to School</Link>
                           </TableCell>
