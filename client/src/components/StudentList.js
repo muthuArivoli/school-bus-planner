@@ -108,7 +108,7 @@ function Table({columns,data, setSortModel}){
             {headerGroup.headers.map(column => (
               < th {...column.getHeaderProps(column.getSortByToggleProps())}                       
               style={{
-                borderBottom: 'solid 3px red',
+                borderBottom: 'solid 3px #4169E1',
                 color: 'black',
               }}>{column.render('Header')} 
                      <span>

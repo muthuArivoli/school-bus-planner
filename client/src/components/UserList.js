@@ -82,7 +82,7 @@ function Table({columns,data, setSortModel}){
             {headerGroup.headers.map(column => (
               < th {...column.getHeaderProps(column.getSortByToggleProps())}                       
               style={{
-                borderBottom: 'solid 3px red',
+                borderBottom: 'solid 3px #4169E1',
                 color: 'black',
               }}>{column.render('Header')} 
                      <span>
@@ -129,7 +129,7 @@ export default function DataTable(props) {
       {
         Header: "Full Name",
         accessor: "name.name",
-        Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/students/" + row.row.original.name.id}>{row.row.original.name.name}</Link></>)
+        Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/users/" + row.row.original.name.id}>{row.row.original.name.name}</Link></>)
 
       },
       {
