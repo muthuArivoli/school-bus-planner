@@ -7,88 +7,6 @@ import axios from 'axios';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import { useTable, useSortBy, useFilters, usePagination, ReactTable } from 'react-table';
-
-import UnfoldMoreOutlinedIcon from '@mui/icons-material/UnfoldMoreOutlined';
-import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
-import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
-
-import TablePagination from '@mui/material/TablePagination';
-
-
-
-function Table({columns,data, setSortModel}){
-
-  const mappingss = {"name": 'name', "pickup": "pickup", "dropoff": "dropoff"};
-
-  const{
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-    state: {sortBy}
-  } = useTable({columns, data, initialState: {pageIndex: 0}, manualSortBy: true},  useFilters, useSortBy);
-
-  React.useEffect(()=>{
-    console.log(sortBy)
-    if(sortBy.length === 0){
-      setSortModel([]);
-    }
-    else{
-    setSortModel([{field: mappingss[sortBy[0].id], sort: sortBy[0].desc ? 'desc' : 'asc'}])
-    }
-  }, [sortBy])
-
-
-  return (
-    <>
-    <table {...getTableProps()}>
-      <thead>
-        {headerGroups.map(headerGroup => (
-          < tr {...headerGroup.getHeaderGroupProps()}>
-            {headerGroup.headers.map(column => (
-              < th {...column.getHeaderProps(column.getSortByToggleProps())}                       
-              style={{
-                borderBottom: 'solid 3px red',
-                color: 'black',
-              }}>{column.render('Header')} 
-                     <span>
-                       {column.canSort ? column.isSorted
-                           ? column.isSortedDesc
-                               ? <KeyboardArrowDownOutlinedIcon/>
-                               : <KeyboardArrowUpOutlinedIcon/>
-                           : <UnfoldMoreOutlinedIcon/> : ""}
-                    </span>              
-              
-              </th>
-            ))}
-          </tr>
-        ))}
-      </thead>
-      <tbody {...getTableBodyProps()}>
-        {/* rows to page */}
-        {rows.map((row, i) => {
-          prepareRow(row)
-          return (
-            <tr {...row.getRowProps()}>
-              {row.cells.map(cell => {
-                return <td {...cell.getCellProps()}>
-                  {/* <Link component={RouterLink} to={"/schools/" + params.value.id}>{params.value.name}</Link>*/}
-                  {cell.render('Cell')}</td> 
-              })}
-            </tr>
-          )
-        })}
-      </tbody>
-    </table>
-
-
-    </>
-  )
-
-}
-
 
 export default function StudentDetail() {
 
@@ -117,25 +35,6 @@ const mapOptions = {
     { field: 'pickup', headerName: "Pickup Time", type: 'dateTime', flex: 1},
     { field: 'dropoff', headerName: "Dropoff Time", type: 'dateTime', flex: 1},
   ];
-
-  const [sortModel, setSortModel] = React.useState([]);
-  const [reactData, setReactData] = React.useState([]);
-  const reactColumns = React.useMemo(
-    () => [
-      {
-        Header: "Stop Name",
-        accessor: "name"
-      },
-      {
-        Header: "Pick-up Time",
-        accessor: "pickup"
-      },
-      {
-        Header: "Drop-off Time",
-        accessor: "dropoff"
-      }
-    ]
-  )
 
   function NoStopsOverlay() {
     return (
@@ -215,10 +114,6 @@ const mapOptions = {
                       autoPageSize
                       density="compact"
                     /> 
-
-                    {/* <Table columns = {reactColumns} data = {reactData} setSortModel={setSortModel}/> */}
-
-
                   </div>
                 </div>
               </div>

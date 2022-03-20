@@ -7,14 +7,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import Link from '@mui/material/Link';
 import Box from '@mui/material/Box';
 
-//import tableStyle from './tablestyle.css';
-import { useTable, useSortBy, useFilters, usePagination, ReactTable } from 'react-table';
-import UnfoldMoreOutlinedIcon from '@mui/icons-material/UnfoldMoreOutlined';
-import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
-import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
-import TablePagination from '@mui/material/TablePagination';
-
-
 function NoStudentsOverlay() {
   return (
     <GridOverlay>
@@ -55,101 +47,7 @@ const columns = [
   },
 ];
 
-function Table({columns,data, setSortModel}){
-
-  const mappingss = {"name.name": 'name', "route": "route", "in_range":"in_range"};
-
-  const{
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-    state: {sortBy}
-  } = useTable({columns, data, initialState: {pageIndex: 0}, manualSortBy: true},  useFilters, useSortBy);
-
-  React.useEffect(()=>{
-    console.log(sortBy)
-    if(sortBy.length === 0){
-      setSortModel([]);
-    }
-    else{
-    setSortModel([{field: mappingss[sortBy[0].id], sort: sortBy[0].desc ? 'desc' : 'asc'}])
-    }
-  }, [sortBy])
-
-
-  return (
-    <>
-    <table {...getTableProps()}>
-      <thead>
-        {headerGroups.map(headerGroup => (
-          < tr {...headerGroup.getHeaderGroupProps()}>
-            {headerGroup.headers.map(column => (
-              < th {...column.getHeaderProps(column.getSortByToggleProps())}                       
-              style={{
-                borderBottom: 'solid 3px red',
-                color: 'black',
-              }}>{column.render('Header')} 
-                     <span>
-                       {column.canSort ? column.isSorted
-                           ? column.isSortedDesc
-                               ? <KeyboardArrowDownOutlinedIcon/>
-                               : <KeyboardArrowUpOutlinedIcon/>
-                           : <UnfoldMoreOutlinedIcon/> : ""}
-                    </span>              
-              
-              </th>
-            ))}
-          </tr>
-        ))}
-      </thead>
-      <tbody {...getTableBodyProps()}>
-        {/* rows to page */}
-        {rows.map((row, i) => {
-          prepareRow(row)
-          return (
-            <tr {...row.getRowProps()}>
-              {row.cells.map(cell => {
-                return <td {...cell.getCellProps()}>
-                  {/* <Link component={RouterLink} to={"/schools/" + params.value.id}>{params.value.name}</Link>*/}
-                  {cell.render('Cell')}</td> 
-              })}
-            </tr>
-          )
-        })}
-      </tbody>
-    </table>
-
-
-    </>
-  )
-
-}
-
 export default function DataTable(props) {
-  const [sortModel, setSortModel] = React.useState([]);
-  const [data, setData] = React.useState([]);
-  const reactColumns = React.useMemo(
-    () => [
-      {
-        Header: "Full Name",
-        accessor: "name.name",
-        Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/students/" + row.row.original.name.id}>{row.row.original.name.name}</Link></>)
-
-      },
-      {
-        Header: "Route",
-        accessor: "route.name",
-        //Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/routes/" + row.row.original.route.id}>{row.row.original.route.name}</Link></>)
-      },
-      {
-        Header: "Has a Stop?",
-        accessor: "in_range",
-        Cell: (row) => (<>{ row.row.original.in_range ? <CheckIcon/>:<CloseIcon/> }</>)//show checkbox  
-      }
-    ]
-  )
 
   return (
     <>
@@ -168,15 +66,9 @@ export default function DataTable(props) {
                 NoRowsOverlay: NoStudentsOverlay,
               }}
             /> 
-
-           
-            {/* <Table columns = {reactColumns} data = {props.rows} setSortModel={setSortModel}/> */}
-
           </div>
         </div>
       </div>
     </>
   );
 }
-
-//            data -> props.rows
