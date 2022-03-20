@@ -48,13 +48,12 @@ const columns = [
 ];
 
 export default function DataTable(props) {
-
   return (
     <>
       <div style={{ height: 400, width: '100%' }}>
         <div style={{ display: 'flex', height: '100%' }}>
           <div style={{ flexGrow: 1 }}>
-             <DataGrid
+            <DataGrid
               rows={props.rows}
               columns={columns}
               getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
@@ -65,7 +64,7 @@ export default function DataTable(props) {
               components={{
                 NoRowsOverlay: NoStudentsOverlay,
               }}
-            /> 
+            />
           </div>
         </div>
       </div>

@@ -69,7 +69,6 @@ const mapOptions = {
               newStopRows = [...newStopRows, {id: cur_stop.pickup_time, name: cur_stop.name, pickup: cur_stop.pickup_time, dropoff: cur_stop.dropoff_time, location: {lat: cur_stop.latitude, lng: cur_stop.longitude}}]
             }
             setStopRows(newStopRows);
-            setReactData(newStopRows);
           }
         }
         else {
@@ -101,10 +100,10 @@ const mapOptions = {
               Stops in range of you: 
             </Typography>
             <Stack direction="row" spacing={3} justifyContent="center">
-              <div style={{ height: 250, width: 450 }}>
+              <div style={{ height: 250, width: 800 }}>
                 <div style={{ display: 'flex', height: '100%' }}>
                   <div style={{ flexGrow: 1 }}>
-                   <DataGrid
+                    <DataGrid
                       components={{
                         NoRowsOverlay: NoStopsOverlay,
                       }}
@@ -113,7 +112,7 @@ const mapOptions = {
                       getRowId={(row) => row.id}
                       autoPageSize
                       density="compact"
-                    /> 
+                    />
                   </div>
                 </div>
               </div>

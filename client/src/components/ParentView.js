@@ -68,8 +68,6 @@ export default function ParentView() {
       );
       if (result.data.success){
         setData(result.data.user);
-        setReactData(result.data.user);
-        console.log(result.data.user);
       }
     }
     fetchData();

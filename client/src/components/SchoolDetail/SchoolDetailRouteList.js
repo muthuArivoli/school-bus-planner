@@ -7,7 +7,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import Link from '@mui/material/Link';
 import Box from '@mui/material/Box';
 
-
 function NoRoutesOverlay() {
   return (
     <GridOverlay>
@@ -39,7 +38,6 @@ const columns = [
 ];
 
 export default function DataTable(props) {
-  
   return (
     <div style={{ height: 400, width: '100%' }}>
         <div style={{ display: 'flex', height: '100%' }}>
@@ -55,7 +53,7 @@ export default function DataTable(props) {
               components={{
                 NoRowsOverlay: NoRoutesOverlay,
               }}
-            /> 
+            />
           </div>
         </div>
       </div>
