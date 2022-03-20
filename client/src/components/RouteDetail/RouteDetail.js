@@ -58,13 +58,15 @@ export default function RouteDetail(props) {
 
   const [navDialogOpen, setNavDialogOpen] = React.useState(false);
   const [navLists, setNavLists] = React.useState([]);
+  const [revNavLists, setRevNavLists] = React.useState([]);
 
   const handleNavDialogClose = () => {
     setNavDialogOpen(false);
   };
 
   const handleNavDialogOpen = () => {
-    createNavLinks(9);
+    createNavLists(stopRows, 9);
+    createReverseNavLists(stopRows, 9);
     setNavDialogOpen(true);
   };
 
@@ -193,24 +195,45 @@ export default function RouteDetail(props) {
     }
   };
 
-  const createNavLinks = (chunkSize) => {
+  const createNavLists = (stops, chunkSize) => {
     let navLists = [];
     let count = 0;
-    for (let i = 0; i < stopRows.length; i += chunkSize) {
+    for (let i = 0; i < stops.length; i += chunkSize) {
       let chunk;
       console.log(i);
       if (i == 0) {
-        chunk = stopRows.slice(i, i + chunkSize);
-        console.log(chunk);
+        chunk = stops.slice(i, i + chunkSize);
       }
       else {
-        chunk = stopRows.slice(i - count, (i - count) + chunkSize);
-        console.log(chunk);
+        chunk = stops.slice(i - count, (i - count) + chunkSize);
       }
       count += 1;
       navLists.push(chunk);
     }
+    console.log(navLists);
     setNavLists(navLists);
+  };
+
+  const createReverseNavLists = (stops, chunkSize) => {
+    let stopsCopy = [...stops];
+    let revStops = stopsCopy.reverse();
+
+    let lists = [];
+    let count = 0;
+    for (let i = 0; i < revStops.length; i += chunkSize) {
+      let chunk;
+      console.log(i);
+      if (i == 0) {
+        chunk = revStops.slice(i, i + chunkSize);
+      }
+      else {
+        chunk = revStops.slice(i - count, (i - count) + chunkSize);
+      }
+      count += 1;
+      lists.push(chunk);
+    }
+    console.log(lists);
+    setRevNavLists(lists);
   };
 
   const createNavURL = (fromSchool, schoolInRoute, stoplist) => {
@@ -246,18 +269,18 @@ export default function RouteDetail(props) {
       }
     }
     else {
-      if (schoolInRoute) {
+      if (schoolInRoute){
         destination += schoolLocation.lat;
         destination += "%2C";
         destination += schoolLocation.lng;
       } else {
-        destination += stoplist[0].latitude;
+        destination += stoplist[stoplist.length-1].latitude;
         destination += "%2C";
-        destination += stoplist[0].longitude;
+        destination += stoplist[stoplist.length-1].longitude;
       }
 
-      for (var i=stoplist.length-1;i>0;i--) {
-        if (i-1 == 0) {
+      for (var i=0;i<stoplist.length-1;i++) {
+        if (i == 0) {
           origin += (''+stoplist[i].latitude)
           origin += "%2C"
           origin += (''+stoplist[i].longitude)
@@ -344,15 +367,21 @@ export default function RouteDetail(props) {
                     <TableBody>
                     {navLists.map((navlist, index) => (
                         <TableRow
-                          key={navlist[0].id}
+                          key={index}
                           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                           <TableCell>Stops {(index*9)+(1-index)} - {((index*9)+(1-index))+(navlist.length-1)}</TableCell>
-                          <TableCell>
-                            <Link href={createNavURL(false, (navLists[0] == navlist), navlist)} rel="noreferrer" target="_blank">Directions to School</Link>
-                          </TableCell>
-                          <TableCell>
-                            <Link href={createNavURL(true, (navLists[0] == navlist), navlist)} rel="noreferrer" target="_blank">Directions from School</Link>
-                          </TableCell>
+
+                          {revNavLists.map((rlist, rindex) => (
+                            ((index === rindex) ? <TableCell key={rindex}>
+                              <Link href={createNavURL(false, (revNavLists[revNavLists.length-1] == rlist), rlist)} rel="noreferrer" target="_blank">Directions to School</Link>
+                            </TableCell> : null)
+                          ))}
+
+                          {navLists.map((flist, findex) => (
+                            ((index === findex) ? <TableCell key={findex}>
+                              <Link href={createNavURL(true, (navLists[0] == flist), flist)} rel="noreferrer" target="_blank">Directions from School</Link>
+                            </TableCell> : null)
+                          ))}
                         </TableRow>
                       ))}
                     </TableBody>
