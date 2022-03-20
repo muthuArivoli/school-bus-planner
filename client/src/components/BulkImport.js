@@ -44,6 +44,7 @@ export default function BulkImport(props){
           props.setSnackbarMsg(`Files successfully uploaded`);
           props.setShowSnackbar(true);
           props.setSnackbarSeverity("success");
+          console.log(res.data)
           // navigate("/schools");
         }
         else{

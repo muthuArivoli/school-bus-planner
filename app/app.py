@@ -19,6 +19,8 @@ import pandas as pd
 from io import TextIOWrapper
 from werkzeug.utils import secure_filename
 import csv
+import re
+from usps import USPSApi, Address
 
 
 app = Flask(__name__)
@@ -32,6 +34,7 @@ db = SQLAlchemy(app)
 cors = CORS(app)
 api = Blueprint('api', __name__)
 gmaps_key = googlemaps.Client(key="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o")
+usps = USPSApi('954DUKEU6917')
 
 from models import User, Student, School, Route, Stop, UserFilter, StudentFilter, SchoolFilter, RouteFilter, TokenBlocklist
 
@@ -1055,47 +1058,134 @@ def send_email_route(route_uid=None):
 @app.route('/fileValidation', methods = ['POST'])
 @cross_origin()
 def validateFiles():
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
     target='/uploadFiles/'
     logging.debug(os.getcwd())
     if not os.path.isdir(target):
         os.mkdir(target)
-  
-    user_file = request.files['parents.csv'] 
-    student_file = request.files['students.csv']
-
-    user_filename = secure_filename(user_file.filename)
-    student_filename = secure_filename(student_file.filename)
-
-    user_file.save("/".join([target, user_filename]))
-    student_file.save("/".join([target, student_filename]))
     
-    csvreader_user = csv.reader(open('/uploadFiles/parents.csv'))
-    csvreader_student = csv.reader(open('/uploadFiles/students.csv'))
+    response = {}
 
     user_rows = []
-    for row in csvreader_user:
-        #SHOULD HAVE email, name, address, phone number
-        errors = {}
+    for filename, file in request.files.items():
+        #ADD SOMETHING TO CHECK USERS.CSV first
+        if filename == 'users.csv':
+            csvreader_user = get_csv(file)
+            usr_row_ct = 0
+            user_resp = []
 
-        user_rows.append(row)
-        dup_email = User.query.filter_by(email = row[0]).first()
-        if dup_email:
-            errors['dup_email': dup_email.as_dict()]
-        dup_name = User.query.filter_by(full_name = row[1]).first()
-        if dup_name:
-            errors['dupe_name': dup_name.as_dict()]
-        
+            for row in csvreader_user:
+                #SHOULD HAVE email, name, address, phone number
+                errors = {}
+                user_rows.append(row)
+                logging.debug(row)
 
+                if usr_row_ct == 0:
+                    usr_row_ct +=1
+                    continue
+            
+                
+                if len(row) != 4:
+                    errors['format'] = "Missing values"
 
+                email, name, addr, phone_number = row
+                logging.debug(email)
+                #CHECK FOR DUPLICATES
+                dup_email = User.query.filter_by(email = email).first()
+                if dup_email:
+                    errors['dup_email': dup_email.as_dict()]
+                dup_name = User.query.filter_by(full_name = name).first()
+                if dup_name:
+                    errors['dup_name': dup_name.as_dict()]
 
+                #CHECK DATA TYPES etc.
+                if name == "":
+                    errors['name'] = "Record must have name"
+                
+                if email == "":
+                    errors['email'] = "Record must have an email"
+                
+                if addr == "":
+                    errors['address'] = "Record must have an address"
 
-    
-    student_rows = []
-    for row in csvreader_student:
-        student_rows.append(row)
+                if(not re.fullmatch(regex,email)):
+                    errors['email'] = 'Invalid email format'
+                
+                values = re.split(', ? +', addr)
+                if len(values) != 4:
+                    errors['address'] = 'Invalid address format'
+                else:
+                    #maybe add geocoding stuff and then also add a check if address has two parts for address 1 and 2
+                    addr1, city, state, zipcode = values
+                    to_addr = Address(name='',address_1=addr1, city=city, state=state, zipcode=zipcode)
+                    validation = usps.validate_address(to_addr)
+                    logging.debug(validation.result)
+                user_resp.append({'row': row, 'errors': errors})
+                usr_row_ct +=1
+            
+            response['users.csv'] = user_resp
+        if filename == 'students.csv':
+            csvreader_student = get_csv(file)
+            stud_row_ct = 0
+            student_rows = []
+            stud_resp = []
+            for row in csvreader_student:
+                #SHOULD HAVE name, parent_email, student_id, school_name
+                errors = {}
+                student_rows.append(row)
+                
+                if stud_row_ct == 0:
+                    stud_row_ct +=1
+                    continue
+                
+                if len(row) != 4:
+                    errors['format'] = "Missing values"
 
+                name, email, student_id, school_name = row
+                school_name = school_name.strip().lower()
+                email = email.strip().lower()
 
+                #CHECK FOR DUPLICATES
+                name = name.strip().lower()
+                dup_name = Student.query.filter_by(name = name).first()
+                if dup_name:
+                    errors['dup_name': dup_name.as_dict()]
 
+                #CHECK DATA TYPES etc.
+                if name == "":
+                    errors['name'] = "Record must have name"
+                
+                if student_id is not "":
+                    #ADD CHECK for floats and strings
+                    student_id = int(student_id)
+                    if student_id <=0 or student_id > 2147483647:
+                        errors['student_id'] = "ID cannot be negative or out of range"
+                    # errors['student_id'] = "Record must have a numeric ID if provided"
+                
+                if school_name == "":
+                    errors['school'] = "Record must have a school"
+                else:
+                    existing_school = School.query.filter_by(name=school_name).first()
+                    if existing_school is None:
+                        errors['school'] = 'Student record must match an existing school'
+                
+                if email == "":
+                    errors['parent_email'] = "Record must have an associated user email"
+                else:
+                    existing_parent = User.query.filter_by(email=email).first()
+                    imported_user = False
+                    if existing_parent is None:
+                        if len(user_rows) > 0:
+                            for usr_row in user_rows:
+                                if usr_row[0].strip().lower() == email:
+                                    imported_user = True
+                
+                    if imported_user is False:
+                        errors['parent_email'] = 'Student record must match a valid user'
+                stud_resp.append({'row': row, 'errors': errors})
+                stud_row_ct +=1
+            logging.debug(stud_resp)
+            response['students.csv'] = stud_resp
     # userFile = request.files.get('parents.csv')
     # userFile = request.form.get('parents.csv')
     # content = request.json
@@ -1109,7 +1199,8 @@ def validateFiles():
 
     # df = pd.read_csv(StringIO(userFile))
     # logging.debug(userFile)
-    return {'success': True}
+    response['success'] = True
+    return json.dumps(response)
 
 #HELPER METHODS
 
@@ -1198,6 +1289,17 @@ def update_stop_calculations(school):
             stop_to_edit.pickup_time = pickup_times[f]
             stop_to_edit.dropoff_time = dropoff_times[f]
     db.session.commit()
+
+def get_csv(file):
+    target='/uploadFiles/'
+    filename = secure_filename(file.filename)
+    logging.debug(filename)
+    file.save("/".join([target, filename]))
+    csvreader = csv.reader(open("/".join([target, filename])))
+    return csvreader
+
+    
+
 
 app.register_blueprint(api, url_prefix='/api')
 
