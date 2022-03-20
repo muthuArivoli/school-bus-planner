@@ -200,8 +200,59 @@ function Table({columns,data, setSortModel}){
 
 }
 
+//make cells editable
+const EditableCell = ({
+  cell: { value: initialValue },
+  row: { index },
+  column: { id },
+  updateMyData 
+}) => {
+  const [value, setValue] = React.useState(initialValue);
+  const onChange = e => {
+    setValue(e.target.value);
+  };
+  const onBlur = () => {
+    updateMyData(index, id, value);
+  };
+  React.useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  if (id === "name"){
+  return <input value={value} onChange={onChange} onBlur={onBlur} />
+  }
+  return value;
+
+};
+
+
+const defaultColumn = {
+  Cell: EditableCell
+};
+
+
+
+//stops table with drag/drop
 function ReactStopsTable({ columns, data, setData}) {
   const [records, setRecords] = React.useState(data);
+
+  const [newlines, setNewLines] = React.useState(data);
+
+  const updateMyData = (rowIndex, columnID, value) => {
+    setNewLines(old =>
+      old.map((row, index) => {
+        console.log(row, index)
+        if (index === rowIndex) {
+          return {
+            ...old[rowIndex],
+            [columnID]: value
+          };
+        }
+        return row;
+      })
+    );
+  };
+
 
   const getRowId = React.useCallback(row => {return row.id}, []);
 
@@ -211,7 +262,7 @@ function ReactStopsTable({ columns, data, setData}) {
     headerGroups,
     rows,
     prepareRow,
-  } = useTable({columns, data, getRowId,});
+  } = useTable({columns, data, getRowId, defaultColumn, updateMyData,});
  
 
   //update row index
