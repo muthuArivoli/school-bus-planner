@@ -200,6 +200,7 @@ function Table({columns,data, setSortModel}){
 
 }
 
+/* 
 //make cells editable
 const EditableCell = ({
   cell: { value: initialValue },
@@ -220,8 +221,7 @@ const EditableCell = ({
 
   if (id === "name"){
   return <input value={value} onChange={onChange} onBlur={onBlur} />
-  }
-  return value;
+  }return value;
 
 };
 
@@ -236,11 +236,12 @@ const defaultColumn = {
 function ReactStopsTable({ columns, data, setData}) {
   const [records, setRecords] = React.useState(data);
 
-  const [newlines, setNewLines] = React.useState(data);
+  const [newLines, setNewLines] = React.useState(data);
 
   const updateMyData = (rowIndex, columnID, value) => {
     setNewLines(old =>
       old.map((row, index) => {
+        console.log("updatemydata row " + row[0]);
         console.log(row, index)
         if (index === rowIndex) {
           return {
@@ -251,8 +252,24 @@ function ReactStopsTable({ columns, data, setData}) {
         return row;
       })
     );
+
+    //setStopRows(newLines);
   };
 
+  console.log("newlines " + newLines[0].name);
+  
+  console.log(data);
+  //data[0].name == newlines[0].name
+
+//  handleStopCell
+//    let oldStopRows = JSON.parse(JSON.stringify(allRows));
+//    if (row.field === "name") {
+//      const i = allRows.findIndex(row_to_edit => row_to_edit.id === row.id);
+//      const newRows = [...allRows];
+//      newRows[index]["name"] = row.value;
+//      setStopRows(newRows);
+//    }
+  
 
   const getRowId = React.useCallback(row => {return row.id}, []);
 
@@ -309,7 +326,7 @@ function ReactStopsTable({ columns, data, setData}) {
     </DndProvider>
     </>
   )
-};
+};  
 
 //drag/drop for row in react-table
 //const to function
@@ -372,6 +389,7 @@ function ReactStopRow({ row, index, moveRow }) {
     </tr>
   )
 };
+*/
 
 export default function RoutePlanner(props) {
   const [studentRows, setStudentRows] = React.useState([]);
@@ -421,7 +439,6 @@ export default function RoutePlanner(props) {
       }
     ]
   )
-
 
 
   const [map, setMap] = React.useState(null);
@@ -640,6 +657,220 @@ export default function RoutePlanner(props) {
     } 
     return errors;
   };
+
+
+  //make cells for stop name in stop table editable
+  const EditableCell = ({
+    cell: { value: initialValue },
+    row: { index },
+    column: { id },
+    updateMyData 
+  }) => {
+
+    // keep and update the state of the cell normally
+    const [value, setValue] = React.useState(initialValue);
+    const onChange = e => {
+      setValue(e.target.value);
+      console.log("setvalue editable cell : "+ value);
+    };
+
+    // only update the external data when the input is blurred
+    const onBlur = () => {
+      updateMyData(index, id, value);
+    };
+
+      // If the initialValue is changed external, sync it up with our state
+    React.useEffect(() => {
+      setValue(value);  //initialValue -> value
+    }, [value]);      //initialValue -> value
+
+    if (id === "name"){
+    return <input value={value} onChange={onChange} onBlur={onBlur} />
+    }
+    console.log("input value: ");
+    console.log(value);
+    return value;
+
+  };
+
+  //editable cell renderer
+  const defaultColumn = {
+    Cell: EditableCell
+  };
+
+  
+  //stops table with drag/drop
+  function ReactStopsTable({ columns, data, setData}) {
+  const [records, setRecords] = React.useState(data);
+
+  const [newStopLines, setNewStopLines] = React.useState(data);
+
+  const updateMyData = (rowIndex, columnID, value) => {
+    setNewStopLines(old =>
+      old.map((row, index) => {
+        console.log("ROW updateMyData")
+        console.log(row, index)
+        if (index === rowIndex) {
+          return {
+            ...old[rowIndex],
+            [columnID]: value
+          };
+        }
+        return row;
+      })
+    );
+
+  
+    console.log("OLD stop rows: ");
+    console.log(stopRows);
+    console.log("NEW stop rows: " );
+    console.log(newStopLines);
+    //console.log("old name: " + data[0].name);
+    //console.log("infunction new line: " + newStopLines[0].name);
+    //console.log("old name: " + data[1].name);
+    //console.log("infunction new line: " + newStopLines[1].name);
+    setStopRows(newStopLines);
+  };
+
+
+  /* 
+  if (data.field === "name"){
+    const newRows = [data];
+    newRows[index]["name"] = newLines[index].name; 
+  }
+  */
+
+  /*handleStopCell
+    let oldStopRows = JSON.parse(JSON.stringify(allRows));
+    if (row.field === "name") {
+      const i = allRows.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...allRows];
+      newRows[index]["name"] = row.value;
+      setStopRows(newRows);
+    }
+  */
+
+  const getRowId = React.useCallback(row => {return row.id}, []);
+
+  const{
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+  } = useTable({columns, data, getRowId, defaultColumn, updateMyData,});
+ 
+
+  //update row index for drag/drop
+  const moveRow = (dragIndex, hoverIndex) => {
+    const dragRecord = data[dragIndex]
+    setData(
+      update(data, {
+        $splice: [
+          [dragIndex, 1],
+          [hoverIndex, 0, dragRecord],
+        ],
+      })
+    )
+  };
+
+  return (
+    <>
+    <DndProvider backend={HTML5Backend}>
+      <table {...getTableProps()}>
+        <thead>
+          {headerGroups.map(headerGroup => (
+            <tr {...headerGroup.getHeaderGroupProps()}>
+              <th></th>
+              {headerGroup.headers.map(column => (
+                <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody {...getTableBodyProps()}>
+          {rows.map(
+            (row, index) =>
+              prepareRow(row) || (
+                <ReactStopRow
+                  index={index}
+                  row={row}
+                  moveRow={moveRow}
+                  {...row.getRowProps()}
+                />
+              )
+          )}
+        </tbody>
+      </table>
+    </DndProvider>
+    </>
+  )
+};
+
+//drag/drop for row in react-table
+//const to function
+function ReactStopRow({ row, index, moveRow }) {
+  const dropRef = React.useRef(null)
+  const dragRef = React.useRef(null)
+
+  const [, drop] = useDrop({
+    accept: 'row',
+    hover(item, monitor) {
+      if (!dropRef.current) {
+        return
+      }
+      const dragIndex = item.index
+      const hoverIndex = index
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex) {
+        return
+      }
+      // Determine rectangle on screen
+      const hoverBoundingRect = dropRef.current.getBoundingClientRect()
+      // Get vertical middle
+      const hoverMiddleY =
+        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+      // Determine mouse position
+      const clientOffset = monitor.getClientOffset()
+      // Get pixels to the top
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+        return
+      }
+      // Dragging upwards
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+        return
+      }
+      moveRow(dragIndex, hoverIndex)
+
+      item.index = hoverIndex
+    },
+  })
+  const [{ isDragging }, drag, preview] = useDrag({
+    type: "row",
+    item: { index },
+    collect: monitor => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const opacity = isDragging ? 0 : 1
+
+  preview(drop(dropRef))
+  drag(dragRef)
+
+  return (
+    <tr ref={dropRef} style={{ opacity }}>
+      <td ref={dragRef}>move</td>
+      {row.cells.map(cell => {
+        return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+      })}
+    </tr>
+  )
+};
+
+
+
 
   // function when add/update route button is clicked
   const handleSubmit = (event) => {
