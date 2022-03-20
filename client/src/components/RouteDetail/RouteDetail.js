@@ -56,6 +56,15 @@ export default function RouteDetail(props) {
 
   const [role, setRole] = React.useState(0);
 
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
+  const handleDialogOpen = () => {
+    setDialogOpen(true);
+  };
+
   const [navDialogOpen, setNavDialogOpen] = React.useState(false);
   const [navLists, setNavLists] = React.useState([]);
   const [revNavLists, setRevNavLists] = React.useState([]);
@@ -355,7 +364,7 @@ export default function RouteDetail(props) {
               </GoogleMap>
             </LoadScript>
             <Stack direction="row" spacing={2} alignItems="center">
-              <Button style={{ fontSize: '12px' }} size="small" onClick={handleDownload} variant='outlined'>Download Student Roster</Button>
+              <Button style={{ fontSize: '12px' }} size="small" onClick={handleDialogOpen} variant='outlined'>View Student Roster</Button>
               <Button style={{ fontSize: '12px' }} size="small" onClick={handleNavDialogOpen} variant='outlined'>View Directions</Button>
             </Stack>
 
@@ -438,7 +447,8 @@ export default function RouteDetail(props) {
         </Stack>
       </Stack>
     </Grid>
-
+    <Dialog open={dialogOpen} onClose={handleDialogClose} maxWidth="xl" sx={{ disableScrollLock: true }} scroll={'paper'}>
+      <DialogContent dividers={true}>
         <PDFExport           
           ref={pdfExportComponent}
           paperSize="Letter"
@@ -483,7 +493,11 @@ export default function RouteDetail(props) {
             </TableContainer>
           </Stack>
         </PDFExport>
-
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDownload} variant="contained" sx={{ maxWidth: '200px' }}>Download</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
