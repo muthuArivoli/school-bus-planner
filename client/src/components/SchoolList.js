@@ -8,11 +8,7 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
-import tableStyle from './tablestyle.css';
-import { useTable, useSortBy, useFilters, usePagination, ReactTable } from 'react-table';
-import {QueryClient, QueryClientProvider, useQuery} from 'react-query';
-//import {Table as rTable} from './ReactTable'; 
-import {Rtable as rTable} from './ReactTable';
+import { useTable, useSortBy} from 'react-table';
 import UnfoldMoreOutlinedIcon from '@mui/icons-material/UnfoldMoreOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
@@ -20,6 +16,13 @@ import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutl
 import TablePagination from '@mui/material/TablePagination';
 import { DateTime } from "luxon";
 import { Helmet } from 'react-helmet';
+import MauTable from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
+import CssBaseline from '@mui/material/CssBaseline';
+import styled from 'styled-components'
 
 const columns = [
   { field: 'name', headerName: 'School Name', width: 250, filterable: false, 
@@ -54,8 +57,6 @@ const columns = [
   }
 ];
 
- 
-
 function Table({columns,data, setSortModel}){
 
   const mappingss = {"name.name": 'name', "arrival_time": "arrival_time", "departure_time": "departure_time"};
@@ -67,7 +68,7 @@ function Table({columns,data, setSortModel}){
     rows,
     prepareRow,
     state: {sortBy}
-  } = useTable({columns, data, initialState: {pageIndex: 0}, manualSortBy: true},  useFilters, useSortBy);
+  } = useTable({columns, data, initialState: {pageIndex: 0}, manualSortBy: true}, useSortBy);
 
   React.useEffect(()=>{
     console.log(sortBy)
@@ -82,16 +83,12 @@ function Table({columns,data, setSortModel}){
 
   return (
     <>
-    <table {...getTableProps()}>
-      <thead>
+    <MauTable {...getTableProps()}>
+      <TableHead>
         {headerGroups.map(headerGroup => (
-          < tr {...headerGroup.getHeaderGroupProps()}>
+          < TableRow {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
-              < th {...column.getHeaderProps(column.getSortByToggleProps())}                       
-              style={{
-                borderBottom: 'solid 3px #4169E1',
-                color: 'black',
-              }}>{column.render('Header')} 
+              < TableCell {...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')} 
                      <span>
                        {column.canSort ? column.isSorted
                            ? column.isSortedDesc
@@ -100,108 +97,31 @@ function Table({columns,data, setSortModel}){
                            : <UnfoldMoreOutlinedIcon/> : ""}
                     </span>              
               
-              </th>
+              </ TableCell>
             ))}
-          </tr>
+          </ TableRow>
         ))}
-      </thead>
-      <tbody {...getTableBodyProps()}>
-        {/* rows to page */}
+      </TableHead>
+      <TableBody {...getTableBodyProps()}>
         {rows.map((row, i) => {
-          prepareRow(row)
+          prepareRow(row);
           return (
-            <tr {...row.getRowProps()}>
+            <TableRow {...row.getRowProps()}>
               {row.cells.map(cell => {
-                return <td {...cell.getCellProps()}>
-                  {/* <Link component={RouterLink} to={"/schools/" + params.value.id}>{params.value.name}</Link>*/}
-                  {cell.render('Cell')}</td> 
+                return <TableCell {...cell.getCellProps()}>
+                  {cell.render('Cell')}</TableCell> 
               })}
-            </tr>
+            </TableRow>
           )
         })}
-      </tbody>
-    </table>
+      </TableBody>
+    </MauTable>
 
 
     </>
   )
 
 }
-
-
-//custom react table pagination 
-const Pagination = ({ pageIndex, totalRows, rowsPerPage}) => { 
-
-  const numPages = Math.ceil(totalRows/rowsPerPage);
-  const pageArr = [...new Array(numPages)]; //array holding number of pages
-
-  const [page, setPage] = React.useState(0);
-  const [canGoPrev, setCanGoPrev] = React.useState(false);
-  const [canGoNext, setCanGoNext] = React.useState(true);
-
-  const [pageFirstEntry, setPageFirstEntry] = React.useState(1);
-  const [pageLastEntry, setPageLastEntry] = React.useState(rowsPerPage);
-
-  const onNext = () => setPage(page + 1);
-  const onPrev = () => setPage(page -1);
-  const onSelect = (pageNum) => setPage(pageNum);
-
-
-  React.useEffect(() => {
-    if (numPages === page) { setCanGoNext(false)};
-    if (page > 1) {setCanGoPrev(true)}
-  }, [numPages, page]);
-
-  React.useEffect( () => {
-    //pageChanger(page)
-    const rowPageSkip = (page ) * rowsPerPage; //(page-1)
-    setPageFirstEntry(rowPageSkip + 1);
-  }, [page]);
-
-  React.useEffect( () => {
-    const pageCounter = pageFirstEntry + rowsPerPage;
-    setPageLastEntry (pageCounter > totalRows ? totalRows : pageCounter - 1);
-  }, [pageFirstEntry,rowsPerPage, totalRows]
-  );
-
-  return(
-    <>
-      {
-        numPages > 1 ? (
-          <div className = {tableStyle.pagination}>
-            <div className = {tableStyle.pageInfo}>
-              {pageFirstEntry} - {pageLastEntry} of {totalRows}
-            </div>
-            <div className = {tableStyle.pagebuttons}>
-              <button
-                className = {tableStyle.pageBtn}
-                onClick = {onPrev}
-                disabled = {!canGoPrev}
-              >
-                {'<'}
-              </button>
-               {pageArr.map((num,index) => (
-                <button
-                  onClick = {() => onSelect(index+1)}
-                  className = {`${tableStyle.pageBtn}  ${index + 1 === page ? tableStyle.activeBtn : ""}`}
-                >
-                  {index+1}
-                </button>
-              ))} 
-              <button
-                className = {tableStyle.pageBtn}
-                onClick = {onNext}
-                disabled = {!canGoNext}
-                >
-                {'>'}
-              </button>
-            </div>
-          </div>
-        ) : null}
-    </>
-    );
-  }
-
 
 export default function DataTable(props) {
 
@@ -360,8 +280,9 @@ export default function DataTable(props) {
           setShowAll(pageSize != 10);
           setPageSize(pageSize)
           setPage(0);}}
-          rowsPerPageOptions={[10, totalRows]}
+          rowsPerPageOptions={[10,  { label: 'All', value: totalRows }]}
       />
+      <div style={{height:50}}>
       {
       role == 1 &&
       <Button
@@ -375,6 +296,7 @@ export default function DataTable(props) {
         Create School
       </Button>
       }
+    </div>
     </div>
     </>
   );

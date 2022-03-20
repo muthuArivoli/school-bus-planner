@@ -10,12 +10,16 @@ import Grid from '@mui/material/Grid';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import CloseIcon from '@mui/icons-material/Close';
-import tableStyle from './tablestyle.css';
 import { useTable, useSortBy, useFilters, usePagination, ReactTable } from 'react-table';
 import UnfoldMoreOutlinedIcon from '@mui/icons-material/UnfoldMoreOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
 
+import MauTable from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
 import TablePagination from '@mui/material/TablePagination';
 
 import { Helmet } from 'react-helmet';
@@ -102,16 +106,12 @@ function Table({columns,data, setSortModel}){
 
   return (
     <>
-    <table {...getTableProps()}>
-      <thead>
+    <MauTable {...getTableProps()}>
+      <TableHead>
         {headerGroups.map(headerGroup => (
-          < tr {...headerGroup.getHeaderGroupProps()}>
+          < TableRow {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
-              < th {...column.getHeaderProps(column.getSortByToggleProps())}                       
-              style={{
-                borderBottom: 'solid 3px #4169E1',
-                color: 'black',
-              }}>{column.render('Header')} 
+              < TableCell {...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')} 
                      <span>
                        {column.canSort ? column.isSorted
                            ? column.isSortedDesc
@@ -120,27 +120,27 @@ function Table({columns,data, setSortModel}){
                            : <UnfoldMoreOutlinedIcon/> : ""}
                     </span>              
               
-              </th>
+              </TableCell>
             ))}
-          </tr>
+          </TableRow>
         ))}
-      </thead>
-      <tbody {...getTableBodyProps()}>
+      </TableHead>
+      <TableBody {...getTableBodyProps()}>
         {/* rows to page */}
         {rows.map((row, i) => {
           prepareRow(row)
           return (
-            <tr {...row.getRowProps()}>
+            <TableRow {...row.getRowProps()}>
               {row.cells.map(cell => {
-                return <td {...cell.getCellProps()}>
+                return <TableCell {...cell.getCellProps()}>
                   {/* <Link component={RouterLink} to={"/schools/" + params.value.id}>{params.value.name}</Link>*/}
-                  {cell.render('Cell')}</td> 
+                  {cell.render('Cell')}</TableCell> 
               })}
-            </tr>
+            </TableRow>
           )
         })}
-      </tbody>
-    </table>
+      </TableBody>
+    </MauTable>
 
 
     </>
@@ -301,7 +301,7 @@ export default function DataTable(props) {
           setShowAll(pageSize != 10);
           setPageSize(pageSize)
           setPage(0);}}
-          rowsPerPageOptions={[10, totalRows]}
+          rowsPerPageOptions={[10, { label: 'All', value: totalRows }]}
       />
  
     </div>
