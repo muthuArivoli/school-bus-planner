@@ -1351,6 +1351,9 @@ def validate_users(csvreader_user):
         if name == "":
             errors['name'] = "Record must have name"
         
+        if len(name.split(" ")) < 2:
+            errors['name'] = "Record must have both a first and last name"
+        
         if email == "":
             errors['email'] = "Record must have an email"
         
