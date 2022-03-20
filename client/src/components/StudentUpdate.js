@@ -1,15 +1,8 @@
 import * as React from 'react'
-import CssBaseline from '@mui/material/CssBaseline';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import StudentForm from './StudentForm';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
-const theme = createTheme();
+import { Helmet } from 'react-helmet';
 
 export default function UserUpdate(props) {
 
@@ -17,10 +10,11 @@ export default function UserUpdate(props) {
   let navigate = useNavigate();
 
   const [school, setSchool] = React.useState({id: "", label: ""});
-  const [user, setUser] = React.useState({id: "", label: ""});
+  const [user, setUser] = React.useState(null);
   const [route, setRoute] = React.useState({id: null, label: ""});
   const [name, setName] = React.useState("")
   const [studentId, setStudentId] = React.useState(null);
+  const [email, setEmail] = React.useState("");
 
     const handleSubmit = (event) => {
       event.preventDefault();
@@ -28,7 +22,7 @@ export default function UserUpdate(props) {
       let req = {
         name: name,
         school_id: school.id,
-        user_id: user.id
+        user_id: user
       }
       console.log(req);
       if (studentId != null && studentId != "") {
@@ -82,7 +76,8 @@ export default function UserUpdate(props) {
           setName(result.data.student.name);
           setStudentId(result.data.student.student_id);
           setSchool({label: result.data.student.school.name, id: result.data.student.school.id});
-          setUser({label: result.data.student.user.email, id: result.data.student.user.id});
+          setUser(result.data.student.user.id);
+          setEmail(result.data.student.user.email);
           if(result.data.student.route_id != null){
             setRoute({label: result.data.student.route.name, id: result.data.student.route.id})
           }
@@ -99,21 +94,28 @@ export default function UserUpdate(props) {
     }, []);
 
     return(
-        <>
-                  <StudentForm 
-                    name={name} 
-                    updateName={setName}
-                    studentId={studentId}
-                    updateStudentId={setStudentId}
-                    user={user}
-                    updateUser={setUser}
-                    school={school}
-                    updateSchool={setSchool}
-                    route={route}
-                    updateRoute={setRoute}
-                    handleSubmit={handleSubmit}
-                    title="Update Student"
-                    />
-        </>
+      <>
+      <Helmet>
+        <title>
+          Update Student
+        </title>
+      </Helmet>
+      <StudentForm 
+        name={name} 
+        updateName={setName}
+        studentId={studentId}
+        updateStudentId={setStudentId}
+        user={user}
+        updateUser={setUser}
+        email={email}
+        setEmail={setEmail}
+        school={school}
+        updateSchool={setSchool}
+        route={route}
+        updateRoute={setRoute}
+        handleSubmit={handleSubmit}
+        title="Update Student"
+      />
+      </>
     )
 }

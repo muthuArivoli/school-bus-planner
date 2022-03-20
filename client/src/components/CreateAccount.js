@@ -1,27 +1,31 @@
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import DeleteIcon from "@mui/icons-material/Delete";
-import IconButton from "@mui/material/IconButton";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useNavigate, Link as RouterLink} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Autocomplete from '@mui/material/Autocomplete';
 import axios from 'axios';
 import GoogleMap from './GoogleMap'
-import Geocode from "react-geocode";
-Geocode.setApiKey('AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o');
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
+import { Helmet } from 'react-helmet';
 
 const theme = createTheme();
+const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+const checkedIcon = <CheckBoxIcon fontSize="small" />;
+
 
 export default function SignUp(props) {
 
@@ -38,11 +42,38 @@ export default function SignUp(props) {
   const [latitude, setLatitude] = React.useState(null);
   const [longitude, setLongitude] = React.useState(null);
   const [email, setEmail] = React.useState("");
-  let [adminChecked, setAdminChecked] = React.useState(false);
+  const [role, setRole] = React.useState(0);
+  const [managedSchools, setManagedSchools] = React.useState([]);
+  const [phone, setPhone] = React.useState("");
 
   const [disable, setDisable] = React.useState(true);
 
-  const [emailList, setEmailList] = React.useState([]);
+  //Represents user id if email already exists, null otherwise
+  const [checkEmail, setCheckEmail] = React.useState(null);
+
+  const [currRole, setCurrRole] = React.useState(0);
+
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success){
+        setCurrRole(result.data.user.role);
+      }
+      else{
+        props.setSnackbarMsg(`Current user could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/");
+      }
+    }
+    fetchData();
+  }, [])
 
   const deleteStudent = (index) => {
     setStudents(students.filter((value, ind) => ind !== index));
@@ -55,29 +86,33 @@ export default function SignUp(props) {
   }
 
   React.useEffect(()=>{
-    const fetchEmailList = async() => {
+    let active = true;
+    const fetchData = async() => {
       const result = await axios.get(
-        process.env.REACT_APP_BASE_URL+'/user', {
+        process.env.REACT_APP_BASE_URL+'/check_email', {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
+          },
+          params: {email: email}
         }
       );
       if (result.data.success){
-        let arr = result.data.users.map((value) => {
-          return value.email;
-        })
-        setEmailList(arr);
+        if (active){
+          setCheckEmail(result.data.id);
+        }
       }
       else{
-        props.setSnackbarMsg(`Users could not be loaded`);
+        props.setSnackbarMsg(`Email could not be verified`);
         props.setShowSnackbar(true);
         props.setSnackbarSeverity("error");
-        navigate("/users");
+        props.updateUser(null);
       }
+    }
+    fetchData();
+    return () => {
+      active = false;
     };
-    fetchEmailList();
-  }, [email])
+  }, [email]);
 
   React.useEffect(() => {
     const fetchData = async() => {
@@ -108,23 +143,23 @@ export default function SignUp(props) {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
+    let req = {
       email: data.get('email'),
       name: data.get('name'),
       address: address,
-      admin_flag: adminChecked,
+      role: role,
       latitude: latitude,
-      longitude: longitude
-    });
-    console.log(process.env.REACT_APP_BASE_URL);
-    axios.post(process.env.REACT_APP_BASE_URL+"/user", {
-      email: data.get('email'),
-      name: data.get('name'),
-      address: address,
-      latitude: latitude ,
       longitude: longitude,
-      admin_flag: adminChecked
-    }, {
+      phone: phone
+    };
+
+    if(role == 2){
+      req.managed_schools = managedSchools.map((value)=>{return value.id});
+    }
+
+    console.log(req);
+    
+    axios.post(process.env.REACT_APP_BASE_URL+"/user", req, {
       headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -234,16 +269,20 @@ export default function SignUp(props) {
   }
 
   React.useEffect(() => {
-    let disabled = email == "" || name == "" || address == "";
+    let disabled = email == "" || name == "" || address == "" || phone == "" || checkEmail != null;
     for (let i=0; i<students.length; i++){
       disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "";
     }
-    disabled = disabled || emailList.includes(email);
     setDisable(disabled);
-  }, [email, name, address, students])
+  }, [email, name, address, students, phone])
 
   return (
     <ThemeProvider theme={theme}>
+      <Helmet>
+        <title>
+          Create User
+        </title>
+      </Helmet>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
@@ -274,8 +313,8 @@ export default function SignUp(props) {
               <Grid item xs={12}>
                 <TextField
                   required
-                  error={emailList.includes(email)}
-                  helperText={emailList.includes(email) ? "Email already taken":""}
+                  error={checkEmail != null}
+                  helperText={checkEmail != null ? "Email already taken":""}
                   fullWidth
                   onChange={(e) => setEmail(e.target.value)}
                   id="email"
@@ -287,14 +326,66 @@ export default function SignUp(props) {
               <Grid item xs={12} sx={{ height: 450 }} >
                 <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
               </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Checkbox value="admin" color="primary" />}
-                  label="Admin"
-                  id="admin"
-                  name="admin"
-                  onChange={(e)=>{setAdminChecked(e.target.checked)}}
+              <Grid item xs={12} sx={{ mt: 2}}>
+                <TextField
+                  required
+                  fullWidth
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  id="phone"
+                  label="Phone Number"
+                  name="phone"
                 />
+              </Grid>
+              <Grid item xs={12}>
+               {
+               currRole == 1 && 
+              <FormControl>
+                <FormLabel id="role-group-label">Role</FormLabel>
+                <RadioGroup
+                  aria-labelledby="role-group-label"
+                  value={role}
+                  onChange={(e)=>{
+                    setManagedSchools([]);
+                    setRole(parseInt(e.target.value));
+                  }}
+                  name="role-group"
+                >
+                  <FormControlLabel value={0} control={<Radio />} label="No Role" />
+                  <FormControlLabel value={1} control={<Radio />} label="Admin" />
+                  <FormControlLabel value={2} control={<Radio />} label="School Staff" />
+                  <FormControlLabel value={3} control={<Radio />} label="Driver" />
+                </RadioGroup>
+                </FormControl>
+                }
+              </Grid>
+              <Grid item xs={12}>
+                {
+                  currRole == 1 && role == 2 &&
+                  <Autocomplete
+                  multiple
+                  id="managed-schools"
+                  value={managedSchools}
+                  onChange={(e, value)=>setManagedSchools(value)}
+                  options={schools}
+                  disableCloseOnSelect
+                  renderOption={(props, option, { selected }) => (
+                    <li {...props}>
+                      <Checkbox
+                        icon={icon}
+                        checkedIcon={checkedIcon}
+                        style={{ marginRight: 8 }}
+                        checked={selected}
+                      />
+                      {option.label}
+                    </li>
+                  )}
+                  fullWidth
+                  renderInput={(params) => (
+                    <TextField {...params} label="Schools Managed" placeholder="Schools" />
+                  )}
+                />
+                }
               </Grid>
               {students.map((element, index) => (
                   <React.Fragment key={index}>
@@ -323,11 +414,15 @@ export default function SignUp(props) {
                     </Grid>
                     <Grid item xs={12}>
                     <TextField
-                        autoFocus
                         label="Student ID"
-                        type="number"
+                        type="text"
                         value={element["id"] || ""}
-                        onChange={(e) => handleStudentChange(index, "id", e.target.value)}
+                        onChange={(e) => {
+                          let input = e.target.value;
+                          if( !input || input.match('^[0-9]+$')){
+                            handleStudentChange(index, "id", input);
+                          }
+                        }}
                         fullWidth
                     />
                     </Grid>

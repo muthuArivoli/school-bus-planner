@@ -1,10 +1,8 @@
 import * as React from 'react';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
 import StudentForm from './StudentForm';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
 
 
 export default function CreateSchool(props) {
@@ -12,10 +10,11 @@ export default function CreateSchool(props) {
   let navigate = useNavigate();
 
   const [school, setSchool] = React.useState({id: "", label: ""});
-  const [user, setUser] = React.useState({id: "", label: ""});
+  const [user, setUser] = React.useState(null);
   const [route, setRoute] = React.useState({id: "", label: ""});
   const [name, setName] = React.useState("")
   const [studentId, setStudentId] = React.useState(null);
+  const [email, setEmail] = React.useState("");
 
     const handleSubmit = (event) => {
       event.preventDefault();
@@ -23,7 +22,7 @@ export default function CreateSchool(props) {
       let req = {
         name: name,
         school_id: school.id,
-        user_id: user.id
+        user_id: user
       }
       console.log(req);
       if (studentId != null && studentId != "") {
@@ -58,23 +57,28 @@ export default function CreateSchool(props) {
     }
 
     return(
-        <>
-
-        <StudentForm 
-          name={name} 
-          updateName={setName}
-          studentId={studentId}
-          updateStudentId={setStudentId}
-          user={user}
-          updateUser={setUser}
-          school={school}
-          updateSchool={setSchool}
-          route={route}
-          updateRoute={setRoute}
-          handleSubmit={handleSubmit}
-          title="Create Student"
-          />
-
-        </>
+      <>
+      <Helmet>
+        <title>
+          Create Student
+        </title>
+      </Helmet>
+      <StudentForm 
+        name={name} 
+        updateName={setName}
+        studentId={studentId}
+        updateStudentId={setStudentId}
+        user={user}
+        updateUser={setUser}
+        email={email}
+        setEmail={setEmail}
+        school={school}
+        updateSchool={setSchool}
+        route={route}
+        updateRoute={setRoute}
+        handleSubmit={handleSubmit}
+        title="Create Student"
+      />
+      </>
     )
 }

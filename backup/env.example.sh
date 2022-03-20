@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+export SSH_REMOTE_USER=ma381
+export SSH_REMOTE_HOST=vcm-25270.vm.duke.edu
+export POSTGRES_DB_CONTAINER_NAME=postgres-db
+export POSTGRES_DB=db
+export POSTGRES_USER=postgres
+export POSTGRES_PASSWORD=bus
+export POSTGRES_PORT=5432
+export SCHEDULE='@daily'
+export BACKUP_DIR='/backups'
+export BACKUP_KEEP_DAYS=7
+export BACKUP_KEEP_WEEKS=4
+export BACKUP_KEEP_MONTHS=12

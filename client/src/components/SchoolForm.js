@@ -4,10 +4,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
-import Input from '@mui/material/Input';
-import InputLabel from '@mui/material/InputLabel';
 import GoogleMap from './GoogleMap';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -15,7 +12,7 @@ import DesktopTimePicker from '@mui/lab/DesktopTimePicker';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const theme = createTheme();
 
@@ -34,6 +31,30 @@ export default function SchoolForm(props) {
 
   let navigate = useNavigate();
 
+  const [role, setRole] = React.useState(0);
+
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success){
+        setRole(result.data.user.role);
+      }
+      else{
+        props.setSnackbarMsg(`Current user could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/");
+      }
+    }
+    fetchData();
+  }, [])
+  
   React.useEffect(()=>{
     const fetchSchoolList = async() => {
       const result = await axios.get(
@@ -45,7 +66,7 @@ export default function SchoolForm(props) {
       );
       if (result.data.success){
         let arr = result.data.schools.map((value) => {
-          return value.name;
+          return value.name.toLowerCase();
         })
         setNameList(arr);
       }
@@ -111,29 +132,17 @@ export default function SchoolForm(props) {
           <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
-                          error={name!=props.name && nameList.includes(name)}
-                          helperText={(name!=props.name && nameList.includes(name)) ? "Name already taken" : ""}
+                          error={name.toLowerCase()!=props.name.toLowerCase() && nameList.includes(name.toLowerCase())}
+                          helperText={(name.toLowerCase()!=props.name.toLowerCase() && nameList.includes(name.toLowerCase())) ? "Name already taken" : ""}
                           autoFocus
                           required
+                          disabled={role != 1}
                           label="Name"
                           id="name"
                           value={name}
                           onChange={handleNameChange}
                           fullWidth
                       />
-              </Grid>
-              <Grid item xs={12}>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <DesktopTimePicker
-                    required
-                    label="Departure Time"
-                    value={departureTime}
-                    onChange={(newValue) => {
-                    setDepartureTime(newValue);
-                  }}
-                  renderInput={(params) => <TextField {...params} />}
-                  />
-                </LocalizationProvider>
               </Grid>
               <Grid item xs={12}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -148,15 +157,28 @@ export default function SchoolForm(props) {
                   />
                 </LocalizationProvider>
               </Grid>
+              <Grid item xs={12}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DesktopTimePicker
+                    required
+                    label="Departure Time"
+                    value={departureTime}
+                    onChange={(newValue) => {
+                    setDepartureTime(newValue);
+                  }}
+                  renderInput={(params) => <TextField {...params} />}
+                  />
+                </LocalizationProvider>
+              </Grid>
               <Grid item md={12} sx={{ height: 450 }} >
-                <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
+                <GoogleMap address={address} disabled={role != 1} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
               </Grid>
 
               <Grid item xs={12}>
                 <Button type="submit"
                   variant="contained"
                   fullWidth
-                  disabled={name=="" || address == "" || departureTime == "" || arrivalTime == "" ||(name != props.name && nameList.includes(name))}
+                  disabled={name=="" || address == "" || departureTime == "" || departureTime == "Invalid Date" || arrivalTime == "Invalid Date" || arrivalTime == "" ||(name.toLowerCase() != props.name.toLowerCase() && nameList.includes(name.toLowerCase()))}
                   sx={{ mt: 3, mb: 2 }}
                   >
                     Submit

@@ -1,12 +1,14 @@
 from app import db
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine, CheckConstraint
+from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, create_engine, CheckConstraint, Enum
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import inspect, select, func
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.sql.operators import contains_op
 
+import enum
 from sqlalchemy_filters import Filter, StringField, Field, TimestampField
-from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator
+from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator, BaseOperator, register_operator
 from datetime import datetime
 import logging
 import geopy.distance
@@ -17,6 +19,16 @@ def get_distance(lat1, long1, lat2, long2):
     coords_2 = (lat2, long2)
     return geopy.distance.geodesic(coords_1, coords_2).miles 
 
+class RoleEnum(enum.IntEnum):
+    UNPRIVILEGED = 0
+    ADMIN = 1
+    SCHOOL_STAFF = 2
+    DRIVER = 3
+
+managed_school_table = db.Table('managed_schools',
+    db.Column('user_id', ForeignKey('users.id'), primary_key=True),
+    db.Column('school_id', ForeignKey('schools.id'), primary_key=True),
+)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -26,21 +38,24 @@ class User(db.Model):
     full_name = db.Column(db.String())
     uaddress = db.Column(db.String())
     pswd = db.Column(db.String())
-    admin_flag = db.Column(db.Boolean())
+    managed_schools = relationship("School", secondary=managed_school_table, back_populates="school_managers")
+    role = db.Column(db.Enum(RoleEnum))
     children = relationship("Student", back_populates="user", cascade="all, delete-orphan")
     longitude = db.Column(db.Float())
     latitude = db.Column(db.Float())
+    phone = db.Column(db.String())
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
         main.pop('pswd')
         main['children'] = [child.as_dict() for child in self.children]
+        if self.role == RoleEnum.SCHOOL_STAFF:
+            main['managed_schools'] = [school.as_dict() for school in self.managed_schools]
         return main
 
     def __repr__(self):
-        return "<User(email='{}', uaddress='{}',full_name='{}', pswd='{}', admin_flag={}, latitude={}, longitude={})>"\
-            .format(self.email, self.uaddress, self.full_name, self.pswd, self.admin_flag, self.latitude, self.longitude)
-  
+        return "<User(email='{}', uaddress='{}',full_name='{}', pswd='{}', role={}, latitude={}, longitude={})>"\
+            .format(self.email, self.uaddress, self.full_name, self.pswd, self.role, self.latitude, self.longitude)
 
 class School(db.Model):
     __tablename__ = 'schools'
@@ -50,6 +65,7 @@ class School(db.Model):
     address = db.Column(db.String())
     routes = relationship("Route", back_populates='school', cascade="all, delete-orphan")
     students = relationship("Student", back_populates='school', cascade="all, delete-orphan")
+    school_managers = relationship("User", secondary=managed_school_table, back_populates="managed_schools")
     longitude = db.Column(db.Float())
     latitude = db.Column(db.Float())
     arrival_time = db.Column(db.Time())
@@ -171,41 +187,43 @@ class Stop(db.Model):
         return "<Stop(name='{}', route_id={}, latitude={}, longitude={}, index={}, pickup_time={}, dropoff_time={})>"\
             .format(self.name, self.route_id, self.latitude, self.longitude, self.index, self.pickup_time, self.dropoff_time)
 
+@register_operator(sql_operator=contains_op)
+class CaseContainsOperator(BaseOperator):
+    def to_sql(self):
+        return self.operator(
+            func.lower(self.get_sql_expression()), func.lower(*self.params)
+        )
 
 class UserFilter(Filter):
-    email = StringField(lookup_operator=ContainsOperator)
-    full_name = StringField(lookup_operator=ContainsOperator)
+    email = StringField(lookup_operator=CaseContainsOperator)
+    full_name = StringField(lookup_operator=CaseContainsOperator)
 
     class Meta:
         model = User
-        session = db.session
         page_size = 10
 
 class StudentFilter(Filter):
     student_id = Field(lookup_operator = EqualsOperator)
     school_id = Field(lookup_operator = EqualsOperator)
-    name = StringField(lookup_operator = ContainsOperator)
+    name = StringField(lookup_operator = CaseContainsOperator)
 
     class Meta:
         model = Student
-        session = db.session
         page_size = 10
 
 class SchoolFilter(Filter):
-    name = StringField(lookup_operator=ContainsOperator)
+    name = StringField(lookup_operator=CaseContainsOperator)
     arrival_time = TimestampField()
     departure_time = TimestampField()
 
     class Meta:
         model = School
-        session = db.session
         page_size = 10
 
 class RouteFilter(Filter):
-    name = StringField(lookup_operator=ContainsOperator)
+    name = StringField(lookup_operator=CaseContainsOperator)
     school_id = Field()
 
     class Meta:
         model = Route
-        session = db.session
         page_size = 10

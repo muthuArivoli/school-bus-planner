@@ -1,5 +1,5 @@
 import './App.css';
-import React, {useState} from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import Login from './Login';
 import CreateAccount from './CreateAccount';
@@ -30,8 +30,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 
 function AuthRoute(props) {
-  const [loading, setLoading] = useState(true);
-  const [auth, setAuth] = useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [auth, setAuth] = React.useState(false);
 
   React.useEffect( () => {
     if (localStorage.getItem('token') == null){
@@ -50,8 +50,8 @@ function AuthRoute(props) {
       console.log(res.data);
       if(res.data.success){
         setAuth(true);
-        if(props.admin != res.data.user.admin_flag)
-          props.setAdmin(res.data.user.admin_flag);
+        if(props.admin != res.data.user.role)
+          props.setAdmin(res.data.user.role);
         setLoading(false);
       }
     }).catch((res) => {
@@ -71,8 +71,8 @@ function AuthRoute(props) {
 }
 
 function LoginRoute(props) {
-  const [loading, setLoading] = useState(true);
-  const [auth, setAuth] = useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [auth, setAuth] = React.useState(false);
 
   React.useEffect( () => {
     if (localStorage.getItem('token') == null){
@@ -109,11 +109,11 @@ function LoginRoute(props) {
   return auth ? <Navigate to="/"/> : props.children;
 }
 
-function PrivateRoute({ children }) {
+function PrivateRoute({ roles = [1,2,3], children }) {
 
-  const [loading, setLoading] = useState(true);
-  const [auth, setAuth] = useState(false);
-  const [admin, setAdmin] = useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [auth, setAuth] = React.useState(false);
+  const [role, setRole] = React.useState(0);
 
   React.useEffect( () => {
       if (localStorage.getItem('token') == null){
@@ -132,7 +132,7 @@ function PrivateRoute({ children }) {
         console.log(res.data);
         if(res.data.success){
           setAuth(true);
-          setAdmin(res.data.user.admin_flag);
+          setRole(res.data.user.role);
           setLoading(false);
         }
       }).catch((res) => {
@@ -148,12 +148,12 @@ function PrivateRoute({ children }) {
 
   if (loading)
     return <Box sx={{ display: 'flex' }}><CircularProgress /></Box>;
-  return auth ? (admin ? children : <Navigate to='/'/>) : <Navigate to="/login" />;
+  return auth ? (roles.includes(role) ? children : <Navigate to='/'/>) : <Navigate to="/login" />;
 }
 
 export default function App () {
 
-    const [admin, setAdmin] = useState(false);
+    const [admin, setAdmin] = React.useState(0);
 
     return (
       <BrowserRouter>
@@ -161,13 +161,13 @@ export default function App () {
           <Route exact path="/" element={
             <AuthRoute setAdmin={setAdmin} admin={admin}>
               {
-              admin &&
+              admin != 0 &&
               <AdminDashboard titleText="Parent Dashboard">
                 <ParentView/>
               </AdminDashboard>
               }
               {
-              !admin &&
+              admin == 0 &&
               <ParentDashboard titleText="Parent Dashboard">
                 <ParentView/>
               </ParentDashboard>
@@ -178,13 +178,13 @@ export default function App () {
           <Route exact path="/students/:id/view" element={
             <AuthRoute setAdmin={setAdmin} admin={admin}>
               {
-              admin &&
+              admin != 0 &&
               <AdminDashboard titleText="Parent Student View">
                 <StudentView/>
               </AdminDashboard>
               }
               {
-              !admin &&
+              admin == 0 &&
               <ParentDashboard titleText="Student View">
                 <StudentView/>
               </ParentDashboard>
@@ -201,14 +201,14 @@ export default function App () {
           }
           />
           <Route exact path="/schools/create" element={
-            <PrivateRoute>
+            <PrivateRoute roles={[1]}>
               <AdminDashboard titleText="Create School">
                 <SchoolCreate/>
               </AdminDashboard>
             </PrivateRoute>
           } />
           <Route exact path="/schools/:id/update" element={
-            <PrivateRoute>
+            <PrivateRoute roles={[1, 2]}>
               <AdminDashboard titleText="Update School">
                 <SchoolUpdate/>
               </AdminDashboard>
@@ -222,7 +222,7 @@ export default function App () {
             </PrivateRoute>
           } /> 
           <Route exact path="/schools/:id/routes" element={
-            <PrivateRoute>
+            <PrivateRoute roles={[1, 2]}>
               <AdminDashboard titleText="Route Planner">
                 <RoutePlanner/>
               </AdminDashboard>
@@ -237,7 +237,7 @@ export default function App () {
           }
           />
           <Route exact path="/users/create" element={
-            <PrivateRoute>
+            <PrivateRoute roles={[1, 2]}>
               <AdminDashboard titleText="Create User">
                 <CreateAccount/>
               </AdminDashboard>
@@ -251,7 +251,7 @@ export default function App () {
             </PrivateRoute>
           } />
           <Route exact path="/users/:id/update" element={
-            <PrivateRoute>
+            <PrivateRoute roles={[1, 2]}>
               <AdminDashboard titleText="Update User">
                 <UserUpdate/>
               </AdminDashboard>
@@ -266,7 +266,7 @@ export default function App () {
           }
           />
           <Route exact path="/students/create" element={
-            <PrivateRoute>
+            <PrivateRoute roles={[1, 2]}>
               <AdminDashboard titleText="Create Student">
                 <StudentCreate/>
               </AdminDashboard>
@@ -280,7 +280,7 @@ export default function App () {
             </PrivateRoute>
           } />
           <Route exact path="/students/:id/update" element={
-            <PrivateRoute>
+            <PrivateRoute roles={[1, 2]}>
               <AdminDashboard titleText="Update Student">
                 <StudentUpdate/>
               </AdminDashboard>
@@ -302,7 +302,7 @@ export default function App () {
             </PrivateRoute>
           } />
           <Route exact path="/email" element={
-            <PrivateRoute>
+            <PrivateRoute roles={[1, 2]}>
               <AdminDashboard titleText="Email">
                 <EmailPage/>
               </AdminDashboard>

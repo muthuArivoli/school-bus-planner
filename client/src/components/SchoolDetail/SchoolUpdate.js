@@ -1,9 +1,8 @@
 import * as React from 'react';
-import Typography from '@mui/material/Typography';
 import SchoolForm from '../SchoolForm';
 import axios from 'axios';
-import {Link as RouterLink, useParams, useNavigate} from 'react-router-dom';
-
+import { useParams, useNavigate} from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 export default function UpdateSchool(props) {
     let navigate = useNavigate();
@@ -91,6 +90,11 @@ export default function UpdateSchool(props) {
 
     return(
         <>
+        <Helmet>
+        <title>
+          Update School
+        </title>
+        </Helmet>
         <SchoolForm 
         name={name} 
         address={address} 

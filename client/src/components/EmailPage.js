@@ -7,17 +7,15 @@ import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Button from '@mui/material/Button';
-import Input from '@mui/material/Input';
-import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
-import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Autocomplete from '@mui/material/Autocomplete';
 import FormLabel from '@mui/material/FormLabel';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
 
 const theme = createTheme();
 
@@ -32,6 +30,32 @@ export default function EmailPage(props) {
 
     let [query, setQuery] = useSearchParams();
     let navigate = useNavigate();
+    const [currRole, setCurrRole] = React.useState(0);
+
+    React.useEffect(()=>{
+      const fetchData = async() => {
+        const result = await axios.get(
+          process.env.REACT_APP_BASE_URL+`/current_user`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        )
+        if(result.data.success){
+          setCurrRole(result.data.user.role);
+          if(result.data.user.role != 1){
+            setUserType("school");
+          }
+        }
+        else{
+          props.setSnackbarMsg(`Current user could not be loaded`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("error");
+          navigate("/");
+        }
+      }
+      fetchData();
+    }, [])
 
     const fetchOptionsData=async()=>{
         console.log(userType);
@@ -45,7 +69,8 @@ export default function EmailPage(props) {
                 process.env.REACT_APP_BASE_URL+'/school', {
                   headers: {
                       Authorization: `Bearer ${localStorage.getItem('token')}`
-                  }
+                  },
+                  params: {sort: "name", dir: "asc"}
                 }
               );
               if (result.data.success){
@@ -69,7 +94,8 @@ export default function EmailPage(props) {
                 process.env.REACT_APP_BASE_URL+'/route', {
                   headers: {
                       Authorization: `Bearer ${localStorage.getItem('token')}`
-                  }
+                  },
+                  params: {sort: "name", dir: "asc"}
                 }
               );
               if (result.data.success){
@@ -202,6 +228,11 @@ export default function EmailPage(props) {
 
     return (
         <ThemeProvider theme={theme}>
+          <Helmet>
+            <title>
+              Email
+            </title>
+          </Helmet>
         <Container component="main" maxWidth="sm">
           <CssBaseline />
           <Box
@@ -242,7 +273,10 @@ export default function EmailPage(props) {
                     value={userType}
                     onChange={(e)=>setUserType(e.target.value)}
                 >
+                  {
+                    currRole == 1 &&
                     <FormControlLabel value="system" control={<Radio />} label="All Users within system" />
+                  }
                     <FormControlLabel value="school" control={<Radio />} label="All Users with students from same School" />
                     <FormControlLabel value="route" control={<Radio />} label="All Users with students from same Route" />
                 </RadioGroup>

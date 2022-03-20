@@ -1,19 +1,24 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import { DataGrid, getGridStringOperators } from '@mui/x-data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import SearchIcon from '@mui/icons-material/Search';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
-import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
+import { Helmet } from 'react-helmet';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormLabel from '@mui/material/FormLabel';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+
+const roles = ["Parent", "Admin", "School Staff", "Driver"]
 
 const columns = [
-  { field: 'name', headerName: 'Full Name', width: 250, filterable: false,
+  { field: 'name', headerName: 'Full Name', width: 200, filterable: false,
   renderCell: (params) => (
     <>
     <Link component={RouterLink} to={"/users/" + params.value.id}>
@@ -21,20 +26,19 @@ const columns = [
     </Link>
     </>
   )},
-  { field: 'email', headerName: 'Email', width: 250, filterable: false},
-  { field: 'address', headerName: 'Address', width: 400, sortable: false, filterable: false},
+  { field: 'email', headerName: 'Email', width: 300, filterable: false},
+  { field: 'address', headerName: 'Address', width: 350, sortable: false, filterable: false},
+  { field: 'phone', headerName: 'Phone Number', width: 150, sortable: false, filterable: false},
   { 
-    field: 'admin',
-    headerName: 'Admin',
-    width: 200,
+    field: 'role',
+    headerName: 'Role',
+    width: 100,
     sortable: false,
     filterable: false,
     renderCell: (params) => (
       <>
       {
-        params.value ? 
-        <CheckIcon/> : 
-        <CloseIcon/>
+        roles[params.value] 
       }
       </>
     )
@@ -54,13 +58,36 @@ export default function DataTable(props) {
   const [showAll, setShowAll] = React.useState(false);
   const [loading , setLoading] = React.useState(true);
 
-
-  const [filterType, setFilterType] = React.useState(null);
-  const filterValues = ['name', 'email'];
+  const [filterRole, setFilterRole] = React.useState(4);
 
   const mappings = {"name": "full_name", "email": "email"}
 
+  const [role, setRole] = React.useState(0);
+
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success){
+        setRole(result.data.user.role);
+      }
+      else{
+        props.setSnackbarMsg(`Current user could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/");
+      }
+    }
+    fetchData();
+  }, []) 
+
   React.useEffect(()=> {
+    let active = true;
     const fetchData = async() => {
 
       setLoading(true);
@@ -72,15 +99,11 @@ export default function DataTable(props) {
         params.sort = mappings[sortModel[0].field];
         params.dir = sortModel[0].sort;
       }
-
-      if(filterType == 'name'){
-        params.name = filterStr;
-      }
-      else if(filterType == 'email'){
-        params.email = filterStr;
-      }
-      else if(filterStr != "") {
-        setFilterStr("");
+      params.name = filterStr;
+      params.email = filterStr;
+      
+      if (filterRole != 4){
+        params.role = filterRole;
       }
 
       const result = await axios.get(
@@ -92,14 +115,13 @@ export default function DataTable(props) {
         }
       );
       if (result.data.success){
-        console.log(result.data.users);
-        console.log(result.data);
-        setTotalRows(result.data.records);
         let arr = result.data.users.map((value) => {
-          console.log({name: value.full_name, id: value.id, address: value.uaddress, email: value.email, admin: value.admin_flag});
-          return {name: {name: value.full_name, id: value.id}, id: value.id, address: value.uaddress, email: value.email, admin: value.admin_flag};
+          return {name: {name: value.full_name, id: value.id}, id: value.id, address: value.uaddress, email: value.email, role: value.role, phone: value.phone};
         });
-        setRows(arr);
+        if(active){
+          setTotalRows(result.data.records);
+          setRows(arr);
+        }
       }
       else{
         props.setSnackbarMsg(`Users could not be loaded`);
@@ -110,30 +132,26 @@ export default function DataTable(props) {
       setLoading(false);
     };
     fetchData();
-  }, [page, sortModel, filterStr, filterType, showAll])
+    return () => {
+      active = false;
+    };
+  }, [page, sortModel, filterStr, showAll, filterRole])
 
   return (
     <>
-    <Grid container>
-      <Grid item md={3} lg={3}>
-    <Autocomplete
-      options={filterValues}
-      value={filterType}
-      autoSelect
-      onChange={(e, new_value) => setFilterType(new_value)}
-      renderInput={(params) => (
-        <TextField {...params} label="Filter By..." />
-      )}
-    />
-    </Grid>
-    <Grid item md={9} lg={9}>
+    <Helmet>
+      <title>
+        Users
+      </title>
+    </Helmet>
+    <Grid container spacing={2}>
+    <Grid item md={12} lg={12}>
     <TextField
           label="Search"
           name="Search"
           type="search"
           fullWidth
           id="outlined-start-adornment"
-          disabled={filterType == null}
           InputProps={{
             startAdornment: <InputAdornment position="start"><SearchIcon/></InputAdornment>,
           }}
@@ -141,6 +159,24 @@ export default function DataTable(props) {
           onChange={(e)=>setFilterStr(e.target.value)}
         />
         </Grid>
+      <Grid item md={12} lg={12}>
+      <FormControl>
+                <FormLabel id="role-group-label">Filter by Role</FormLabel>
+                <RadioGroup
+                  aria-labelledby="role-group-label"
+                  value={filterRole}
+                  onChange={(e) => setFilterRole(e.target.value)}
+                  name="role-group"
+                  row
+                >
+                  <FormControlLabel value={4} control={<Radio />} label="All" />                  
+                  <FormControlLabel value={0} control={<Radio />} label="Unprivileged" />
+                  <FormControlLabel value={1} control={<Radio />} label="Admin" />
+                  <FormControlLabel value={2} control={<Radio />} label="School Staff" />
+                  <FormControlLabel value={3} control={<Radio />} label="Driver" />
+                </RadioGroup>
+                </FormControl>
+      </Grid>
         </Grid>
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
@@ -164,6 +200,8 @@ export default function DataTable(props) {
         loading={loading}
       />
     </div>
+    {
+    (role == 1 || role == 2) &&
     <Button
       component={RouterLink}
       to={"/users/create"}
@@ -174,6 +212,7 @@ export default function DataTable(props) {
       >
         Create User
       </Button>
+      }
       </>
   );
 }

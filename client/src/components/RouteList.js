@@ -1,5 +1,4 @@
 import * as React from 'react';
-import Button from '@mui/material/Button';
 import { DataGrid, GridOverlay } from '@mui/x-data-grid';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import axios from 'axios';
@@ -7,11 +6,11 @@ import SearchIcon from '@mui/icons-material/Search';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
-import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import CloseIcon from '@mui/icons-material/Close';
+import { Helmet } from 'react-helmet';
 
 const columns = [
   { field: 'name', headerName: 'Route Name', width: 350, filterable: false,
@@ -78,8 +77,6 @@ export default function DataTable(props) {
   const [filterStr, setFilterStr] = React.useState("");
 
   const [loading , setLoading] = React.useState(true);
-  const [filterType, setFilterType] = React.useState(null);
-  const filterValues = ['name'];
 
   let navigate = useNavigate();
 
@@ -88,6 +85,7 @@ export default function DataTable(props) {
   const mappings = {'name': 'name', 'school': 'school_id', 'students': 'student_count'}
 
   React.useEffect(()=> {
+    let active = true;
     const fetchData = async() => {
       setLoading(true);
       let params = {}
@@ -98,15 +96,8 @@ export default function DataTable(props) {
         params.sort = mappings[sortModel[0].field];
         params.dir = sortModel[0].sort;
       }
+      params.name = filterStr;
 
-      if(filterType == 'name'){
-        params.name = filterStr;
-      }
-      else if(filterStr != "") {
-        setFilterStr("");
-      }
-
-      console.log(params);
       const result = await axios.get(
         process.env.REACT_APP_BASE_URL+'/route', {
           headers: {
@@ -119,8 +110,10 @@ export default function DataTable(props) {
         let newRows = result.data.routes.map((value)=>{
           return {...value, name: {name: value.name, id: value.id}, students: value.students.length}
         })
-        setTotalRows(result.data.records);
-        setRows(newRows);
+        if(active){
+          setTotalRows(result.data.records);
+          setRows(newRows);
+        }
       }
       else{
         // console.log(result.data)
@@ -132,30 +125,26 @@ export default function DataTable(props) {
       setLoading(false);
     };
     fetchData();
-  }, [page, sortModel, filterStr, filterType, showAll])
+    return () => {
+      active = false;
+    };
+  }, [page, sortModel, filterStr, showAll])
 
   return (
     <>
+    <Helmet>
+      <title>
+        Routes
+      </title>
+    </Helmet>
  <Grid container>
-      <Grid item md={3} lg={3}>
-    <Autocomplete
-      options={filterValues}
-      value={filterType}
-      autoSelect
-      onChange={(e, new_value) => setFilterType(new_value)}
-      renderInput={(params) => (
-        <TextField {...params} label="Filter By..." />
-      )}
-    />
-    </Grid>
-    <Grid item md={9} lg={9}>
+    <Grid item md={12} lg={12}>
     <TextField
           label="Search"
           name="Search"
           type="search"
           fullWidth
           id="outlined-start-adornment"
-          disabled={filterType == null}
           InputProps={{
             startAdornment: <InputAdornment position="start"><SearchIcon/></InputAdornment>,
           }}
