@@ -2,11 +2,13 @@ import * as React from 'react';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid';
 import { GridOverlay, DataGrid } from '@mui/x-data-grid';
-import {Link as RouterLink, useParams, useNavigate} from 'react-router-dom';
+import { useParams, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { DateTime } from 'luxon';
+import { Helmet } from 'react-helmet';
 
 export default function StudentDetail() {
 
@@ -28,6 +30,11 @@ const mapOptions = {
   const [user, setUser] = React.useState({});
   const [route, setRoute] = React.useState({name: "No Route", description: ""});
   const [stopRows, setStopRows] = React.useState([]);
+
+  function tConvert(time) {
+    let date_time = DateTime.fromISO(time);
+    return date_time.toLocaleString(DateTime.TIME_SIMPLE);
+  }
 
   const stopColumns = [
     { field: 'id', hide: true, width: 30},
@@ -66,7 +73,7 @@ const mapOptions = {
             let newStopRows = [];
             for (let i=0;i<result.data.in_range_stops.length;i++) {
               let cur_stop = result.data.in_range_stops[i];
-              newStopRows = [...newStopRows, {id: cur_stop.pickup_time, name: cur_stop.name, pickup: cur_stop.pickup_time, dropoff: cur_stop.dropoff_time, location: {lat: cur_stop.latitude, lng: cur_stop.longitude}}]
+              newStopRows = [...newStopRows, {id: cur_stop.id, name: cur_stop.name, pickup: tConvert(cur_stop.pickup_time), dropoff: tConvert(cur_stop.dropoff_time), location: {lat: cur_stop.latitude, lng: cur_stop.longitude}}]
             }
             setStopRows(newStopRows);
           }
@@ -82,6 +89,12 @@ const mapOptions = {
   }, []);
 
   return (
+    <>
+    <Helmet>
+      <title>
+        {data.name + " - Detail"}
+      </title>
+    </Helmet>
     <Grid container alignItems="center" justifyContent="center" pt={5}>
       <Stack spacing={4}>
         <Typography variant="h5" align="center">Name: {data.name}</Typography>
@@ -129,5 +142,6 @@ const mapOptions = {
 
       </Stack>
     </Grid>
+    </>
   );
 }

@@ -1,4 +1,4 @@
-//import React from 'react'
+import React from 'react'
 import { GoogleMap, LoadScript, Marker, Circle } from '@react-google-maps/api';
 import Stack from '@mui/material/Stack';
 import { GridOverlay, DataGrid } from '@mui/x-data-grid';
@@ -9,14 +9,16 @@ import axios from 'axios';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Box from '@mui/material/Box';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import Divider from '@mui/material/Divider';
-import * as React from 'react';
 import { useTable, useSortBy, useFilters, usePagination, ReactTable } from 'react-table';
+import ListItem from '@mui/material/ListItem';
+import List from '@mui/material/List';
+import { Icon } from "@material-ui/core";
+import ListItemText from '@mui/material/ListItemText';
+import { Helmet } from 'react-helmet';
 
 import UnfoldMoreOutlinedIcon from '@mui/icons-material/UnfoldMoreOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
@@ -42,12 +44,23 @@ const titleStyle = (size, margin) => {
     });
   };
 
+  const legendItem = (src, text) => {
+    return(
+      <ListItem disablePadding>
+        <Icon>
+          <img src={src} height={25} width={25}/>
+        </Icon>
+        <ListItemText primary={text} />
+      </ListItem>
+    );
+  };
+
 const CircleOptions = {
   strokeColor: '#d9db58',
-  strokeOpacity: 0.55,
+  strokeOpacity: 0.50,
   strokeWeight: 1.5,
   fillColor: '#ebed72',
-  fillOpacity: 0.35,
+  fillOpacity: 0.30,
   clickable: false,
   draggable: false,
   editable: false,
@@ -68,7 +81,7 @@ const studentColumns = [
 
 const routeColumns = [
   { field: 'id', hide: true, width: 30},
-  { field: 'name', headerName: "Name", width: 150},
+  { field: 'name', headerName: "Name", width: 250},
   { field: 'description', headerName: "Description", flex: 1},
   { field: 'complete', headerName: "Is Route Complete?", width: 175,
     renderCell: (params) => (
@@ -310,9 +323,9 @@ function ReactStopRow({ row, index, moveRow }) {
 };
 
 export default function RoutePlanner(props) {
-  const [studentRows, setStudentRows] = React.useState([]); //rows of data grid: "Students in Current Row"
-  const [routeRows, setRouteRows] = React.useState([]); //rows of data grid: "Current Routes"
-  const [routeInfo, setRouteInfo] = React.useState({"name": "", "description": ""}); //values from text fields
+  const [studentRows, setStudentRows] = React.useState([]);
+  const [routeRows, setRouteRows] = React.useState([]); 
+  const [routeInfo, setRouteInfo] = React.useState({"name": "", "description": ""}); 
 
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
   const [snackbarMsg, setSnackbarMsg] = React.useState("");
@@ -325,6 +338,9 @@ export default function RoutePlanner(props) {
   const [schoolLocation, setSchoolLocation] = React.useState({lat: 0, lng:0});
 
   const [stopRows, setStopRows] = React.useState([]);
+  const [schoolTitle, setSchoolTitle] = React.useState("");
+
+  const [completeness, setCompleteness] = React.useState("No Route");
 
   const [data, setData] = React.useState([]);
   const reactStopColumns = React.useMemo(
@@ -363,8 +379,6 @@ export default function RoutePlanner(props) {
   let { id } = useParams();
   let navigate = useNavigate();
 
-  const [toggleSelection, setToggleSelection] = React.useState('students');
-
   let [query, setQuery] = useSearchParams();
 
   React.useEffect(()=>{
@@ -373,7 +387,7 @@ export default function RoutePlanner(props) {
     }
   }, []);
 
-  // load current routes into page
+  // load info into page on load
   React.useEffect(()=>{
   const fetchData = async() => {
       const result = await axios.get(
@@ -384,9 +398,10 @@ export default function RoutePlanner(props) {
           }
         );
       if(result.data.success) {
-          console.log(result.data.school);
           setRouteRows(result.data.school.routes);
-          setSchoolLocation({lat: result.data.school.latitude, lng: result.data.school.longitude})
+          setSchoolLocation({lat: result.data.school.latitude, lng: result.data.school.longitude});
+          setSchoolTitle(result.data.school.name);
+          //setCompleteness("No Route");
           let newRows = result.data.school.students.map((value)=>{
             return {...value, address: value.user.uaddress, location: {lat: value.user.latitude, lng: value.user.longitude}}
           });
@@ -402,7 +417,7 @@ export default function RoutePlanner(props) {
   fetchData();
   }, [resetRoute]);
 
-  // load route info into fields when route is clicked
+  // load route info on route edit
   React.useEffect(() => {
     const fetchStudents = async() => {
         if(selectionModel.length == 0){
@@ -449,8 +464,6 @@ export default function RoutePlanner(props) {
   React.useEffect(()=>{
     if(map){
       var bounds = new window.google.maps.LatLngBounds();
-      console.log(students);
-      console.log(schoolLocation);
       for (var i = 0; i < students.length; i++) {
         bounds.extend(students[i].location);
       }
@@ -459,7 +472,44 @@ export default function RoutePlanner(props) {
     }
   }, [students, schoolLocation, map]);
 
-  // function when snackbar is closed
+  // update route completeness on a change
+  React.useEffect(()=>{
+    let active = true;
+    const fetchData = async() => {
+      if (selectionModel.length != 0 || routeInfo["name"] != "" ) {
+        const result = await axios.post(process.env.REACT_APP_BASE_URL+`/check_complete`, {
+          students: studentRows.map((value)=>{return value.id}),
+          stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
+          }, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+        if(result.data.success){
+          let isComplete = result.data.completion;
+          if (isComplete && active) {
+            setCompleteness("Complete");
+          }
+          else if(active){
+            setCompleteness("Incomplete");
+          }
+        }
+        else{
+          console.log("Completeness check failed.")
+        }
+      }
+      else if (active){
+        setCompleteness("No Route");
+      }
+    }
+    fetchData(); 
+
+    return () => {
+      active = false;
+    };
+  }, [selectionModel, stopRows, studentRows, students, routeInfo]);
+
+  // function on snackbar close
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -469,7 +519,6 @@ export default function RoutePlanner(props) {
 
   // function when address is clicked (add address to route)
   const handleAddressClick = (student) => {
-    if (toggleSelection=="students") {
       let addresses = studentRows.map((value)=>{return value.address});
       if(addresses.includes(student.address)){
           let newStudentRows = studentRows.filter(value=> value.address != student.address)
@@ -480,14 +529,10 @@ export default function RoutePlanner(props) {
           let newStudentRows = [...studentRows, ...allStudents];
           setStudentRows(newStudentRows);
       }
-    }
   };
 
-  // function when map is clicked (add stop to map)
+  // function when map is double clicked (add stop to map)
   const handleMapClick = (value) => {
-    if (toggleSelection=="stops") {
-      
-
       let loc = {
         lat: value.lat(),
         lng: value.lng(),
@@ -510,10 +555,9 @@ export default function RoutePlanner(props) {
       console.log(newStopRow);
       setStopRows(newStopRows);
       setData(newStopRows);
-    }
-  };
+  }
 
-  // function when stop icon is clicked
+  // function when stop icon is clicked on
   const handleStopClick = (stop) => {
     let newStopRows = stopRows.filter(value => value.id != stop.id);
     for (let i=0;i<newStopRows.length;i++) {
@@ -525,6 +569,7 @@ export default function RoutePlanner(props) {
     setData(newStopRows);
   };
 
+  // function to check stop indices (will become deprecated)
   const validateStops = (allRows) => {
     const errors = [];
     console.log(allRows)
@@ -578,8 +623,8 @@ export default function RoutePlanner(props) {
                 setSnackbarSeverity('success');
                 setSnackbarMsg('Route successfully created');
                 setSelectionModel([]);
+                setCompleteness("No Route");
                 setResetRoute(!resetRoute);
-                setToggleSelection("students");
             }
             else {
                 setSnackbarOpen(true);
@@ -611,8 +656,8 @@ export default function RoutePlanner(props) {
                 setSnackbarSeverity('success');
                 setSnackbarMsg('Route successfully updated');
                 setSelectionModel([]);
+                setCompleteness("No Route");
                 setResetRoute(!resetRoute);
-                setToggleSelection("students");
             }
             else{
                 setSnackbarOpen(true);
@@ -625,7 +670,7 @@ export default function RoutePlanner(props) {
     }
   }
 
-  //runs when user types in textfield, should add value into correct part of routeInfo
+  // function when user types in textfields
   const handleInfoChange = (fieldindicator, new_value) => {
     let newInfo = JSON.parse(JSON.stringify(routeInfo));
     if (fieldindicator == "name") {
@@ -638,12 +683,7 @@ export default function RoutePlanner(props) {
     }
   };
 
-  const handleToggleMode = (event, newToggle) => {
-    if (newToggle.length) {
-      setToggleSelection(newToggle);
-    }
-  };
-
+  // function when user stops editing stop cell (will become deprecated?)
   const handleStopCellEdit = (row, allRows) => {
     let oldStopRows = JSON.parse(JSON.stringify(allRows));
     if (row.field === "name") {
@@ -674,45 +714,31 @@ export default function RoutePlanner(props) {
     }
   };
 
-  const handleCheckCompleteness = () => {
-    const fetchData = async() => {
-      const result = await axios.post(process.env.REACT_APP_BASE_URL+`/check_complete`, {
-        students: studentRows.map((value)=>{return value.id}),
-        stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
-        }, {
-          headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-      if(result.data.success){
-        let isComplete = result.data.completion;
-        if (isComplete) {
-          setSnackbarOpen(true);
-          setSnackbarSeverity('success');
-          setSnackbarMsg('Route is complete!');
-        }
-        else {
-          setSnackbarOpen(true);
-          setSnackbarSeverity('error');
-          setSnackbarMsg('Route is incomplete!');
-        }
-      }
-      else{
-        console.log("Completeness check failed.")
-      }
-    }
-    fetchData(); 
-  };
-
+  // function on map load-in
   const onLoad = React.useCallback(function callback(map) {
     setMap(map);
   }, [])
 
   return (
+    <>
+    <Helmet>
+      <title>
+        {schoolTitle + " - Route Planner"}
+      </title>
+    </Helmet>
     <Stack id="container-stack" spacing={5} justifyContent="center" alignItems="center">
+      <Typography variant="h2" align="center" sx={titleStyle(36, 1)}>
+        {schoolTitle}
+      </Typography>
+
+      <Divider id="divider" variant="fullWidth" style={{width:'100%'}}/>
+
       <Stack id="top-stack" spacing={0} justifyContent="center">
-        <Typography variant="h3" align="left" sx={titleStyle(28, 1)}>
-          Current Routes: (Click on a route to start editing it)
+        <Typography variant="h2" align="center" sx={titleStyle(28, 1)}>
+          Route List
+        </Typography>
+        <Typography variant="subtitle2" align="left">
+          (Click on a route to start editing it)
         </Typography>
         <div style={{ height: 400, width: 1200 }}>
           <div style={{ display: 'flex', height: '100%' }}>
@@ -736,24 +762,27 @@ export default function RoutePlanner(props) {
         </div>
       </Stack>
 
-      <Divider id="divider" style={{width:'100%'}}/>
+      <Divider id="divider" variant="fullWidth" style={{width:'100%'}}/>
 
       <Stack id="bottom-stack" spacing={3} justifyContent="center" alignItems="center">
-
-        <ToggleButtonGroup color="primary" value={toggleSelection} exclusive onChange={handleToggleMode}>
-          <ToggleButton value="students">Student Mode</ToggleButton>
-          <ToggleButton value="stops" disabled={routeInfo["name"].length == 0}>Stops Mode</ToggleButton>
-        </ToggleButtonGroup>
-
+        <Typography variant="h2" align="center" sx={titleStyle(28, 1)}>
+          Route Editor
+        </Typography>
         <Stack id="bottom-middle-stack" direction="row" spacing={10} justifyContent="center" alignItems="center" sx={{ width: 1200 }}>
           <Stack id="route-info-stack" spacing={2} justifyContent="center" alignItems="center">
             <Stack id="indicator-and-check-stack" direction="row" spacing={1} justifyContent="center" alignItems="center">
               <Typography variant="h5" align="left" sx={{ width: 300, fontWeight: 'bold', fontSize: 28 }}>
                 Current Route: {routeInfo["name"].length==0 ? "None" : routeInfo["name"]}
               </Typography>
-              <Button variant="contained" color="primary" onClick={handleCheckCompleteness} disabled={routeInfo["name"].length == 0} sx={{ width: 250 }}>
-                Check Route Completeness
-              </Button>
+
+              {completeness=="No Route" ? <Typography variant="h5" align="right" sx={{ width: 300, fontSize: 22 }}>
+                {"Completeness: "+completeness}
+              </Typography> : (completeness=="Incomplete" ? <Typography variant="h5" align="right" sx={{ width: 300, fontSize: 22, color: '#ff0000' }}>
+                {"Completeness: "+completeness}
+              </Typography> : <Typography variant="h5" align="right" sx={{ width: 300, fontSize: 22, color: '#00ff00' }}>
+                {"Completeness: "+completeness}
+              </Typography>)}
+
             </Stack>
             <TextField label="Route Name" 
             variant="outlined" 
@@ -769,8 +798,18 @@ export default function RoutePlanner(props) {
             fullWidth />
           </Stack>
           <Stack id="map-stack" spacing={0} justifyContent="center" alignItems="center" sx={{ p: 2, border: 2, borderRadius: '16px', borderColor: '#dcdcdc'}}>
-            {toggleSelection=="stops" ? <Typography variant="subtitle2" align="left">Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>
-            : <Typography variant="subtitle2" align="left">Click on an address to add it to the route! Click on that address again to remove it.</Typography>}
+            <Stack id="legend-stack" direction="row" spacing={4} alignItems="center" justifyContent="center">
+              <List>
+                {legendItem("http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png", "= School")}
+                {legendItem("http://maps.google.com/mapfiles/kml/paddle/red-circle.png", "= Student Without a Route")}
+                
+              </List>
+              <List>
+                {legendItem("http://maps.google.com/mapfiles/kml/paddle/blu-circle.png", "= Student on a Different Route")}
+                {legendItem("http://maps.google.com/mapfiles/kml/paddle/grn-circle.png", "= Student on the Current Route")}
+              </List>
+            </Stack>
+            
             <LoadScript googleMapsApiKey={api_key}>
               <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad} options={mapOptions} onDblClick={(value) => handleMapClick(value.latLng)}>
                 <Marker title="School" position={schoolLocation} icon="http://maps.google.com/mapfiles/kml/paddle/ltblu-blank.png"/>
@@ -779,76 +818,79 @@ export default function RoutePlanner(props) {
                   icon={{url: studentRows.find(element => student.id == element.id) ? "http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"
                   : (student.route == null ? "http://maps.google.com/mapfiles/kml/paddle/red-circle.png"
                   : "http://maps.google.com/mapfiles/kml/paddle/blu-circle.png") }}/> ))}
-                {toggleSelection=="stops" ? stopRows.map((stop, index) => (
+                {stopRows.map((stop, index) => (
                   <Marker key={index} title={stop.name} position={stop.location} onClick={() => handleStopClick(stop)} 
-                  icon={{url: "http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"}}/>)) : [] } 
-                {toggleSelection=="stops" ? students.map((student, index) => (
-                  <Circle key={index} center={student.location} options={CircleOptions} />)) : [] } 
+                  icon={{url: "http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"}}/>))} 
+                {stopRows.map((stop, index) => (
+                  <Circle key={index} center={stop.location} options={CircleOptions} />))} 
               </GoogleMap>
             </LoadScript>
+            <Typography variant="subtitle2" align="left" sx={{ fontSize: 12, mt: 1 }}>Click on an student to add it to the route! Click on that student again to remove it.</Typography>
+            <Typography variant="subtitle2" align="left" sx={{ fontSize: 12 }}>Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>
           </Stack>
         </Stack>
 
-        { toggleSelection=="stops" ? <Stack id="stop-stable-stack" spacing={0} justifyContent="center">
-          <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
-            Current Stops in Route: 
-            (double click on any stop name or ordering to edit it)
-          </Typography>
-          <div style={{ height: 350, width: 1000 }}>
-            <div style={{ display: 'flex', height: '100%' }}>
-              <div style={{ flexGrow: 1 }}>
-{/*                 <DataGrid
-                  components={{
-                    NoRowsOverlay: NoStopsOverlay,
-                  }}
-                  rows={stopRows}
-                  columns={stopColumns}
-                  getRowId={(row) => row.id}
-                  autoPageSize
-                  density="compact"
-                  onCellEditCommit = {(row) => handleStopCellEdit(row, stopRows)}
-                /> */}
-              <ReactStopsTable columns = {reactStopColumns} data = {stopRows} setData={setStopRows}/>   
-              </div>
-              {/* stopRows */}
-
-
-            </div>
-          </div>
-        </Stack> : <Stack id="student-table-stack" spacing={0} justifyContent="center">
-          <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
-            Current Students in Route:
-          </Typography>
-          <div style={{ height: 350, width: 1000 }}>
-            <div style={{ display: 'flex', height: '100%' }}>
-              <div style={{ flexGrow: 1 }}>
+        <Stack id="bottom-tables-stack" direction="row" spacing={5} alignItems="center" justifyContent="center">
+          <Stack id="student-table-stack" spacing={0} justifyContent="center">
+            <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
+              Current Students in Route:
+            </Typography>
+            <div style={{ height: 350, width: 600 }}>
+              <div style={{ display: 'flex', height: '100%' }}>
+                <div style={{ flexGrow: 1 }}>
                   <DataGrid
-                  components={{
-                    NoRowsOverlay: NoStudentsOverlay,
-                  }}
-                  rows={studentRows}
-                  columns={studentColumns}
-                  getRowId={(row) => row.id}
-                  autoPageSize
-                  density="compact"
-                /> 
- 
-                {/* <Table columns = {reactStudentColumns} data = {studentRows} setSortModel={setSortModel} /> */}
+                    components={{
+                      NoRowsOverlay: NoStudentsOverlay,
+                    }}
+                    rows={studentRows}
+                    columns={studentColumns}
+                    getRowId={(row) => row.id}
+                    autoPageSize
+                    density="compact"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </Stack> }
+          </Stack>
+          <Stack id="stop-stable-stack" spacing={0} justifyContent="center">
+            <Typography variant="h5" align="left" sx={titleStyle(28, 0)}>
+              Current Stops in Route: 
+            </Typography>
+            <Typography variant="subtitle2" align="left">
+              (Click on a stop name or ordering to start editing it)
+            </Typography>
+            <div style={{ height: 350, width: 600 }}>
+              <div style={{ display: 'flex', height: '100%' }}>
+                <div style={{ flexGrow: 1 }}>
+                  {/*<DataGrid
+                    components={{
+                      NoRowsOverlay: NoStopsOverlay,
+                    }}
+                    rows={stopRows}
+                    columns={stopColumns}
+                    getRowId={(row) => row.id}
+                    autoPageSize
+                    density="compact"
+                    onCellEditCommit = {(row) => handleStopCellEdit(row, stopRows)}
+                  />*/}
+                  <ReactStopsTable columns = {reactStopColumns} data = {stopRows} setData={setStopRows}/>   
+                </div>
+              </div>
+            </div>
+          </Stack>
+        </Stack>
 
         <Button variant="contained" color="primary" onClick={handleSubmit} disabled={routeInfo["name"] == ""}>
-          {selectionModel.length == 0 ? "Add Route" : "Update Route"}
+          {selectionModel.length == 0 ? "Save Route" : "Update Route"}
         </Button>
       </Stack>
 
-      <Snackbar open={snackbarOpen} onClose={handleClose} anchorOrigin={{vertical: 'bottom', horizontal: 'center'}} sx={{ width: 600 }}>
+      <Snackbar open={snackbarOpen} onClose={handleClose} anchorOrigin={{vertical: 'bottom', horizontal: 'left'}} sx={{ width: 600 }}>
         <Alert onClose={handleClose} severity={snackbarSeverity}>
           {snackbarMsg}
         </Alert>
       </Snackbar>
     </Stack>
+    </>
   )
 } 

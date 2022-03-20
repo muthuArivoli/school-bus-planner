@@ -9,6 +9,8 @@ import SchoolDeleteDialog from './SchoolDeleteDialog';
 import SchoolDetailMid from './SchoolDetailMid'
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
+import { DateTime } from 'luxon';
+import { Helmet } from 'react-helmet';
 
 export default function SchoolDetail(props) {
 
@@ -22,6 +24,35 @@ export default function SchoolDetail(props) {
   const [students, setStudents] = React.useState([]);
   const [routes, setRoutes] = React.useState([]);
 
+  const [role, setRole] = React.useState(0);
+
+  function tConvert(time) {
+    let date_time = DateTime.fromISO(time);
+    return date_time.toLocaleString(DateTime.TIME_SIMPLE);
+  }
+
+  React.useEffect(()=>{
+    const fetchData = async() => {
+      const result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/current_user`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success){
+        setRole(result.data.user.role);
+      }
+      else{
+        props.setSnackbarMsg(`Current user could not be loaded`);
+        props.setShowSnackbar(true);
+        props.setSnackbarSeverity("error");
+        navigate("/");
+      }
+    }
+    fetchData();
+  }, [])  
+
   React.useEffect(() => {
     const fetchData = async() => {
       setLoading(true);
@@ -34,7 +65,10 @@ export default function SchoolDetail(props) {
       );
       if (result.data.success){
         console.log(result.data);
-        setData(result.data.school);
+        let newSchool = result.data.school;
+        newSchool.arrival_time = tConvert(result.data.school.arrival_time);
+        newSchool.departure_time = tConvert(result.data.school.departure_time);
+        setData(newSchool);
         let newRows = result.data.school.students.map((value)=>{
           return {...value, name: {name: value.name, id: value.id}}
         })
@@ -44,10 +78,10 @@ export default function SchoolDetail(props) {
 
       }
       else{
-        props.setSnackbarMsg(`Route could not be loaded`);
+        props.setSnackbarMsg(`School could not be loaded`);
         props.setShowSnackbar(true);
         props.setSnackbarSeverity("error");
-        navigate("/routes");
+        navigate("/schools");
       }
       setLoading(false);
     };
@@ -87,6 +121,11 @@ export default function SchoolDetail(props) {
 
   return (
     <>
+    <Helmet>
+      <title>
+        {data.name + " - Detail"}
+      </title>
+    </Helmet>
     <Snackbar open={error} onClose={handleClose}>
     <Alert onClose={handleClose} severity="error">
       Failed to delete school.
@@ -94,8 +133,8 @@ export default function SchoolDetail(props) {
   </Snackbar>
     <Grid container justifyContent="center" pt={5}>
       <Stack spacing={4} sx={{ width: '100%'}}>
-        <Stack direction="row" spacing={50} justifyContent="center">
-        <Typography variant="h5" align="center">
+        <Stack direction="row" spacing={25} justifyContent="center">
+        <Typography variant="h5" align="center" /*sx={{ width: 150 }}*/>
           School Name: {data.name}
         </Typography>
         <Typography variant="h5" align="center">
@@ -121,6 +160,8 @@ export default function SchoolDetail(props) {
         <SchoolDetailMid students={students} routes={routes} loading={loading}/>
 
         <Stack direction="row" spacing={3} justifyContent="center">
+          {
+          (role == 1 || role == 2) &&
           <Button component={RouterLink}
                 to={"/schools/" + id + "/routes"}
                 color="primary"
@@ -129,6 +170,9 @@ export default function SchoolDetail(props) {
                 style={{  }}>
                   Route Planner
           </Button>
+          }
+          {
+          (role == 1 || role == 2) &&  
           <Button component={RouterLink}
               to={"/schools/" + id +"/update"}
               color="primary"
@@ -137,7 +181,13 @@ export default function SchoolDetail(props) {
               style={{  }}>
               Modify
           </Button>
+          }
+          {
+          role == 1 &&
           <SchoolDeleteDialog schoolName={data.name} handleDelete={handleDelete}/>
+          }
+          {
+          (role == 1 || role == 2) &&
           <Button component={RouterLink}
               to={`/email?school=${id}`}
               color="primary"
@@ -146,6 +196,7 @@ export default function SchoolDetail(props) {
               style={{ }}>
               Email
           </Button>
+          }
         </Stack>
       </Stack>
     </Grid>

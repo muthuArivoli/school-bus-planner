@@ -1,29 +1,25 @@
-import React, {useState} from 'react';
+import React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Alert from '@mui/material/Alert';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useNavigate, Link as RouterLink, BrowserRouter as Router, useSearchParams} from 'react-router-dom';
+import { useNavigate, useSearchParams} from 'react-router-dom';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
 
 const theme = createTheme();
 
 export default function SignIn() {
     let navigate = useNavigate();
 
-    const [alert, setAlert] = useState(false);
-    const [password, setPassword] = useState("");
-    const [conPassword, setConPassword] = useState("");
+    const [alert, setAlert] = React.useState(false);
+    const [password, setPassword] = React.useState("");
+    const [conPassword, setConPassword] = React.useState("");
 
     let [query, setQuery] = useSearchParams();
 
@@ -70,6 +66,11 @@ export default function SignIn() {
 
     return (
       <ThemeProvider theme={theme}>
+        <Helmet>
+          <title>
+            Reset Password
+          </title>
+        </Helmet>
         <Container component="main" maxWidth="xs">
           <CssBaseline />
           <Box
@@ -80,7 +81,7 @@ export default function SignIn() {
               alignItems: 'center',
             }}
           >
-            <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }} src="/HTLogo128.png"/>
+            <img src="/HTLogo128_fixed.png" height={64} width={64}/>
             <Typography component="h1" variant="h5">
               Reset Password for
             </Typography>

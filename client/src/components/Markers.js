@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import {Component} from 'react';
 
 const Wrapper = styled.div`
     position: absolute;
@@ -13,13 +12,6 @@ const Wrapper = styled.div`
     transform: translate(-50%,-50%);
     cursor: grab;
 `;
-
-/*    -webkit-user-select: none;
--moz-user-select: none;
--ms-user-select: none;
--webkit-transform: translate(-50%,-50%);
--ms-transform: translate(-50%,-50%);
-transform: translate(-50%,-50%); */
 
 const markerStyle = {
     position: "absolute",
