@@ -192,7 +192,7 @@ export default function DataTable(props) {
       },{
         Header: "Route",
         accessor: "route",
-        Cell: (row) => (<>{console.log(row)}{row.row.original.route_id != null && <Link component={RouterLink} to={"/routes/" + row.row.original.route_id}>{row.row.original.route.name}</Link>}</>),
+        Cell: (row) => (<>{console.log(row)}{row.row.original.route_id != null ? <Link component={RouterLink} to={"/routes/" + row.row.original.route_id}>{row.row.original.route.name}</Link> : <CloseIcon/>}</>),
         disableSortBy: true
       },
       {
