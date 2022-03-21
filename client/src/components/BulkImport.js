@@ -6,12 +6,6 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import Papa from "papaparse";
 import axios from 'axios';
 import Typography from '@mui/material/Typography';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import { DataGrid } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
 import Snackbar from '@mui/material/Snackbar';
@@ -19,8 +13,8 @@ import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import Tooltip from '@mui/material/Tooltip';
 import Popover from '@mui/material/Popover';
+import Stack from '@mui/material/Stack';
 
 const userColumns = [
   //{ field: 'id', hide: true, width: 30},
@@ -28,6 +22,14 @@ const userColumns = [
   { field: 'name', headerName: "Name", editable: true, flex: 1.5},
   { field: 'address', headerName: "Address", editable: true, flex: 2},
   { field: 'phone', headerName: "Phone #", editable: true, width: 150},
+];
+
+const studentColumns = [
+  //{ field: 'id', hide: true, width: 30},
+  { field: 'name', headerName: "Name", editable: true, flex: 1},
+  { field: 'parentemail', headerName: "Parent Email", editable: true, flex: 1},
+  { field: 'studentid', headerName: "Student ID", type: 'number', editable: true, width: 150},
+  { field: 'school', headerName: "School Name", editable: true, flex: 1},
 ];
 
 export default function BulkImport() {
@@ -45,11 +47,17 @@ export default function BulkImport() {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [popoverMessage, setPopoverMessage] = React.useState("");
 
-  const [users, setUsers] = React.useState([]);
   const [userRows, setUserRows] = React.useState([]);
   const [errorRows, setErrorRows] = React.useState([]);
 
-  //const [studentRows, setStudentRows] = React.useState([]);
+  const [studentRows, setStudentRows] = React.useState([]);
+  const [studentErrorRows, setStudentErrorRows] = React.useState([]);
+
+  const [fileOneName, setFileOneName] = React.useState("");
+  const [fileTwoName, setFileTwoName] = React.useState("");
+
+  const [excludedUsers, setExcludedUsers] = React.useState([]);
+  const [excludedStudents, setExcludedStudents] = React.useState([]);
 
   const popoverOpen = Boolean(anchorEl);
   const popoverID = popoverOpen ? 'simple-popover' : undefined;
@@ -63,11 +71,69 @@ export default function BulkImport() {
 
   const sendRecords = () => {
     // will ONLY send records to db (user will click this after validating)
+
+    // these work, console.log to test
+    let remainingUsers = userRows.filter(o=> !excludedUsers.some(i=> i === o.id));
+    let remainingStudents = studentRows.filter(o=> !excludedStudents.some(i=> i === o.id));
   };
 
   const validateRecords = () => {
     // validate changes through backend (user will click this before upload)
     // **make sure that the error dictionaries are updated correctly**
+  };
+
+  const setUserInfo = (res) => {
+    var usr_rows = res.data["users.csv"];
+
+    let rows = [];
+    let errors = {};
+
+    for (var i=0; i<usr_rows.length; i++) {      
+      let newRow = {id: i, email: usr_rows[i]['row'][0], name: usr_rows[i]['row'][1], address: usr_rows[i]['row'][2], phone: usr_rows[i]['row'][3]};
+      rows.push(newRow);
+      errors[i] = usr_rows[i]['errors'];
+    }
+
+    setUserRows(rows);
+    setErrorRows(errors);
+
+    let initial_selectionmodel = [];
+
+    let keys = Object.keys(usr_rows);
+    for (var i=0;i<usr_rows.length;i++) {
+      let err = usr_rows[i]['errors'];
+      if ("dup_name" in err || "dup_email" in err) {
+        initial_selectionmodel.push(keys[i]);
+      }
+    }
+    setExcludedUsers(initial_selectionmodel);
+  };
+
+  const setStudentInfo = (res) => {
+    var student_rows = res.data["students.csv"];
+
+    let rows = [];
+    let errors = {};
+
+    for (var i=0; i<student_rows.length; i++) {      
+      let newRow = {id: i, name: student_rows[i]['row'][0], parentemail: student_rows[i]['row'][1], studentid: student_rows[i]['row'][2], school: student_rows[i]['row'][3]};
+      rows.push(newRow);
+      errors[i] = student_rows[i]['errors'];
+    }
+
+    setStudentRows(rows);
+    setStudentErrorRows(errors);
+
+    let initial_selectionmodel = [];
+
+    let keys = Object.keys(student_rows);
+    for (var i=0;i<student_rows.length;i++) {
+      let err = student_rows[i]['errors'];
+      if ("dup_name" in err || "dup_email" in err) {
+        initial_selectionmodel.push(keys[i]);
+      }
+    }
+    setExcludedStudents(initial_selectionmodel);
   };
 
 
@@ -89,24 +155,11 @@ export default function BulkImport() {
         setSnackbarOpen(true);
         setSnackbarSeverity("success");
 
-        var usr_rows = res.data[Object.keys(res.data)[0]];
+        setUserInfo(res);
 
-        let rows = [];
-        let errors = {};
-
-        for (var i=0; i<usr_rows.length; i++) {      
-          let newRow = {id: i, email: usr_rows[i]['row'][0], name: usr_rows[i]['row'][1], address: usr_rows[i]['row'][2], phone: usr_rows[i]['row'][3]};
-          rows.push(newRow);
-          errors[i] = usr_rows[i]['errors'];
+        if (files.length > 1) {
+          setStudentInfo(res);
         }
-
-        console.log(usr_rows);
-        console.log(rows);
-        console.log(errors);
-
-        setUsers(usr_rows);
-        setUserRows(rows);
-        setErrorRows(errors);
 
         handleDialogOpen()
       }
@@ -138,6 +191,12 @@ export default function BulkImport() {
         }
         allfiles.push(acceptedFiles);
         console.log(allfiles);
+
+        setFileOneName(allfiles[0][0].name);
+        if (allfiles.length > 1) {
+          setFileTwoName(allfiles[1][0].name);
+        }
+
         Papa.parse(acceptedFiles[0], {
           complete: function(results) {
             console.log("Finished:", results.data);
@@ -149,7 +208,7 @@ export default function BulkImport() {
         setParsed(currParsed);
       }
       else{
-          alert("Only two files should be uploaded")
+          alert("Only two files should be uploaded");
       }
       }, [])
 
@@ -157,25 +216,28 @@ export default function BulkImport() {
           alert("Invalid File")
       }, [])
       
-  const {getRootProps, getInputProps} = useDropzone({onDrop})
+  const {getRootProps, getInputProps} = useDropzone({onDrop});
 
-  //const theme = createTheme();
-
-  const handleClose = (event, reason) => {
-    // if (reason === 'clickaway') {
-    //   return;
-    // }
+  const handleClose = () => {
     setSnackbarOpen(false);
   };
 
   const handleCellEditStart = (event, i) => {
+    if (errorRows[event.id][event.field] == undefined) {
+      return;
+    }
     let msg = errorRows[event.id][event.field];
     setPopoverMessage(msg);
     setAnchorEl(i.currentTarget);
   };
 
-  const handleCellEditCommit = (row) => {
-    console.log(row);
+  const handleStudentCellEditStart = (event, i) => {
+    if (studentErrorRows[event.id][event.field] == undefined) {
+      return;
+    }
+    let msg = studentErrorRows[event.id][event.field];
+    setPopoverMessage(msg);
+    setAnchorEl(i.currentTarget);
   };
 
   const handlePopoverClose = () => {
@@ -183,98 +245,155 @@ export default function BulkImport() {
   };
 
   return (
-      <div className="App">
-        <Dropzone
-          onDropAccepted={onDrop}
-          onDropRejected={onDropReject}
-          accept="text/csv,.csv"
+    <div className="App">
+      <Dropzone
+        onDropAccepted={onDrop}
+        onDropRejected={onDropReject}
+        accept="text/csv,.csv"
+      >
+        {({
+          getRootProps,
+          getInputProps,
+          isDragAccept,
+          isDragReject
+        }) => {
+          const additionalClass = isDragAccept
+            ? "accept"
+            : isDragReject
+            ? "reject"
+            : "";
+
+          return (
+            <div
+              {...getRootProps({
+                className: `dropzone ${additionalClass}`
+              })}
+            >
+              <input {...getInputProps()} />
+              <p>Drag'n'drop files</p>
+              <FileUploadIcon></FileUploadIcon>
+            </div>
+          );
+        }}
+      </Dropzone>
+      <div>
+        <strong>Files:</strong>
+        <ul>
+          {filesPreview.map(fileName => (
+            <li key={fileName.props.children}>{fileName}</li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <Button
+        variant="contained"
+        component="label"
+        onClick={handleUpload}
         >
-          {({
-            getRootProps,
-            getInputProps,
-            isDragAccept,
-            isDragReject
-          }) => {
-            const additionalClass = isDragAccept
-              ? "accept"
-              : isDragReject
-              ? "reject"
-              : "";
+        Upload Files
+        </Button>
+      </div>
 
-            return (
-              <div
-                {...getRootProps({
-                  className: `dropzone ${additionalClass}`
-                })}
-              >
-                <input {...getInputProps()} />
-                <p>Drag'n'drop files</p>
-                <FileUploadIcon></FileUploadIcon>
-              </div>
-            );
-          }}
-        </Dropzone>
-        <div>
-          <strong>Files:</strong>
-          <ul>
-            {filesPreview.map(fileName => (
-              <li key={fileName.props.children}>{fileName}</li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <Button
-          variant="contained"
-          component="label"
-          onClick={handleUpload}
-          >
-          Upload Files
-          </Button>
-        </div>
-
-      {/* <ThemeProvider theme={theme}> */}
-        <Dialog open={dialogOpen} onClose={handleDialogClose} maxWidth="xl" sx={{ disableScrollLock: true }} scroll={'paper'}>
-          <DialogContent dividers={true}>
-            <div style={{ height: 500, width: 1200 }}>
-              <div style={{ display: 'flex', height: '100%' }}>
-                <div style={{ flexGrow: 1 }}>
-                  <Box sx={{
-                    height: 300,
-                    width: 1,
-                    '& .hot': {
-                      backgroundColor: '#FF8E8E',
-                    },}}
-                    >
-                    <DataGrid
-                      rows={userRows}
-                      columns={userColumns}
-                      getRowId={(row) => row.id}
-                      pageSize={100}
-                      density="compact"
-                      getCellClassName={(params) => {
-                        let errorDict = errorRows[params.id];
-                        if (errorDict.length == 0) {
-                          return '';
-                        } else {
-                          if (params.field in errorDict) {
-                            return 'hot';
+      <Dialog open={dialogOpen} onClose={handleDialogClose} maxWidth="xl" sx={{ disableScrollLock: true }} scroll={'paper'}>
+        <DialogContent dividers={true}>
+          <Stack direction="row" spacing={5} alignItems="center">
+            <Stack spacing={1} alignItems="center">
+              <Typography variant="h5" align="center">
+                {fileOneName}
+              </Typography>
+              <div style={{ height: 650, width: 800 }}>
+                <div style={{ display: 'flex', height: '100%' }}>
+                  <div style={{ flexGrow: 1 }}>
+                    <Box sx={{
+                      height: 300,
+                      width: 1,
+                      '& .hot': {
+                        backgroundColor: '#FF8E8E',
+                      },}}
+                      >
+                      <DataGrid
+                        rows={userRows}
+                        columns={userColumns}
+                        getRowId={(row) => row.id}
+                        pageSize={100}
+                        density="compact"
+                        getCellClassName={(params) => {
+                          let errorDict = errorRows[params.id];
+                          if (errorDict.length == 0) {
+                            return '';
+                          } else {
+                            if (params.field in errorDict) {
+                              return 'hot';
+                            }
                           }
-                        }
-                      }}
-                      onCellEditCommit = {(cell) => handleCellEditCommit(cell.row)}
-                      onCellEditStart = {handleCellEditStart}
-                    />
-                  </Box>
+                        }}
+                        //onCellEditCommit = {(cell) => handleCellEditCommit(cell.row)}
+                        onCellEditStart = {handleCellEditStart}
+                        checkboxSelection
+                        disableSelectionOnClick
+                        onSelectionModelChange={(newSelectionModel) => {
+                          setExcludedUsers(newSelectionModel);
+                        }}
+                        selectionModel={excludedUsers}
+                      />
+                    </Box>
+                  </div>
                 </div>
               </div>
-            </div>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={validateRecords} variant="contained" align="left" sx={{ maxWidth: '200px' }}>Validate Changes</Button>
-            <Button onClick={sendRecords} variant="contained" sx={{ maxWidth: '200px' }}>Upload Records</Button>
-          </DialogActions>
-        </Dialog>
-      {/* </ThemeProvider> */}
+            </Stack>
+
+            <Stack spacing={1} alignItems="center">
+              <Typography variant="h5" align="center">
+                {fileTwoName}
+              </Typography>
+              <div style={{ height: 650, width: 800 }}>
+                <div style={{ display: 'flex', height: '100%' }}>
+                  <div style={{ flexGrow: 1 }}>
+                    <Box sx={{
+                      height: 300,
+                      width: 1,
+                      '& .hot': {
+                        backgroundColor: '#FF8E8E',
+                      },}}
+                      >
+                      <DataGrid
+                        rows={studentRows}
+                        columns={studentColumns}
+                        getRowId={(row) => row.id}
+                        pageSize={100}
+                        density="compact"
+                        getCellClassName={(params) => {
+                          let errorDict = studentErrorRows[params.id];
+                          if (errorDict.length == 0) {
+                            return '';
+                          } else {
+                            if (params.field in errorDict) {
+                              return 'hot';
+                            }
+                          }
+                        }}
+                        //onCellEditCommit = {(cell) => handleCellEditCommit(cell.row)}
+                        onCellEditStart = {handleStudentCellEditStart}
+                        checkboxSelection
+                        disableSelectionOnClick
+                        onSelectionModelChange={(newSelectionModel) => {
+                          setExcludedStudents(newSelectionModel);
+                        }}
+                        selectionModel={excludedStudents}
+                      />
+                    </Box>
+                  </div>
+                </div>
+              </div>
+            </Stack>
+            
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={validateRecords} variant="contained" align="left" sx={{ maxWidth: '200px' }}>Validate Changes</Button>
+          <Button onClick={sendRecords} variant="contained" sx={{ maxWidth: '200px' }}>Upload Records</Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar open={snackbarOpen} onClose={handleClose} anchorOrigin={{vertical: 'bottom', horizontal: 'left'}} sx={{ width: 600 }}>
         <Alert onClose={handleClose} severity={snackbarSeverity}>
@@ -296,34 +415,6 @@ export default function BulkImport() {
         >
           <Typography sx={{ p: 2 }}>{popoverMessage}</Typography>
       </Popover>
-
-      </div>
-    );
-  }
-
-  // <TableContainer>
-  //   <Table>
-  //     <TableHead>
-  //       <TableRow>
-  //         <TableCell width="30%">Email</TableCell>
-  //         <TableCell width="20%">Name</TableCell>
-  //         <TableCell width="40%">Address</TableCell>
-  //         <TableCell width="10%">Phone Number</TableCell>
-  //       </TableRow>
-  //     </TableHead>
-  //     <TableBody>
-  //       {userRows.map((user) => (
-  //         <TableRow
-  //           key={user['row'][0]}
-  //           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-  //         >
-  //         <TableCell sx={{ color: user['errors']['email'] ? 'theme.palette.red' : 'theme.palette.black' }} width="30%">{user['row'][0]}</TableCell>
-  //         <TableCell width="20%">{user['row'][1]}</TableCell>
-  //         <TableCell width="40%">{user['row'][2]}</TableCell>
-  //         <TableCell width="10%">{user['row'][3]}</TableCell>
-  //         </TableRow>
-  //       ))}
-  //     </TableBody>
-  //   </Table>
-  // </TableContainer>
-  
+    </div>
+  );
+}
