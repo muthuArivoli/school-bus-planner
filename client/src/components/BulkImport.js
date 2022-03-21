@@ -114,6 +114,9 @@ export default function BulkImport() {
     });
     // validate changes through backend (user will click this before upload)
     // **make sure that the error dictionaries are updated correctly**
+
+    console.log(userRows);
+    console.log(studentRows);
   };
 
   const setUserInfo = (res) => {
@@ -312,6 +315,60 @@ export default function BulkImport() {
     }
   };
 
+  const handleCellEditCommit = (row, state) => {
+    if (row.field === "name") {
+      const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...state];
+      newRows[rowIndex]["name"] = row.value;
+      setUserRows(newRows);
+    }
+    if (row.field === "email") {
+      const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...state];
+      newRows[rowIndex]["email"] = row.value;
+      setUserRows(newRows);
+    }
+    if (row.field === "address") {
+      const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...state];
+      newRows[rowIndex]["address"] = row.value;
+      setUserRows(newRows);
+    }
+    if (row.field === "phone") {
+      const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...state];
+      newRows[rowIndex]["phone"] = row.value;
+      setUserRows(newRows);
+    }
+  };
+
+  const handleStudentCellEditCommit = (row, state) => {
+    if (row.field === "name") {
+      const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...state];
+      newRows[rowIndex]["name"] = row.value;
+      setStudentRows(newRows);
+    }
+    if (row.field === "parentemail") {
+      const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...state];
+      newRows[rowIndex]["parentemail"] = row.value;
+      setStudentRows(newRows);
+    }
+    if (row.field === "studentid") {
+      const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...state];
+      newRows[rowIndex]["studentid"] = row.value;
+      setStudentRows(newRows);
+    }
+    if (row.field === "school") {
+      const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...state];
+      newRows[rowIndex]["school"] = row.value;
+      setStudentRows(newRows);
+    }
+  };
+
   return (
     <div className="App">
       <Dropzone
@@ -396,7 +453,7 @@ export default function BulkImport() {
                             }
                           }
                         }}
-                        //onCellEditCommit = {(cell) => handleCellEditCommit(cell.row)}
+                        onCellEditCommit = {(cell) => handleCellEditCommit(cell, userRows)}
                         onCellEditStart = {handleCellEditStart}
                         checkboxSelection
                         disableSelectionOnClick
@@ -441,7 +498,7 @@ export default function BulkImport() {
                             }
                           }
                         }}
-                        //onCellEditCommit = {(cell) => handleCellEditCommit(cell.row)}
+                        onCellEditCommit = {(cell) => handleStudentCellEditCommit(cell, studentRows)}
                         onCellEditStart = {handleStudentCellEditStart}
                         checkboxSelection
                         disableSelectionOnClick
