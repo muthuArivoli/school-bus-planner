@@ -309,7 +309,7 @@ export default function App () {
             </PrivateRoute>
           } />
           <Route exact path="/bulkimport" element={
-            <PrivateRoute>
+            <PrivateRoute roles={[1, 2]}>
               <AdminDashboard titleText="Bulk Import">
                 <BulkImport/>
               </AdminDashboard>

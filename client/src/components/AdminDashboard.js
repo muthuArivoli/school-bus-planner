@@ -333,12 +333,15 @@ export default function AdminDashboard(props){
             <ListItemText primary="Email" />
           </ListItemButton>
           }
+          {
+          (role == 1 || role == 2) &&
           <ListItemButton component={RouterLink} to="/bulkimport">
             <ListItemIcon>
               <FileDownloadIcon />
             </ListItemIcon>
             <ListItemText primary="Bulk Import" />
           </ListItemButton>
+          }
         </div>
           </List>
         </Drawer>
