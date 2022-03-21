@@ -1257,12 +1257,12 @@ def validateFiles():
         #ADD SOMETHING TO CHECK USERS.CSV first
         if filename == 'users.csv':
             csvreader_user = get_csv(file)
-            user_rows, user_resp = validate_users(csvreader_user)
+            user_rows, user_resp, critical = validate_users(csvreader_user)
             logging.info(user_resp)
             response['users'] = user_resp
         if filename == 'students.csv':
             csvreader_student = get_csv(file)
-            stud_rows, stud_resp = validate_students(csvreader_student, user_rows)
+            stud_rows, stud_resp, critical = validate_students(csvreader_student, user_rows)
             response['students'] = stud_resp
     # userFile = request.files.get('parents.csv')
     # userFile = request.form.get('parents.csv')
@@ -1293,18 +1293,16 @@ def validate():
     no_errors = True
     if 'users' in content:
         users = content.get('users')
-        users, user_resp = validate_users(users)
+        users, user_resp, critical = validate_users(users)
         logging.debug(user_resp)
-        for value in user_resp:
-            if len(value['errors']) != 0:
-                no_errors = False
+        if critical:
+            no_errors = False
 
     if 'students' in content:
         students = content.get('students')
-        students, student_resp = validate_students(students, users)
-        for value in student_resp:
-            if len(value['errors']) != 0:
-                no_errors = False
+        students, student_resp, critical = validate_students(students, users)
+        if critical:
+            no_errors = False
     
     if no_errors is False:
         response['users'] = user_resp
@@ -1335,16 +1333,14 @@ def bulkImport():
     no_errors = True
     if 'users' in content:
         users = content.get('users')
-        users, user_resp = validate_users(users)
-        for value in user_resp:
-            if len(value['errors']) != 0:
-                no_errors = False
+        users, user_resp, critical = validate_users(users)
+        if critical:
+            no_errors = False
     if 'students' in content:
         students = content.get('students')
-        students, student_resp = validate_students(students, users)
-        for value in student_resp:
-            if len(value['errors']) != 0:
-                no_errors = False
+        students, student_resp, critical = validate_students(students, users)
+        if critical:
+            no_errors = False
     
     if no_errors is False:
         response['users'] = user_resp
@@ -1400,6 +1396,7 @@ def validate_users(csvreader_user):
     user_resp = []
     user_rows = []
     usr_row_ct = 0
+    critical = False
     for row in csvreader_user:
         #SHOULD HAVE email, name, address, phone number
         errors = {}
@@ -1407,18 +1404,20 @@ def validate_users(csvreader_user):
         if type(row) is list:
             if usr_row_ct == 0:
                 if(row[0]!='email' or row[1]!='name' or row[2] != 'address' or row[3]!='phone_number'):
-                    return {'success': False, 'msg': 'Invalid header order'}
+                    return [], [], True
                 usr_row_ct +=1
                 continue
             
             if len(row) != 4:
                 errors['format'] = "Missing values"
+                critical = True
             
             email, name, addr, phone_number = row
         
         if type(row) is dict:
             if len(row) != 5:
                 errors['format'] = "Missing values"
+                critical = True
             email = row.get('email', "")
             name = row.get("name", "")
             addr = row.get('address', "")
@@ -1430,6 +1429,7 @@ def validate_users(csvreader_user):
         dup_email = User.query.filter(func.lower(User.email) == func.lower(email)).first()
         if dup_email:
             errors['dup_email'] = "Email already exists (duplicate)"
+            critical = True
         dup_name = User.query.filter(func.lower(User.full_name) == func.lower(name)).first()
         if dup_name:
             errors['dup_name'] = "Name already exists (duplicate)"
@@ -1437,21 +1437,23 @@ def validate_users(csvreader_user):
         #CHECK DATA TYPES etc.
         if name == "":
             errors['name'] = "Record must have name"
-        
-        if len(name.split(" ")) < 2:
-            errors['name'] = "Record must have both a first and last name"
+            critical = True
         
         if email == "":
             errors['email'] = "Record must have an email"
+            critical = True
         
         if addr == "":
             errors['address'] = "Record must have an address"
+            critial = True
         
         if phone_number == "":
             errors['phone'] = "Record must have a phone number"
+            critical = True
 
         if(not re.fullmatch(regex,email)):
             errors['email'] = 'Invalid email format'
+            critical = True
         
         values = re.split(', ? +', addr)
         stzip = values[2].split(' ')
@@ -1460,6 +1462,7 @@ def validate_users(csvreader_user):
         logging.info(values)
         if len(values) != 4:
             errors['address'] = 'Invalid address format'
+            critical = True
         else:
             #maybe add geocoding stuff and then also add a check if address has two parts for address 1 and 2
             addr1, city, state, zipcode = values
@@ -1470,12 +1473,13 @@ def validate_users(csvreader_user):
         user_resp.append({'row': row, 'errors': errors})
         logging.debug(row)
         usr_row_ct +=1    
-    return user_rows, user_resp
+    return user_rows, user_resp, critical
 
 def validate_students(csvreader_student, user_rows):
     student_rows = []
     stud_resp = []
     stud_row_ct = 0
+    critical = False
     for row in csvreader_student:
         #SHOULD HAVE name, parent_email, student_id, school_name
         errors = {}
@@ -1484,12 +1488,13 @@ def validate_students(csvreader_student, user_rows):
         
             if stud_row_ct == 0:
                 if(row[0]!='name' or row[1]!='parent_email' or row[2] != 'student_id' or row[3]!='school_name'):
-                    return {'success': False, 'msg': 'Invalid header order'}
+                    return [], [], True
                 stud_row_ct +=1
                 continue
             
             if len(row) != 4:
                 errors['format'] = "Missing values"
+                critical = True
 
             name, email, student_id, school_name = row
         
@@ -1515,6 +1520,7 @@ def validate_students(csvreader_student, user_rows):
         #CHECK DATA TYPES etc.
         if name == "":
             errors['name'] = "Record must have name"
+            critical = True
         
         if student_id != "":
             #ADD CHECK for floats and strings
@@ -1522,19 +1528,24 @@ def validate_students(csvreader_student, user_rows):
                 student_id = int(student_id)
                 if student_id <=0 or student_id > 2147483647:
                     errors['studentid'] = "ID cannot be negative or out of range"
+                    critical = True
             except ValueError:
                 errors['studentid'] = "ID is not valid integer"
+                critical = True
             # errors['student_id'] = "Record must have a numeric ID if provided"
         
         if school_name == "":
             errors['school'] = "Record must have a school"
+            critical = True
         else:
             existing_school = School.query.filter(func.lower(School.name) == func.lower(school_name)).first()
             if existing_school is None:
                 errors['school'] = 'Student record must match an existing school'
+                critical = True
         
         if email == "":
             errors['parentemail'] = "Record must have an associated user email"
+            critical = True
         else:
             existing_parent = User.query.filter(func.lower(User.email) == func.lower(email)).first()
             imported_user = False
@@ -1550,11 +1561,12 @@ def validate_students(csvreader_student, user_rows):
         
                 if imported_user is False:
                     errors['parentemail'] = 'Student record must match a valid user'
+                    critical = True
         stud_resp.append({'row': row, 'errors': errors})
         student_rows.append(row)
         stud_row_ct +=1
     logging.debug(stud_resp)
-    return student_rows, stud_resp
+    return student_rows, stud_resp, critical
 
 def get_distance(lat1, long1, lat2, long2):
     coords_1 = (lat1, long1)
