@@ -39,9 +39,8 @@ export default function BulkImport() {
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
   const maxNum = 2;
-  const [filesPreview, setPreview] = React.useState([]);
-  const [files, setFiles] = React.useState([]);
-  const [parsedFiles, setParsed] = React.useState([]);
+  const [studentFile, setStudentFile] = React.useState({});
+  const [userFile, setUserFile] = React.useState({});
 
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
   const [snackbarMsg, setSnackbarMsg] = React.useState("");
@@ -55,9 +54,6 @@ export default function BulkImport() {
 
   const [studentRows, setStudentRows] = React.useState([]);
   const [studentErrorRows, setStudentErrorRows] = React.useState([]);
-
-  const [fileOneName, setFileOneName] = React.useState("");
-  const [fileTwoName, setFileTwoName] = React.useState("");
 
   const [includedUsers, setIncludedUsers] = React.useState([]);
   const [includedStudents, setIncludedStudents] = React.useState([]);
@@ -122,8 +118,6 @@ export default function BulkImport() {
         setSnackbarSeverity("error");
       }
     });
-
-    console.log(files);
   };
 
   const validateRecords = () => {
@@ -227,8 +221,12 @@ export default function BulkImport() {
   const handleUpload = () => {
     var formData = new FormData();
 
-    for(var file in files) {
-      formData.append(files[file][0].name, files[file][0]);
+    if(userFile.name != null){
+      formData.append("users.csv", userFile, "users.csv")
+    }
+
+    if(studentFile.name != null){
+      formData.append("students.csv", studentFile, "students.csv")
     }
 
     axios.post(process.env.REACT_APP_BASE_URL+`/fileValidation`, formData, {
@@ -261,44 +259,21 @@ export default function BulkImport() {
   }
 
   const onDrop = React.useCallback(acceptedFiles => {
-      var allfiles = files;
-      var currParsed = parsedFiles;
-      bigif: if(allfiles.length < maxNum){
 
-        var fileNames=[];
-        var trueNames=[];
-        for(var i in files){
-          fileNames.push(<div>
-              {files[i][0].name}
-              </div>
-          );
-          trueNames.push(files[i][0].name);
-        }
-        if(trueNames.includes(acceptedFiles[0].name)){
-            alert("Cannot upload two files with same name");
-            break bigif;
-        }
-        allfiles.push(acceptedFiles);
-        console.log(allfiles);
-
-        setFileOneName(allfiles[0][0].name);
-        if (allfiles.length > 1) {
-          setFileTwoName(allfiles[1][0].name);
-        }
-
-        Papa.parse(acceptedFiles[0], {
-          complete: function(results) {
-            console.log("Finished:", results.data);
-            currParsed.push(results.data);
-        }});
-        fileNames.push(<div>{acceptedFiles[0].name}</div> );
-        setFiles(allfiles);
-        setPreview(fileNames);
-        setParsed(currParsed);
-      }
-      else{
-          alert("Only two files should be uploaded");
-      }
+      let file = acceptedFiles[0];
+      
+      Papa.parse(acceptedFiles[0], {
+        complete: function(results) {
+          console.log("Finished:", results.data);
+          console.log(results.data[0])
+          if(JSON.stringify(results.data[0]) == JSON.stringify(["name", "parent_email", "student_id", "school_name"])){
+            setStudentFile(file);
+          }
+          else if(JSON.stringify(results.data[0]) == JSON.stringify(["email", "name", "address", "phone_number"])){
+            setUserFile(file);
+          }
+      }});
+      
       }, [])
 
   const onDropReject = React.useCallback(rejectedFiles => {
@@ -356,34 +331,12 @@ export default function BulkImport() {
 
   const checkUsersPresent = () => {
     //console.log("user present?:")
-    if (files.length > 1) {
-      //console.log((files[0][0].name == 'users.csv' || files[1][0].name == 'users.csv'));
-      return (files[0][0].name == 'users.csv' || files[1][0].name == 'users.csv');
-    } 
-    else if (files.length == 1) {
-      //console.log((files[0][0].name == 'users.csv'));
-      return (files[0][0].name == 'users.csv');
-    } 
-    else {
-      //console.log(false);
-      return false;
-    }
+    return userFile.name != null;
   };
 
   const checkStudentsPresent = () => {
     //console.log("student present?:");
-    if (files.length > 1) {
-      //console.log((files[0][0].name == 'students.csv' || files[1][0].name == 'students.csv'));
-      return (files[0][0].name == 'students.csv' || files[1][0].name == 'students.csv');
-    } 
-    else if (files.length == 1) {
-      //console.log((files[0][0].name == 'students.csv'));
-      return (files[0][0].name == 'students.csv');
-    } 
-    else {
-      //console.log(false);
-      return false;
-    }
+    return studentFile.name != null
   };
 
   const handleCellEditCommit = (row, state) => {
@@ -480,9 +433,16 @@ export default function BulkImport() {
       <div>
         <strong>Files:</strong>
         <ul>
-          {filesPreview.map(fileName => (
-            <li key={fileName.props.children}>{fileName}</li>
-          ))}
+          <li>
+            <div>
+              User File: {userFile.name != null && userFile.name}
+            </div>
+          </li>
+          <li>
+            <div>
+              Student File: {studentFile.name != null && studentFile.name}
+            </div>
+          </li>
         </ul>
       </div>
         <Button
@@ -497,7 +457,7 @@ export default function BulkImport() {
 
             {checkUsersPresent() ? <Stack spacing={1} alignItems="center">
               <Typography variant="h5" align="center">
-                {fileOneName}
+                {userFile.name}
               </Typography>
               <div style={{ height: 650, width: 800 }}>
                 <div style={{ display: 'flex', height: '100%' }}>
@@ -543,7 +503,7 @@ export default function BulkImport() {
             
             {checkStudentsPresent() ? <Stack spacing={1} alignItems="center">
               <Typography variant="h5" align="center">
-                {fileTwoName}
+                {studentFile.name}
               </Typography>
               <div style={{ height: 650, width: 800 }}>
                 <div style={{ display: 'flex', height: '100%' }}>
