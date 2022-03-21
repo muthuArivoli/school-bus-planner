@@ -15,7 +15,9 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import Popover from '@mui/material/Popover';
 import Stack from '@mui/material/Stack';
+import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
+import DeleteDialog from './DeleteDialog';
 
 const userColumns = [
   //{ field: 'id', hide: true, width: 30},
@@ -440,6 +442,11 @@ export default function BulkImport() {
 
   return (
     <>
+    <Helmet>
+      <title>
+        Bulk Import
+      </title>
+    </Helmet>
       <Dropzone
         onDropAccepted={onDrop}
         onDropRejected={onDropReject}
@@ -582,8 +589,9 @@ export default function BulkImport() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={validateRecords} variant="contained" align="left" sx={{ maxWidth: '200px' }}>Validate Changes</Button>
-          <Button onClick={sendRecords} variant="contained" sx={{ maxWidth: '200px' }}>Upload Records</Button>
+          <Button onClick={validateRecords} size="small" variant="outlined" sx={{ mr:1 }}>Validate Changes</Button>
+          <DeleteDialog dialogTitle="Confirm Import" dialogDesc="Please confirm you would like to commit the import" buttonDesc="Import" onAccept={sendRecords}/>
+          <DeleteDialog dialogTitle="Cancel Import" dialogDesc="Please confirm you would like to cancel the import" buttonDesc="Cancel" onAccept={()=>{navigate("/users")}}/>
         </DialogActions>
       </Dialog>
 
