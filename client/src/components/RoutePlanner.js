@@ -279,6 +279,7 @@ export default function RoutePlanner(props) {
 
   // function when address is clicked (add address to route)
   const handleAddressClick = (student) => {
+      console.log(routeRows);
       let addresses = studentRows.map((value)=>{return value.address});
       if(addresses.includes(student.address)){
           let newStudentRows = studentRows.filter(value=> value.address != student.address)
@@ -360,8 +361,6 @@ export default function RoutePlanner(props) {
     }
     else {
       if(selectionModel.length == 0){
-        console.log("new stops: ");
-        console.log(stopRows);
         axios.post(process.env.REACT_APP_BASE_URL+`/route`, {
             school_id: parseInt(id),
             name: routeInfo["name"],
