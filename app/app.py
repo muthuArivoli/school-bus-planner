@@ -1379,6 +1379,7 @@ def validate_users(csvreader_user):
 def validate_students(csvreader_student, user_rows):
     student_rows = []
     stud_resp = []
+    stud_row_ct = 0
     for row in csvreader_student:
         #SHOULD HAVE name, parent_email, student_id, school_name
         errors = {}
