@@ -197,39 +197,35 @@ class CaseContainsOperator(BaseOperator):
         )
 
 class UserFilter(Filter):
-    email = StringField(lookup_operator=ContainsOperator)
-    full_name = StringField(lookup_operator=ContainsOperator)
+    email = StringField(lookup_operator=CaseContainsOperator)
+    full_name = StringField(lookup_operator=CaseContainsOperator)
 
     class Meta:
         model = User
-        session = db.session
         page_size = 10
 
 class StudentFilter(Filter):
     student_id = Field(lookup_operator = EqualsOperator)
     school_id = Field(lookup_operator = EqualsOperator)
-    name = StringField(lookup_operator = ContainsOperator)
+    name = StringField(lookup_operator = CaseContainsOperator)
 
     class Meta:
         model = Student
-        session = db.session
         page_size = 10
 
 class SchoolFilter(Filter):
-    name = StringField(lookup_operator=ContainsOperator)
+    name = StringField(lookup_operator=CaseContainsOperator)
     arrival_time = TimestampField()
     departure_time = TimestampField()
 
     class Meta:
         model = School
-        session = db.session
         page_size = 10
 
 class RouteFilter(Filter):
-    name = StringField(lookup_operator=ContainsOperator)
+    name = StringField(lookup_operator=CaseContainsOperator)
     school_id = Field()
 
     class Meta:
         model = Route
-        session = db.session
         page_size = 10

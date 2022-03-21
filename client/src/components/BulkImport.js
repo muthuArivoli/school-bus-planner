@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import Dropzone, {useDropzone} from 'react-dropzone';
 import {ThemeProvider, createTheme} from '@mui/material/styles';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
@@ -15,6 +15,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import Popover from '@mui/material/Popover';
 import Stack from '@mui/material/Stack';
+import { useNavigate } from 'react-router-dom';
 
 const userColumns = [
   //{ field: 'id', hide: true, width: 30},
@@ -56,11 +57,13 @@ export default function BulkImport() {
   const [fileOneName, setFileOneName] = React.useState("");
   const [fileTwoName, setFileTwoName] = React.useState("");
 
-  const [excludedUsers, setExcludedUsers] = React.useState([]);
-  const [excludedStudents, setExcludedStudents] = React.useState([]);
+  const [includedUsers, setIncludedUsers] = React.useState([]);
+  const [includedStudents, setIncludedStudents] = React.useState([]);
 
   const popoverOpen = Boolean(anchorEl);
   const popoverID = popoverOpen ? 'simple-popover' : undefined;
+
+  let navigate = useNavigate();
 
   const handleDialogClose = () => {
     setDialogOpen(false);
@@ -74,8 +77,8 @@ export default function BulkImport() {
     // will ONLY send records to db (user will click this after validating)
 
     // these work, console.log to test
-    let remainingUsers = userRows.filter(o=> !excludedUsers.some(i=> i === o.id));
-    let remainingStudents = studentRows.filter(o=> !excludedStudents.some(i=> i === o.id));
+    let remainingUsers = userRows.filter(o=> includedUsers.some(i=> i === o.id));
+    let remainingStudents = studentRows.filter(o=> includedStudents.some(i=> i === o.id));
 
     axios.post(process.env.REACT_APP_BASE_URL+`/bulkimport`, {
       'users': remainingUsers,
@@ -90,9 +93,15 @@ export default function BulkImport() {
           console.log(res.data.students);
           console.log(res.data.users);
           handleDialogClose();
-          alert('You have successfully imported ${res.data.students} students and ${res.data.users} users');
+          alert(`You have successfully imported ${res.data.students} students and ${res.data.users} users`);
+          navigate("/users");
         }
         else{
+
+          setSnackbarMsg(`Upload Failed due to errors, see table`);
+          setSnackbarOpen(true);
+          setSnackbarSeverity("error");
+
           if (checkUsersPresent()) {
             setUserInfo(res);
           }
@@ -116,8 +125,8 @@ export default function BulkImport() {
   };
 
   const validateRecords = () => {
-    let remainingUsers = userRows.filter(o=> !excludedUsers.some(i=> i === o.id));
-    let remainingStudents = studentRows.filter(o=> !excludedStudents.some(i=> i === o.id));
+    let remainingUsers = userRows
+    let remainingStudents = studentRows
 
     axios.post(process.env.REACT_APP_BASE_URL+`/validaterecords`, {
       'users': remainingUsers,
@@ -156,11 +165,13 @@ export default function BulkImport() {
   };
 
   const setUserInfo = (res) => {
-    var usr_rows = res.data["users.csv"];
+    console.log(res);
+    var usr_rows = res.data.users;
 
     let rows = [];
     let errors = {};
 
+    console.log(usr_rows);
     for (var i=0; i<usr_rows.length; i++) {      
       let newRow = {id: i, email: usr_rows[i]['row'][0], name: usr_rows[i]['row'][1], address: usr_rows[i]['row'][2], phone: usr_rows[i]['row'][3]};
       rows.push(newRow);
@@ -175,15 +186,15 @@ export default function BulkImport() {
     let keys = Object.keys(usr_rows);
     for (var i=0;i<usr_rows.length;i++) {
       let err = usr_rows[i]['errors'];
-      if ("dup_name" in err || "dup_email" in err) {
-        initial_selectionmodel.push(keys[i]);
+      if (!("dup_email" in err || "dup_name" in err)) {
+        initial_selectionmodel.push(i);
       }
     }
-    setExcludedUsers(initial_selectionmodel);
+    setIncludedUsers(initial_selectionmodel);
   };
 
   const setStudentInfo = (res) => {
-    var student_rows = res.data["students.csv"];
+    var student_rows = res.data.students;
 
     let rows = [];
     let errors = {};
@@ -202,11 +213,11 @@ export default function BulkImport() {
     let keys = Object.keys(student_rows);
     for (var i=0;i<student_rows.length;i++) {
       let err = student_rows[i]['errors'];
-      if ("dup_name" in err) {
-        initial_selectionmodel.push(keys[i]);
+      if (!"dup_name" in err) {
+        initial_selectionmodel.push(i);
       }
     }
-    setExcludedStudents(initial_selectionmodel);
+    setIncludedStudents(initial_selectionmodel);
   };
 
 
@@ -427,7 +438,7 @@ export default function BulkImport() {
   };
 
   return (
-    <div className="App">
+    <>
       <Dropzone
         onDropAccepted={onDrop}
         onDropRejected={onDropReject}
@@ -466,16 +477,12 @@ export default function BulkImport() {
           ))}
         </ul>
       </div>
-      <div>
         <Button
         variant="contained"
-        component="label"
         onClick={handleUpload}
         >
         Upload Files
         </Button>
-      </div>
-
       <Dialog open={dialogOpen} onClose={handleDialogClose} maxWidth="xl" sx={{ disableScrollLock: true }} scroll={'paper'}>
         <DialogContent dividers={true}>
           <Stack direction="row" spacing={5} alignItems="center">
@@ -505,7 +512,7 @@ export default function BulkImport() {
                           if (errorDict.length == 0) {
                             return '';
                           } else {
-                            if ((params.field in errorDict) || ("dup_name" in errorDict) || ("dup_email" in errorDict)) {
+                            if ((params.field in errorDict) || ("dup_name" in errorDict && params.field == "name") || ("dup_email" in errorDict && params.field == "email")) {
                               return 'hot';
                             }
                           }
@@ -515,9 +522,10 @@ export default function BulkImport() {
                         checkboxSelection
                         disableSelectionOnClick
                         onSelectionModelChange={(newSelectionModel) => {
-                          setExcludedUsers(newSelectionModel);
+                          console.log(newSelectionModel);
+                          setIncludedUsers(newSelectionModel);
                         }}
-                        selectionModel={excludedUsers}
+                        selectionModel={includedUsers}
                       />
                     </Box>
                   </div>
@@ -560,9 +568,9 @@ export default function BulkImport() {
                         checkboxSelection
                         disableSelectionOnClick
                         onSelectionModelChange={(newSelectionModel) => {
-                          setExcludedStudents(newSelectionModel);
+                          setIncludedStudents(newSelectionModel);
                         }}
-                        selectionModel={excludedStudents}
+                        selectionModel={includedStudents}
                       />
                     </Box>
                   </div>
@@ -598,6 +606,6 @@ export default function BulkImport() {
         >
           <Typography sx={{ p: 2 }}>{popoverMessage}</Typography>
       </Popover>
-    </div>
+    </>
   );
 }

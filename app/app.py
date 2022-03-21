@@ -1258,11 +1258,12 @@ def validateFiles():
         if filename == 'users.csv':
             csvreader_user = get_csv(file)
             user_rows, user_resp = validate_users(csvreader_user)
-            response['users.csv'] = user_resp
+            logging.info(user_resp)
+            response['users'] = user_resp
         if filename == 'students.csv':
             csvreader_student = get_csv(file)
             stud_rows, stud_resp = validate_students(csvreader_student, user_rows)
-            response['students.csv'] = stud_resp
+            response['students'] = stud_resp
     # userFile = request.files.get('parents.csv')
     # userFile = request.form.get('parents.csv')
     # content = request.json
@@ -1284,6 +1285,9 @@ def validateFiles():
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 def validate():
+    if request.method == 'OPTIONS':
+        return {'success': True}
+
     response = {}
     content = request.json
     no_errors = True
@@ -1303,8 +1307,8 @@ def validate():
                 no_errors = False
     
     if no_errors is False:
-        response['users.csv'] = user_resp
-        response['students.csv'] = student_resp
+        response['users'] = user_resp
+        response['students'] = student_resp
         response['valid'] = False
         response['success'] = True
         return json.dumps(response)
@@ -1313,6 +1317,8 @@ def validate():
         #LOOP THROUGH ALL VALUES AND ADD OBJECTS TO DB
         response['success'] = True
         response['valid'] = True
+        response['users'] = user_resp
+        response['students'] = student_resp
         return json.dumps(response)
     
 
@@ -1321,6 +1327,9 @@ def validate():
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 def bulkImport():
+
+    if request.method == 'OPTIONS':
+        return {'success': True}
     response = {}
     content = request.json
     no_errors = True
@@ -1338,8 +1347,8 @@ def bulkImport():
                 no_errors = False
     
     if no_errors is False:
-        response['users.csv'] = user_resp
-        response['students.csv'] = student_resp
+        response['users'] = user_resp
+        response['students'] = student_resp
         response['valid'] = False
         response['success'] = True
         return json.dumps(response)
@@ -1352,10 +1361,22 @@ def bulkImport():
             db.session.add(new_user)
             db.session.flush()
             db.session.refresh(new_user)
+            if '@example.com' not in user[0]:
+                access_token = create_access_token(identity=user[0])
+                link = f"{DOMAIN}/resetpassword?token={access_token}"
+    
+                r = requests.post(
+                f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
+                auth=("api", API_KEY),
+                data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
+                    "to": user[0],
+                    "subject": "Account Creation for Hypothetical Transportation",
+                    "html": f"Please use the following link to set the password for your new account: \n <a href={link}>{link}</a>"})
+            
 
         for student in students:
-            associated_school = School.query.filter_by(name = student[3].strip().lower()).first()
-            associated_parent = User.query.filter_by(email = student[1].strip().lower()).first()
+            associated_school = School.query.filter(func.lower(School.name) == func.lower(student[3].strip())).first()
+            associated_parent = User.query.filter(func.lower(User.email) == func.lower(student[1].strip())).first()
             new_student = Student(name=student[0], school_id=associated_school.id, user_id=associated_parent.id)
             new_student.student_id = student[2]
             db.session.add(new_student)
@@ -1405,12 +1426,12 @@ def validate_users(csvreader_user):
         
         logging.debug(email)
         #CHECK FOR DUPLICATES
-        dup_email = User.query.filter_by(email = email).first()
+        dup_email = User.query.filter(func.lower(User.email) == func.lower(email)).first()
         if dup_email:
-            errors['dup_email'] = dup_email.as_dict()
-        dup_name = User.query.filter_by(full_name = name).first()
+            errors['dup_email'] = "Email already exists (duplicate)"
+        dup_name = User.query.filter(func.lower(User.full_name) == func.lower(name)).first()
         if dup_name:
-            errors['dup_name'] = dup_name.as_dict()
+            errors['dup_name'] = "Name already exists (duplicate)"
 
         #CHECK DATA TYPES etc.
         if name == "":
@@ -1424,11 +1445,18 @@ def validate_users(csvreader_user):
         
         if addr == "":
             errors['address'] = "Record must have an address"
+        
+        if phone_number == "":
+            errors['phone'] = "Record must have a phone number"
 
         if(not re.fullmatch(regex,email)):
             errors['email'] = 'Invalid email format'
         
         values = re.split(', ? +', addr)
+        stzip = values[2].split(' ')
+        values[2] = stzip[0]
+        values.append(stzip[1])
+        logging.info(values)
         if len(values) != 4:
             errors['address'] = 'Invalid address format'
         else:
@@ -1473,47 +1501,50 @@ def validate_students(csvreader_student, user_rows):
             school_name = row.get('school', "")
             row = [name, email, student_id, school_name]
 
-        school_name = school_name.strip().lower()
-        email = email.strip().lower()
+        school_name = school_name.strip()
+        email = email.strip()
 
         #CHECK FOR DUPLICATES in file?
-        name = name.strip().lower()
-        dup_name = Student.query.filter_by(name = name).first()
+        name = name.strip()
+        dup_name = Student.query.filter(func.lower(Student.name) == func.lower(name)).first()
         if dup_name:
-            errors['dup_name': dup_name.as_dict()]
+            errors['dup_name'] = 'Name already exists (duplicate)'
         
 
         #CHECK DATA TYPES etc.
         if name == "":
             errors['name'] = "Record must have name"
         
-        if student_id is not "":
+        if student_id != "":
             #ADD CHECK for floats and strings
-            student_id = int(student_id)
-            if student_id <=0 or student_id > 2147483647:
+            try:
+                student_id = int(student_id)
+                if student_id <=0 or student_id > 2147483647:
+                    errors['studentid'] = "ID cannot be negative or out of range"
+            except ValueError:
                 errors['studentid'] = "ID cannot be negative or out of range"
             # errors['student_id'] = "Record must have a numeric ID if provided"
         
         if school_name == "":
             errors['school'] = "Record must have a school"
         else:
-            existing_school = School.query.filter_by(name=school_name).first()
+            existing_school = School.query.filter(func.lower(School.name) == func.lower(school_name)).first()
             if existing_school is None:
                 errors['school'] = 'Student record must match an existing school'
         
         if email == "":
             errors['parentemail'] = "Record must have an associated user email"
         else:
-            existing_parent = User.query.filter_by(email=email).first()
+            existing_parent = User.query.filter(func.lower(User.email) == func.lower(email)).first()
             imported_user = False
             if existing_parent is None:
                 if len(user_rows) > 0:
                     for usr_row in user_rows:
                         if type(usr_row) is list:
-                            if usr_row[0].strip().lower() == email:
+                            if usr_row[0].strip().lower() == email.lower():
                                 imported_user = True
                         if type(usr_row) is dict:
-                            if usr_row['email'].strip().lower() == email:
+                            if usr_row['email'].strip().lower() == email.lower():
                                 imported_user = True
         
             if imported_user is False:
