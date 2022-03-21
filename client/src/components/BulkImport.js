@@ -75,6 +75,8 @@ export default function BulkImport() {
     // these work, console.log to test
     let remainingUsers = userRows.filter(o=> !excludedUsers.some(i=> i === o.id));
     let remainingStudents = studentRows.filter(o=> !excludedStudents.some(i=> i === o.id));
+
+    console.log(files);
   };
 
   const validateRecords = () => {
@@ -129,7 +131,7 @@ export default function BulkImport() {
     let keys = Object.keys(student_rows);
     for (var i=0;i<student_rows.length;i++) {
       let err = student_rows[i]['errors'];
-      if ("dup_name" in err || "dup_email" in err) {
+      if ("dup_name" in err) {
         initial_selectionmodel.push(keys[i]);
       }
     }
@@ -155,9 +157,11 @@ export default function BulkImport() {
         setSnackbarOpen(true);
         setSnackbarSeverity("success");
 
-        setUserInfo(res);
+        if (checkUsersPresent()) {
+          setUserInfo(res);
+        }
 
-        if (files.length > 1) {
+        if (checkStudentsPresent()) {
           setStudentInfo(res);
         }
 
@@ -244,6 +248,38 @@ export default function BulkImport() {
     setAnchorEl(null);
   };
 
+  const checkUsersPresent = () => {
+    //console.log("user present?:")
+    if (files.length > 1) {
+      //console.log((files[0][0].name == 'users.csv' || files[1][0].name == 'users.csv'));
+      return (files[0][0].name == 'users.csv' || files[1][0].name == 'users.csv');
+    } 
+    else if (files.length == 1) {
+      //console.log((files[0][0].name == 'users.csv'));
+      return (files[0][0].name == 'users.csv');
+    } 
+    else {
+      //console.log(false);
+      return false;
+    }
+  };
+
+  const checkStudentsPresent = () => {
+    //console.log("student present?:");
+    if (files.length > 1) {
+      //console.log((files[0][0].name == 'students.csv' || files[1][0].name == 'students.csv'));
+      return (files[0][0].name == 'students.csv' || files[1][0].name == 'students.csv');
+    } 
+    else if (files.length == 1) {
+      //console.log((files[0][0].name == 'students.csv'));
+      return (files[0][0].name == 'students.csv');
+    } 
+    else {
+      //console.log(false);
+      return false;
+    }
+  };
+
   return (
     <div className="App">
       <Dropzone
@@ -297,7 +333,8 @@ export default function BulkImport() {
       <Dialog open={dialogOpen} onClose={handleDialogClose} maxWidth="xl" sx={{ disableScrollLock: true }} scroll={'paper'}>
         <DialogContent dividers={true}>
           <Stack direction="row" spacing={5} alignItems="center">
-            <Stack spacing={1} alignItems="center">
+
+            {checkUsersPresent() ? <Stack spacing={1} alignItems="center">
               <Typography variant="h5" align="center">
                 {fileOneName}
               </Typography>
@@ -340,9 +377,9 @@ export default function BulkImport() {
                   </div>
                 </div>
               </div>
-            </Stack>
-
-            <Stack spacing={1} alignItems="center">
+            </Stack> : null}
+            
+            {checkStudentsPresent() ? <Stack spacing={1} alignItems="center">
               <Typography variant="h5" align="center">
                 {fileTwoName}
               </Typography>
@@ -385,7 +422,7 @@ export default function BulkImport() {
                   </div>
                 </div>
               </div>
-            </Stack>
+            </Stack> : null}
             
           </Stack>
         </DialogContent>
