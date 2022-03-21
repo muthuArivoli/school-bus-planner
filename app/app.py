@@ -1384,6 +1384,8 @@ def validate_users(csvreader_user):
 
         if type(row) is list:
             if usr_row_ct == 0:
+                if(row[0]!='email' or row[1]!='name' or row[2] != 'address' or row[3]!='phone_number'):
+                    return {'success': False, 'msg': 'Invalid header order'}
                 usr_row_ct +=1
                 continue
             
@@ -1452,6 +1454,8 @@ def validate_students(csvreader_student, user_rows):
         if type(row) is list:
         
             if stud_row_ct == 0:
+                if(row[0]!='name' or row[1]!='parent_email' or row[2] != 'student_id' or row[3]!='school_name'):
+                    return {'success': False, 'msg': 'Invalid header order'}
                 stud_row_ct +=1
                 continue
             
@@ -1472,11 +1476,12 @@ def validate_students(csvreader_student, user_rows):
         school_name = school_name.strip().lower()
         email = email.strip().lower()
 
-        #CHECK FOR DUPLICATES
+        #CHECK FOR DUPLICATES in file?
         name = name.strip().lower()
         dup_name = Student.query.filter_by(name = name).first()
         if dup_name:
             errors['dup_name': dup_name.as_dict()]
+        
 
         #CHECK DATA TYPES etc.
         if name == "":
