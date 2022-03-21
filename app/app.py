@@ -1538,10 +1538,16 @@ def validate_students(csvreader_student, user_rows):
             errors['school'] = "Record must have a school"
             critical = True
         else:
+            curr_user = User.query.filter_by(email = get_jwt_identity()).first()                
             existing_school = School.query.filter(func.lower(School.name) == func.lower(school_name)).first()
             if existing_school is None:
                 errors['school'] = 'Student record must match an existing school'
                 critical = True
+            elif curr_user.role == RoleEnum.SCHOOL_STAFF:
+                ids = [mschool.id for mschool in curr_user.managed_schools]
+                if existing_school.id not in ids:
+                    errors['school'] = 'School staff does not manage school'
+                    critical = True
         
         if email == "":
             errors['parentemail'] = "Record must have an associated user email"
