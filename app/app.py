@@ -1378,7 +1378,8 @@ def bulkImport():
             associated_school = School.query.filter(func.lower(School.name) == func.lower(student[3].strip())).first()
             associated_parent = User.query.filter(func.lower(User.email) == func.lower(student[1].strip())).first()
             new_student = Student(name=student[0], school_id=associated_school.id, user_id=associated_parent.id)
-            new_student.student_id = student[2]
+            if student[2] != '':
+                new_student.student_id = int(student[2])
             db.session.add(new_student)
         
         db.session.commit()
@@ -1522,7 +1523,7 @@ def validate_students(csvreader_student, user_rows):
                 if student_id <=0 or student_id > 2147483647:
                     errors['studentid'] = "ID cannot be negative or out of range"
             except ValueError:
-                errors['studentid'] = "ID cannot be negative or out of range"
+                errors['studentid'] = "ID is not valid integer"
             # errors['student_id'] = "Record must have a numeric ID if provided"
         
         if school_name == "":
@@ -1547,8 +1548,8 @@ def validate_students(csvreader_student, user_rows):
                             if usr_row['email'].strip().lower() == email.lower():
                                 imported_user = True
         
-            if imported_user is False:
-                errors['parentemail'] = 'Student record must match a valid user'
+                if imported_user is False:
+                    errors['parentemail'] = 'Student record must match a valid user'
         stud_resp.append({'row': row, 'errors': errors})
         student_rows.append(row)
         stud_row_ct +=1

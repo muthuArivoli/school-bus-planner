@@ -186,7 +186,7 @@ export default function BulkImport() {
     let keys = Object.keys(usr_rows);
     for (var i=0;i<usr_rows.length;i++) {
       let err = usr_rows[i]['errors'];
-      if (!("dup_email" in err || "dup_name" in err)) {
+      if (Object.keys(err).length ===  0) {
         initial_selectionmodel.push(i);
       }
     }
@@ -213,7 +213,8 @@ export default function BulkImport() {
     let keys = Object.keys(student_rows);
     for (var i=0;i<student_rows.length;i++) {
       let err = student_rows[i]['errors'];
-      if (!"dup_name" in err) {
+      console.log(student_rows[i]);
+      if (Object.keys(err).length ===  0) {
         initial_selectionmodel.push(i);
       }
     }
@@ -558,7 +559,7 @@ export default function BulkImport() {
                           if (errorDict.length == 0) {
                             return '';
                           } else {
-                            if ((params.field in errorDict) || ("dup_name" in errorDict)){
+                            if ((params.field in errorDict) || ("dup_name" in errorDict && params.field == "name")){
                               return 'hot';
                             }
                           }
