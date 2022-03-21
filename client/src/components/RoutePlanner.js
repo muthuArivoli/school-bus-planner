@@ -13,12 +13,17 @@ import Box from '@mui/material/Box';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import Divider from '@mui/material/Divider';
+import { useTable, useSortBy, useFilters, usePagination, ReactTable } from 'react-table';
 import ListItem from '@mui/material/ListItem';
 import List from '@mui/material/List';
 import { Icon } from "@material-ui/core";
 import ListItemText from '@mui/material/ListItemText';
 import { Helmet } from 'react-helmet';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 
+import {DndProvider, useDrag, useDrop} from 'react-dnd';
+import {HTML5Backend} from 'react-dnd-html5-backend';
+import update from 'immutability-helper';
 let api_key = "AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o";
 
 
@@ -26,6 +31,190 @@ const containerStyle = {
     height: "400px",
     width: "500px",
 };
+
+ //make cells for stop name in stop table editable
+ const EditableCell = ({
+  cell: { value: initialValue },
+  row: { index },
+  column: { id },
+  updateMyData 
+}) => {
+
+  // keep and update the state of the cell normally
+  const [value, setValue] = React.useState(initialValue);
+  const onChange = e => {
+    setValue(e.target.value);
+    console.log("setvalue editable cell : "+ value);
+  };
+
+  // only update the external data when the input is blurred
+  const onBlur = () => {
+    updateMyData(index, value);
+  };
+
+    // If the initialValue is changed external, sync it up with our state
+  React.useEffect(() => {
+    setValue(value);  //initialValue -> value
+  }, [value]);      //initialValue -> value
+
+  if (id === "name"){
+  return <input value={value} onChange={onChange} onBlur={onBlur} />
+  }
+  console.log("input value: ");
+  console.log(value);
+  return value;
+
+};
+
+//editable cell renderer
+const defaultColumn = {
+  Cell: EditableCell
+};
+
+function ReactStopsTable({ columns, datas, setStopRows}) {
+  const [records, setRecords] = React.useState(datas);
+  const getRowId = React.useCallback(row => {return row.id}, []);
+
+  React.useEffect(()=>{
+    setRecords(datas);
+  }, [datas]);
+
+  const updateMyData = (index, value) => {
+    let newData = datas.map((row, ind) => {
+      if(index === ind){
+        return {...row, name: value}
+      }
+      return row
+    });
+    setStopRows(newData);
+  }
+
+  const{
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+  } = useTable({columns, data: records, getRowId, defaultColumn, updateMyData});
+
+  //update row index for drag/drop
+  const moveRow = (dragIndex, hoverIndex) => {
+    const dragRecord = records[dragIndex]
+    setRecords(
+      update(records, {
+        $splice: [
+          [dragIndex, 1],
+          [hoverIndex, 0, dragRecord],
+        ],
+      })
+    )
+  };
+
+  const upData = ()=>{
+    setStopRows(records);
+  }
+
+  return (
+    <>
+    <DndProvider backend={HTML5Backend}>
+      <table {...getTableProps()}>
+        <thead>
+          {headerGroups.map(headerGroup => (
+            <tr {...headerGroup.getHeaderGroupProps()}>
+              <th></th>
+              {headerGroup.headers.map(column => (
+                <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody {...getTableBodyProps()}>
+          {rows.map(
+            (row, index) =>
+              prepareRow(row) || (
+                <ReactStopRow
+                  index={index}
+                  row={row}
+                  moveRow={moveRow}
+                  updateData={upData}
+                  {...row.getRowProps()}
+                />
+              )
+          )}
+        </tbody>
+      </table>
+    </DndProvider>
+    </>
+  )
+};
+
+//drag/drop for row in react-table
+//const to function
+function ReactStopRow({ row, index, moveRow, updateData }) {
+  const dropRef = React.useRef(null)
+  const dragRef = React.useRef(null)
+
+  const [, drop] = useDrop({
+    accept: 'row',
+    hover(item, monitor) {
+      if (!dropRef.current) {
+        return
+      }
+      const dragIndex = item.index
+      const hoverIndex = index
+      // Don't replace items with themselves
+      console.log(`${dragIndex} h ${hoverIndex}`)
+      
+      if (dragIndex === hoverIndex) {
+        return
+      }
+      // Determine rectangle on screen
+      const hoverBoundingRect = dropRef.current.getBoundingClientRect()
+      // Get vertical middle
+      const hoverMiddleY =
+        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+      // Determine mouse position
+      const clientOffset = monitor.getClientOffset()
+      // Get pixels to the top
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+        return
+      }
+      // Dragging upwards
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+        return
+      }
+      moveRow(dragIndex, hoverIndex)
+
+      item.index = hoverIndex
+    },
+    drop(item, monitor){
+      updateData();
+    }
+  })
+  const [{ isDragging }, drag, preview] = useDrag({
+    type: "row",
+    item: { index },
+    collect: monitor => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const opacity = isDragging ? 0 : 1
+
+  preview(drop(dropRef))
+  drag(dragRef)
+
+  return (
+    <tr ref={dropRef} style={{ opacity }}>
+      <td ref={dragRef}><DragIndicatorIcon/></td>
+      {row.cells.map(cell => {
+        return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+      })}
+    </tr>
+  )
+};
+
 
 const titleStyle = (size, margin) => {
   return(
@@ -93,6 +282,8 @@ const stopColumns = [
   { field: 'index', headerName: "Order", type: 'number', editable: true, width: 100},
 ];
 
+
+
 function NoStopsOverlay() {
   return (
     <GridOverlay>
@@ -137,6 +328,14 @@ export default function RoutePlanner(props) {
 
   const [completeness, setCompleteness] = React.useState("No Route");
 
+  const reactStopColumns = React.useMemo(
+    () => [
+     {
+       Header: "Stop Name",
+       accessor: "name"
+     }
+   ]
+  )
   const [map, setMap] = React.useState(null);
 
 
@@ -206,6 +405,8 @@ export default function RoutePlanner(props) {
           let newStopRows = response.data.route.stops.map((value)=>{
             return {...value, location: {lat: value.latitude, lng: value.longitude}}
           });
+          console.log("STOP ROWS")
+          console.log(newStopRows);
           setStudentRows(newStudentRows);
           setStopRows(newStopRows);
         }
@@ -314,8 +515,7 @@ export default function RoutePlanner(props) {
       let newStopRows = [...stopRows, newStopRow];
       console.log(newStopRow);
       setStopRows(newStopRows);
-
-  };
+  }
 
   // function when stop icon is clicked on
   const handleStopClick = (stop) => {
@@ -328,37 +528,10 @@ export default function RoutePlanner(props) {
     setStopRows(newStopRows);
   };
 
-  // function to check stop indices (will become deprecated)
-  const validateStops = (allRows) => {
-    const errors = [];
-    console.log(allRows)
-    let rowsWithIndex = [];
-    for (let i=0;i<allRows.length;i++) {
-      let cur_row = allRows[i];
-      rowsWithIndex.push(cur_row["index"]);
-      if ((cur_row["index"]>(allRows.length))) {
-        errors.push("Stop indexes must not be skipped. Index: \""+cur_row["index"]+"\" is too large.");
-        return errors;
-      }
-    }
-    console.log(rowsWithIndex)
-    var set = new Set(rowsWithIndex)
-    if (set.size !== rowsWithIndex.length) {
-      errors.push("Multiple stops cannot have the same index!");
-    } 
-    return errors;
-  };
 
   // function when add/update route button is clicked
   const handleSubmit = (event) => {
-    const errors = validateStops(stopRows);
-    if (errors.length > 0) {
-      console.log('ERROR')
-      setSnackbarOpen(true);
-      setSnackbarSeverity('error');
-      setSnackbarMsg(errors[0]);
-    }
-    else {
+
       if(selectionModel.length == 0){
         console.log("new stops: ");
         console.log(stopRows);
@@ -367,7 +540,7 @@ export default function RoutePlanner(props) {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id}),
-            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
+            stops: stopRows.map((value, index)=>{return { name: value.name, index: index, latitude: value.location.lat, longitude: value.location.lng}})
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -399,7 +572,7 @@ export default function RoutePlanner(props) {
             name: routeInfo["name"],
             description: routeInfo["description"],
             students: studentRows.map((value)=>{return value.id}),
-            stops: stopRows.map((value)=>{return { name: value.name, index: value.index, latitude: value.location.lat, longitude: value.location.lng}})
+            stops: stopRows.map((value, index)=>{return { name: value.name, index: index, latitude: value.location.lat, longitude: value.location.lng}})
         }, {
           headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -424,7 +597,6 @@ export default function RoutePlanner(props) {
           }
         );
       }
-    }
   }
 
   // function when user types in textfields
@@ -512,6 +684,8 @@ export default function RoutePlanner(props) {
                 autoPageSize
                 density="compact"
               />
+
+
             </div>
           </div>
         </div>
@@ -584,8 +758,7 @@ export default function RoutePlanner(props) {
             <Typography variant="subtitle2" align="left" sx={{ fontSize: 12 }}>Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>
           </Stack>
         </Stack>
-
-        <Stack id="bottom-tables-stack" direction="row" spacing={5} alignItems="center" justifyContent="center">
+        <Stack id="bottom-tables-stack" direction="row" spacing={5} alignItems="flex-start" justifyContent="center">
           <Stack id="student-table-stack" spacing={0} justifyContent="center">
             <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
               Current Students in Route:
@@ -612,12 +785,10 @@ export default function RoutePlanner(props) {
               Current Stops in Route: 
             </Typography>
             <Typography variant="subtitle2" align="left">
-              (Click on a stop name or ordering to start editing it)
+              (Click on icon to left of stop name and drag to reorder)
             </Typography>
-            <div style={{ height: 350, width: 600 }}>
-              <div style={{ display: 'flex', height: '100%' }}>
-                <div style={{ flexGrow: 1 }}>
-                  <DataGrid
+
+                  {/*<DataGrid
                     components={{
                       NoRowsOverlay: NoStopsOverlay,
                     }}
@@ -627,10 +798,8 @@ export default function RoutePlanner(props) {
                     autoPageSize
                     density="compact"
                     onCellEditCommit = {(row) => handleStopCellEdit(row, stopRows)}
-                  />
-                </div>
-              </div>
-            </div>
+                  />*/}
+                  <ReactStopsTable columns={reactStopColumns} datas={stopRows} setStopRows={setStopRows}/>   
           </Stack>
         </Stack>
 

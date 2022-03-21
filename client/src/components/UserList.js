@@ -8,12 +8,26 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import { useTable, useSortBy, useFilters, usePagination, ReactTable } from 'react-table';
+import UnfoldMoreOutlinedIcon from '@mui/icons-material/UnfoldMoreOutlined';
+import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
+import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
+import TablePagination from '@mui/material/TablePagination';
+
 import { Helmet } from 'react-helmet';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
+
+import MauTable from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
 
 const roles = ["Parent", "Admin", "School Staff", "Driver"]
 
@@ -45,7 +59,108 @@ const columns = [
   }
 ];
 
+
+function Table({columns,data, setSortModel}){
+
+  const mappingss = {"name.name": 'name', "email": "email", "admin": "admin"};
+
+  const{
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+    state: {sortBy}
+  } = useTable({columns, data, initialState: {pageIndex: 0}, manualSortBy: true}, useSortBy);
+
+  React.useEffect(()=>{
+    console.log(sortBy)
+    if(sortBy.length === 0){
+      setSortModel([]);
+    }
+    else{
+    setSortModel([{field: mappingss[sortBy[0].id], sort: sortBy[0].desc ? 'desc' : 'asc'}])
+    }
+  }, [sortBy])
+
+
+  return (
+    <>
+    <MauTable {...getTableProps()}>
+      <TableHead>
+        {headerGroups.map(headerGroup => (
+          < TableRow {...headerGroup.getHeaderGroupProps()}>
+            {headerGroup.headers.map(column => (
+              < TableCell {...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')} 
+                     <span>
+                       {column.canSort ? column.isSorted
+                           ? column.isSortedDesc
+                               ? <KeyboardArrowDownOutlinedIcon/>
+                               : <KeyboardArrowUpOutlinedIcon/>
+                           : <UnfoldMoreOutlinedIcon/> : ""}
+                    </span>              
+              
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableHead>
+      <TableBody {...getTableBodyProps()}>
+        {rows.map((row, i) => {
+          prepareRow(row)
+          return (
+            <TableRow {...row.getRowProps()}>
+              {row.cells.map(cell => {
+                return <TableCell {...cell.getCellProps()}>
+                  {/* <Link component={RouterLink} to={"/schools/" + params.value.id}>{params.value.name}</Link>*/}
+                  {cell.render('Cell')}</TableCell> 
+              })}
+            </TableRow>
+          )
+        })}
+      </TableBody>
+    </MauTable>
+
+
+    </>
+  )
+
+}
+
 export default function DataTable(props) {
+  const [data, setData] = React.useState([]);
+
+  const reactColumns = React.useMemo(
+    () => [
+      {
+        Header: "Full Name",
+        accessor: "name.name",
+        Cell: (row) => (<Link component={RouterLink} to={"/users/" + row.row.original.name.id}>{row.row.original.name.name}</Link>)
+
+      },
+      {
+        Header: "Email",
+        accessor: "email",
+      
+      },
+      {
+        Header: "Address",
+        accessor: "address",
+        disableSortBy: true
+      },
+      {
+        Header: "Phone Number",
+        accessor: "phone",
+        disableSortBy: true
+      },
+      {
+        Header: "Role",
+        accessor: "role",
+        Cell: (row) => (<>{roles[row.row.original.role]}</>),
+        disableSortBy: true
+      }
+    ]
+  )
 
   const [rows, setRows] = React.useState([]);
   let navigate = useNavigate();
@@ -121,6 +236,7 @@ export default function DataTable(props) {
         if(active){
           setTotalRows(result.data.records);
           setRows(arr);
+          setData(arr);
         }
       }
       else{
@@ -179,7 +295,7 @@ export default function DataTable(props) {
       </Grid>
         </Grid>
     <div style={{ height: 400, width: '100%' }}>
-      <DataGrid
+{/*       <DataGrid
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id} //set what is used as ID ******MUST BE UNIQUE***********
@@ -198,8 +314,22 @@ export default function DataTable(props) {
         onSortModelChange={(sortModel) => setSortModel(sortModel)}
         disableSelectionOnClick
         loading={loading}
+      /> */}
+      <Table columns = {reactColumns} data = {data} setSortModel={setSortModel}/>
+      <TablePagination
+        component="div"
+        count={totalRows}
+        page={page}
+        onPageChange={(event, page) => setPage(page)}
+        rowsPerPage={pageSize}
+        onRowsPerPageChange={(event) => {
+          let pageSize = event.target.value;
+          setShowAll(pageSize != 10);
+          setPageSize(pageSize)
+          setPage(0);}}
+          rowsPerPageOptions={[10,  { label: 'All', value: totalRows }]}
       />
-    </div>
+    <div style={{height:50}}>
     {
     (role == 1 || role == 2) &&
     <Button
@@ -208,11 +338,13 @@ export default function DataTable(props) {
       color="primary"
       variant="contained"
       size="small"
-      style={{ marginLeft: 16 }}
+      style={{ marginLeft: 16}}
       >
         Create User
       </Button>
       }
+      </div>
+      </div>
       </>
   );
 }
