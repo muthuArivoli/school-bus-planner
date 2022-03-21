@@ -10,6 +10,17 @@ import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import { useTable, useSortBy, useFilters, usePagination, ReactTable } from 'react-table';
+import UnfoldMoreOutlinedIcon from '@mui/icons-material/UnfoldMoreOutlined';
+import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
+import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
+
+import TablePagination from '@mui/material/TablePagination';
+import MauTable from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
 import { Helmet } from 'react-helmet';
 
 const columns = [
@@ -89,7 +100,121 @@ const columns = [
   }
 ];
 
+
+function Table({columns,data, setSortModel}){
+
+  const mappingss = {"name.name": 'name', "student_id": "student_id", "school": "school", "route.name": "route", "in_range":"in_range"};
+
+  const{
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+    state: {sortBy}
+  } = useTable({columns, data, initialState: {pageIndex: 0}, manualSortBy: true}, useSortBy);
+
+  React.useEffect(()=>{
+    console.log(sortBy)
+    if(sortBy.length === 0){
+      setSortModel([]);
+    }
+    else{
+    setSortModel([{field: mappingss[sortBy[0].id], sort: sortBy[0].desc ? 'desc' : 'asc'}])
+    }
+  }, [sortBy])
+
+
+  return (
+    <>
+    <MauTable {...getTableProps()}>
+      <TableHead>
+        {headerGroups.map(headerGroup => (
+          < TableRow {...headerGroup.getHeaderGroupProps()}>
+            {headerGroup.headers.map(column => (
+              < TableCell {...column.getHeaderProps(column.getSortByToggleProps())}                       
+              >{column.render('Header')} 
+                     <span>
+                       {column.canSort ? column.isSorted
+                           ? column.isSortedDesc
+                               ? <KeyboardArrowDownOutlinedIcon/>
+                               : <KeyboardArrowUpOutlinedIcon/>
+                           : <UnfoldMoreOutlinedIcon/> : ""}
+                    </span>              
+              
+              </TableCell>
+            ))}
+          </ TableRow>
+        ))}
+      </TableHead>
+      <TableBody {...getTableBodyProps()}>
+        {/* rows to page */}
+        {rows.map((row, i) => {
+          prepareRow(row)
+          return (
+            <TableRow {...row.getRowProps()}>
+              {row.cells.map(cell => {
+                return <TableCell {...cell.getCellProps()}>
+                  {/* <Link component={RouterLink} to={"/schools/" + params.value.id}>{params.value.name}</Link>*/}
+                  {cell.render('Cell')}</TableCell> 
+              })}
+            </TableRow>
+          )
+        })}
+      </TableBody>
+    </MauTable>
+
+
+    </>
+  )
+
+}
+
 export default function DataTable(props) {
+  const [data, setData] = React.useState([]);
+  const reactColumns = React.useMemo(
+    () => [
+      {
+        Header: "Full Name",
+        accessor: "name.name",
+        Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/students/" + row.row.original.name.id}>{row.row.original.name.name}</Link></>)
+
+      },
+      {
+        Header: "Student ID",
+        accessor: "student_id"
+      },
+      {
+        Header: "School",
+        accessor: "school",
+        Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/schools/" + row.row.original.school_id}>{row.row.original.school.name}</Link></>)
+
+      },{
+        Header: "Route",
+        accessor: "route",
+        Cell: (row) => (<>{console.log(row)}{row.row.original.route_id != null ? <Link component={RouterLink} to={"/routes/" + row.row.original.route_id}>{row.row.original.route.name}</Link> : <CloseIcon/>}</>),
+        disableSortBy: true
+      },
+      {
+        Header: "Has a Stop?",
+        accessor: "in_range",
+        Cell: (row) => (<>{ row.row.original.in_range ? <CheckIcon/>:<CloseIcon/> }</>),//show checkbox        
+        disableSortBy: true
+      },
+      {
+        Header: "Parent Name",
+        accessor: "parent_name",
+        Cell: (row) => (<>{console.log(row)}{<Link component={RouterLink} to={"/users/" + row.row.original.parent_name.id}>{row.row.original.parent_name.name}</Link>}</>),
+        disableSortBy: true
+      },
+      {
+        Header: "Parent Phone",
+        accessor: "parent_phone",
+        disableSortBy: true
+      },
+    ]
+  )
+
   const [rows, setRows] = React.useState([]);
   let navigate = useNavigate();
 
@@ -156,6 +281,7 @@ export default function DataTable(props) {
         if(active){
           setTotalRows(result.data.records);
           setRows(rows);
+          setData(rows)
         }
       }
       else{
@@ -197,10 +323,10 @@ export default function DataTable(props) {
           value={filterStr}
           onChange={(e)=>setFilterStr(e.target.value)}
         />
-        </Grid>
-        </Grid>
+      </Grid>
+    </Grid>
     <div style={{ height: 400, width: '100%' }}>
-      <DataGrid
+{/*       <DataGrid
         rows={rows}
         columns={columns}
         onRowClick={(row) => handleRowClick(row)}
@@ -220,8 +346,23 @@ export default function DataTable(props) {
         onSortModelChange={(sortModel) => setSortModel(sortModel)}
         disableSelectionOnClick
         loading={loading}
+      /> */}
+
+      <Table columns = {reactColumns} data = {data} setSortModel={setSortModel}/>
+      <TablePagination
+        component="div"
+        count={totalRows}
+        page={page}
+        onPageChange={(event, page) => setPage(page)}
+        rowsPerPage={pageSize}
+        onRowsPerPageChange={(event) => {
+          let pageSize = event.target.value;
+          setShowAll(pageSize != 10);
+          setPageSize(pageSize)
+          setPage(0);}}
+          rowsPerPageOptions={[10,{ label: 'All', value: totalRows }]}
       />
-    </div>
+    <div style={{height:50}}>
     {
     (role == 1 || role == 2) &&
     <Button
@@ -235,6 +376,8 @@ export default function DataTable(props) {
         Create Student
       </Button>
     }
+    </div>
+    </div>
       </>
   );
 }
