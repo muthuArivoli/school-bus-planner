@@ -1279,6 +1279,43 @@ def validateFiles():
     response['success'] = True
     return json.dumps(response)
 
+
+@app.route('/validaterecords', methods=['POST', 'OPTIONS'])
+@cross_origin()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
+def validate():
+    response = {}
+    content = request.json
+    no_errors = True
+    if 'users' in content:
+        users = content.get('users')
+        users, user_resp = validate_users(users)
+        logging.debug(user_resp)
+        for value in user_resp:
+            if len(value['errors']) != 0:
+                no_errors = False
+    if 'students' in content:
+        students = content.get('students')
+        student_resp = validate_students(students, users)
+        for value in student_resp:
+            if len(value['errors']) != 0:
+                no_errors = False
+    
+    if no_errors is False:
+        response['users.csv'] = user_resp
+        response['students.csv'] = student_resp
+        response['valid'] = False
+        response['success'] = True
+        return json.dumps(response)
+    
+    else:
+        #LOOP THROUGH ALL VALUES AND ADD OBJECTS TO DB
+        response['success'] = True
+        response['valid'] = True
+        return json.dumps(response)
+    
+
+
 @app.route('/bulkimport', methods=['POST', 'OPTIONS'])
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
@@ -1288,7 +1325,7 @@ def bulkImport():
     no_errors = True
     if 'users' in content:
         users = content.get('users')
-        user_resp = validate_users(users)
+        users, user_resp = validate_users(users)
         for value in user_resp:
             if len(value['errors']) != 0:
                 no_errors = False
@@ -1327,17 +1364,26 @@ def validate_users(csvreader_user):
         #SHOULD HAVE email, name, address, phone number
         errors = {}
         user_rows.append(row)
-        logging.debug(row)
 
-        if usr_row_ct == 0:
-            usr_row_ct +=1
-            continue
-    
+        if type(row) is list:
+            if usr_row_ct == 0:
+                usr_row_ct +=1
+                continue
+            
+            if len(row) != 4:
+                errors['format'] = "Missing values"
+            
+            email, name, addr, phone_number = row
         
-        if len(row) != 4:
-            errors['format'] = "Missing values"
-
-        email, name, addr, phone_number = row
+        if type(row) is dict:
+            if len(row) != 5:
+                errors['format'] = "Missing values"
+            email = row.get('email', "")
+            name = row.get("name", "")
+            addr = row.get('address', "")
+            phone_number = row.get('phone', "")
+            row = [email, name, addr, phone_number]
+        
         logging.debug(email)
         #CHECK FOR DUPLICATES
         dup_email = User.query.filter_by(email = email).first()
@@ -1373,6 +1419,7 @@ def validate_users(csvreader_user):
             validation = usps.validate_address(to_addr)
             logging.debug(validation.result)
         user_resp.append({'row': row, 'errors': errors})
+        logging.debug(row)
         usr_row_ct +=1    
     return user_rows, user_resp
 
@@ -1384,15 +1431,26 @@ def validate_students(csvreader_student, user_rows):
         #SHOULD HAVE name, parent_email, student_id, school_name
         errors = {}
         student_rows.append(row)
-        
-        if stud_row_ct == 0:
-            stud_row_ct +=1
-            continue
-        
-        if len(row) != 4:
-            errors['format'] = "Missing values"
 
-        name, email, student_id, school_name = row
+        if type(row) is list:
+        
+            if stud_row_ct == 0:
+                stud_row_ct +=1
+                continue
+            
+            if len(row) != 4:
+                errors['format'] = "Missing values"
+
+            name, email, student_id, school_name = row
+        
+        if type(row) is dict:
+            if len(row) != 5:
+                errors['format'] = "Missing values"
+            name = row.get('name', "")
+            email = row.get("parentemail", "")
+            student_id = row.get('studentid', "")
+            school_name = row.get('school', "")
+
         school_name = school_name.strip().lower()
         email = email.strip().lower()
 

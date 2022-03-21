@@ -80,6 +80,38 @@ export default function BulkImport() {
   };
 
   const validateRecords = () => {
+    let remainingUsers = userRows.filter(o=> !excludedUsers.some(i=> i === o.id));
+    let remainingStudents = studentRows.filter(o=> !excludedStudents.some(i=> i === o.id));
+
+    axios.post(process.env.REACT_APP_BASE_URL+`/validaterecords`, {
+      'users': remainingUsers,
+      'students': remainingStudents
+    }, {
+      headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }).then((res) => {
+      if (res.data.success){
+        setSnackbarMsg(`Files successfully uploaded`);
+        setSnackbarOpen(true);
+        setSnackbarSeverity("success");
+
+        if (checkUsersPresent()) {
+          setUserInfo(res);
+        }
+
+        if (checkStudentsPresent()) {
+          setStudentInfo(res);
+        }
+
+        handleDialogOpen()
+      }
+      else{
+        setSnackbarMsg(`Files not successfully updated`);
+        setSnackbarOpen(true);
+        setSnackbarSeverity("error");
+      }
+    });
     // validate changes through backend (user will click this before upload)
     // **make sure that the error dictionaries are updated correctly**
   };
