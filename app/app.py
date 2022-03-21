@@ -1261,7 +1261,7 @@ def validateFiles():
             response['users.csv'] = user_resp
         if filename == 'students.csv':
             csvreader_student = get_csv(file)
-            stud_resp = validate_students(csvreader_student, user_rows)
+            stud_rows, stud_resp = validate_students(csvreader_student, user_rows)
             response['students.csv'] = stud_resp
     # userFile = request.files.get('parents.csv')
     # userFile = request.form.get('parents.csv')
@@ -1294,9 +1294,10 @@ def validate():
         for value in user_resp:
             if len(value['errors']) != 0:
                 no_errors = False
+
     if 'students' in content:
         students = content.get('students')
-        student_resp = validate_students(students, users)
+        students, student_resp = validate_students(students, users)
         for value in student_resp:
             if len(value['errors']) != 0:
                 no_errors = False
@@ -1331,7 +1332,7 @@ def bulkImport():
                 no_errors = False
     if 'students' in content:
         students = content.get('students')
-        student_resp = validate_students(students, users)
+        students, student_resp = validate_students(students, users)
         for value in student_resp:
             if len(value['errors']) != 0:
                 no_errors = False
@@ -1345,6 +1346,23 @@ def bulkImport():
     
     else:
         #LOOP THROUGH ALL VALUES AND ADD OBJECTS TO DB
+        for user in users:
+            lat, lng = geocode_address(user[2])
+            new_user = User(email=user[0], full_name=user[1], uaddress = user[2], role=RoleEnum.UNPRIVILEGED, latitude=lat, longitude=lng, phone=user[3])
+            db.session.add(new_user)
+            db.session.flush()
+            db.session.refresh(new_user)
+
+        for student in students:
+            associated_school = School.query.filter_by(name = student[3].strip().lower()).first()
+            associated_parent = User.query.filter_by(email = student[1].strip().lower()).first()
+            new_student = Student(name=student[0], school_id=associated_school.id, user_id=associated_parent.id)
+            new_student.student_id = student[2]
+            db.session.add(new_student)
+        
+        db.session.commit()
+
+        #CREATE RESPONSE
         response['success'] = True
         response['valid'] = True
         response['users'] = len(users)
@@ -1363,7 +1381,6 @@ def validate_users(csvreader_user):
     for row in csvreader_user:
         #SHOULD HAVE email, name, address, phone number
         errors = {}
-        user_rows.append(row)
 
         if type(row) is list:
             if usr_row_ct == 0:
@@ -1388,10 +1405,10 @@ def validate_users(csvreader_user):
         #CHECK FOR DUPLICATES
         dup_email = User.query.filter_by(email = email).first()
         if dup_email:
-            errors['dup_email': dup_email.as_dict()]
+            errors['dup_email'] = dup_email.as_dict()
         dup_name = User.query.filter_by(full_name = name).first()
         if dup_name:
-            errors['dup_name': dup_name.as_dict()]
+            errors['dup_name'] = dup_name.as_dict()
 
         #CHECK DATA TYPES etc.
         if name == "":
@@ -1418,6 +1435,7 @@ def validate_users(csvreader_user):
             to_addr = Address(name='',address_1=addr1, city=city, state=state, zipcode=zipcode)
             validation = usps.validate_address(to_addr)
             logging.debug(validation.result)
+        user_rows.append(row)
         user_resp.append({'row': row, 'errors': errors})
         logging.debug(row)
         usr_row_ct +=1    
@@ -1430,7 +1448,6 @@ def validate_students(csvreader_student, user_rows):
     for row in csvreader_student:
         #SHOULD HAVE name, parent_email, student_id, school_name
         errors = {}
-        student_rows.append(row)
 
         if type(row) is list:
         
@@ -1450,6 +1467,7 @@ def validate_students(csvreader_student, user_rows):
             email = row.get("parentemail", "")
             student_id = row.get('studentid', "")
             school_name = row.get('school', "")
+            row = [name, email, student_id, school_name]
 
         school_name = school_name.strip().lower()
         email = email.strip().lower()
@@ -1468,7 +1486,7 @@ def validate_students(csvreader_student, user_rows):
             #ADD CHECK for floats and strings
             student_id = int(student_id)
             if student_id <=0 or student_id > 2147483647:
-                errors['student_id'] = "ID cannot be negative or out of range"
+                errors['studentid'] = "ID cannot be negative or out of range"
             # errors['student_id'] = "Record must have a numeric ID if provided"
         
         if school_name == "":
@@ -1479,22 +1497,27 @@ def validate_students(csvreader_student, user_rows):
                 errors['school'] = 'Student record must match an existing school'
         
         if email == "":
-            errors['parent_email'] = "Record must have an associated user email"
+            errors['parentemail'] = "Record must have an associated user email"
         else:
             existing_parent = User.query.filter_by(email=email).first()
             imported_user = False
             if existing_parent is None:
                 if len(user_rows) > 0:
                     for usr_row in user_rows:
-                        if usr_row[0].strip().lower() == email:
-                            imported_user = True
+                        if type(usr_row) is list:
+                            if usr_row[0].strip().lower() == email:
+                                imported_user = True
+                        if type(usr_row) is dict:
+                            if usr_row['email'].strip().lower() == email:
+                                imported_user = True
         
             if imported_user is False:
-                errors['parent_email'] = 'Student record must match a valid user'
+                errors['parentemail'] = 'Student record must match a valid user'
         stud_resp.append({'row': row, 'errors': errors})
+        student_rows.append(row)
         stud_row_ct +=1
     logging.debug(stud_resp)
-    return stud_resp
+    return student_rows, stud_resp
 
 def get_distance(lat1, long1, lat2, long2):
     coords_1 = (lat1, long1)
@@ -1589,6 +1612,13 @@ def get_csv(file):
     file.save("/".join([target, filename]))
     csvreader = csv.reader(open("/".join([target, filename])))
     return csvreader
+
+def geocode_address(addr):
+    g = gmaps_key.geocode(addr)
+    logging.debug(g)
+    lat = g[0]["geometry"]["location"]["lat"]
+    lng = g[0]["geometry"]["location"]["lng"]
+    return lat, lng
 
     
 

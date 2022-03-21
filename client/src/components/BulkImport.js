@@ -67,6 +67,7 @@ export default function BulkImport() {
   };
   const handleDialogOpen = () => {
     setDialogOpen(true);
+    console.log(errorRows);
   };
 
   const sendRecords = () => {
@@ -75,6 +76,41 @@ export default function BulkImport() {
     // these work, console.log to test
     let remainingUsers = userRows.filter(o=> !excludedUsers.some(i=> i === o.id));
     let remainingStudents = studentRows.filter(o=> !excludedStudents.some(i=> i === o.id));
+
+    axios.post(process.env.REACT_APP_BASE_URL+`/bulkimport`, {
+      'users': remainingUsers,
+      'students': remainingStudents
+    }, {
+      headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }).then((res) => {
+      if (res.data.success){
+        if (res.data.valid){
+          console.log(res.data.students);
+          console.log(res.data.users);
+          handleDialogClose();
+          alert('You have successfully imported ${res.data.students} students and ${res.data.users} users');
+        }
+        else{
+          if (checkUsersPresent()) {
+            setUserInfo(res);
+          }
+  
+          if (checkStudentsPresent()) {
+            setStudentInfo(res);
+          }
+
+          handleDialogOpen()
+
+        }
+      }
+      else{
+        setSnackbarMsg(`Files not successfully updated`);
+        setSnackbarOpen(true);
+        setSnackbarSeverity("error");
+      }
+    });
 
     console.log(files);
   };
@@ -262,6 +298,20 @@ export default function BulkImport() {
   };
 
   const handleCellEditStart = (event, i) => {
+    if (event.field == "name" && errorRows[event.id]["dup_name"] != undefined) {
+      console.log(errorRows[event.id]["dup_name"]);
+      let msg = JSON.stringify(errorRows[event.id]["dup_name"])
+      setPopoverMessage(msg);
+      setAnchorEl(i.currentTarget);
+    }
+
+    if (event.field == "email" && errorRows[event.id]["dup_email"] != undefined) {
+      console.log(errorRows[event.id]["dup_email"]);
+      let msg = JSON.stringify(errorRows[event.id]["dup_email"]);
+      setPopoverMessage(msg);
+      setAnchorEl(i.currentTarget);
+    }
+
     if (errorRows[event.id][event.field] == undefined) {
       return;
     }
@@ -271,6 +321,13 @@ export default function BulkImport() {
   };
 
   const handleStudentCellEditStart = (event, i) => {
+    if (event.field == "name" && studentErrorRows[event.id]["dup_name"] != undefined) {
+      console.log(studentErrorRows[event.id]["dup_name"]);
+      let msg = JSON.stringify(studentErrorRows[event.id]["dup_name"])
+      setPopoverMessage(msg);
+      setAnchorEl(i.currentTarget);
+    }
+
     if (studentErrorRows[event.id][event.field] == undefined) {
       return;
     }
@@ -448,7 +505,7 @@ export default function BulkImport() {
                           if (errorDict.length == 0) {
                             return '';
                           } else {
-                            if (params.field in errorDict) {
+                            if ((params.field in errorDict) || ("dup_name" in errorDict) || ("dup_email" in errorDict)) {
                               return 'hot';
                             }
                           }
@@ -493,7 +550,7 @@ export default function BulkImport() {
                           if (errorDict.length == 0) {
                             return '';
                           } else {
-                            if (params.field in errorDict) {
+                            if ((params.field in errorDict) || ("dup_name" in errorDict)){
                               return 'hot';
                             }
                           }

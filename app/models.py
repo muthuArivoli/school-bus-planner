@@ -7,6 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.sql.operators import contains_op
 
 import enum
+
 from sqlalchemy_filters import Filter, StringField, Field, TimestampField
 from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator, BaseOperator, register_operator
 from datetime import datetime
@@ -56,6 +57,7 @@ class User(db.Model):
     def __repr__(self):
         return "<User(email='{}', uaddress='{}',full_name='{}', pswd='{}', role={}, latitude={}, longitude={})>"\
             .format(self.email, self.uaddress, self.full_name, self.pswd, self.role, self.latitude, self.longitude)
+  
 
 class School(db.Model):
     __tablename__ = 'schools'
@@ -195,35 +197,39 @@ class CaseContainsOperator(BaseOperator):
         )
 
 class UserFilter(Filter):
-    email = StringField(lookup_operator=CaseContainsOperator)
-    full_name = StringField(lookup_operator=CaseContainsOperator)
+    email = StringField(lookup_operator=ContainsOperator)
+    full_name = StringField(lookup_operator=ContainsOperator)
 
     class Meta:
         model = User
+        session = db.session
         page_size = 10
 
 class StudentFilter(Filter):
     student_id = Field(lookup_operator = EqualsOperator)
     school_id = Field(lookup_operator = EqualsOperator)
-    name = StringField(lookup_operator = CaseContainsOperator)
+    name = StringField(lookup_operator = ContainsOperator)
 
     class Meta:
         model = Student
+        session = db.session
         page_size = 10
 
 class SchoolFilter(Filter):
-    name = StringField(lookup_operator=CaseContainsOperator)
+    name = StringField(lookup_operator=ContainsOperator)
     arrival_time = TimestampField()
     departure_time = TimestampField()
 
     class Meta:
         model = School
+        session = db.session
         page_size = 10
 
 class RouteFilter(Filter):
-    name = StringField(lookup_operator=CaseContainsOperator)
+    name = StringField(lookup_operator=ContainsOperator)
     school_id = Field()
 
     class Meta:
         model = Route
+        session = db.session
         page_size = 10
