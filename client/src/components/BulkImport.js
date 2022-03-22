@@ -274,6 +274,11 @@ export default function BulkImport(props) {
           else if(JSON.stringify(results.data[0]) == JSON.stringify(["email", "name", "address", "phone_number"])){
             setUserFile(file);
           }
+          else{
+            setSnackbarMsg(`File does not have a valid format`);
+            setSnackbarOpen(true);
+            setSnackbarSeverity("error");
+          }
       }});
       
       }, [])
@@ -404,6 +409,9 @@ export default function BulkImport(props) {
         Bulk Import
       </title>
     </Helmet>
+    <Link href="" rel="noreferrer" target="_blank">
+      Import Format
+    </Link>
       <Dropzone
         onDropAccepted={onDrop}
         onDropRejected={onDropReject}
