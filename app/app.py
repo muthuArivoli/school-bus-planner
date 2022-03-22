@@ -1482,7 +1482,7 @@ def validate_users(csvreader_user):
 
         if addr == "":
             errors['address'] = "Record must have an address"
-            critial = True
+            critical = True
         
         if phone_number == "":
             errors['phone'] = "Record must have a phone number"
