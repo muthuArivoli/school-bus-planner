@@ -1257,11 +1257,11 @@ def validateFiles():
             csvreader_user = get_csv(file)
             user_rows, user_resp, critical = validate_users(csvreader_user)
             logging.info(user_resp)
-            response['users'] = user_resp
+            response['users'] = user_resp[1:]
         if filename == 'students.csv':
             csvreader_student = get_csv(file)
             stud_rows, stud_resp, critical = validate_students(csvreader_student, user_rows)
-            response['students'] = stud_resp
+            response['students'] = stud_resp[1:]
     # userFile = request.files.get('parents.csv')
     # userFile = request.form.get('parents.csv')
     # content = request.json
@@ -1410,6 +1410,8 @@ def validate_users(csvreader_user):
             if usr_row_ct == 0:
                 if(row[0]!='email' or row[1]!='name' or row[2] != 'address' or row[3]!='phone_number'):
                     return [], [], True
+                user_rows.append(row)
+                user_resp.append({'row': row, 'errors': errors})
                 usr_row_ct +=1
                 continue
             
@@ -1522,6 +1524,8 @@ def validate_students(csvreader_student, user_rows):
             if stud_row_ct == 0:
                 if(row[0]!='name' or row[1]!='parent_email' or row[2] != 'student_id' or row[3]!='school_name'):
                     return [], [], True
+                stud_rows.append(row)
+                stud_resp.append({'row': row, 'errors': errors})
                 stud_row_ct +=1
                 continue
             
