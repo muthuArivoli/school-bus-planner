@@ -1438,7 +1438,7 @@ def validate_users(csvreader_user):
             critical = True
         
         if len(name.split(" ")) < 2:
-            errors['name'] = "Record must have both a first and last name"
+            errors['name'] = "Record should have both a first and last name"
 
         if email == "":
             errors['email'] = "Record must have an email"
@@ -1512,6 +1512,8 @@ def validate_students(csvreader_student, user_rows):
         if name == "":
             errors['name'] = "Record must have name"
             critical = True
+        if len(name.split(" ")) < 2:
+            errors['name'] = "Record should have both a first and last name"
         
         if student_id != "":
             #ADD CHECK for floats and strings

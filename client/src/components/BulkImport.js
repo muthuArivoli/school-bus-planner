@@ -18,6 +18,7 @@ import Stack from '@mui/material/Stack';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import DeleteDialog from './DeleteDialog';
+import Link from '@mui/material/Link';
 
 const userColumns = [
   //{ field: 'id', hide: true, width: 30},
@@ -409,7 +410,7 @@ export default function BulkImport(props) {
         Bulk Import
       </title>
     </Helmet>
-    <Link href="" rel="noreferrer" target="_blank">
+    <Link href="https://github.com/muthuArivoli/school-bus-planner/blob/muthu-bulk-import/app/data/README.md" rel="noreferrer" target="_blank">
       Import Format
     </Link>
       <Dropzone
