@@ -1352,6 +1352,10 @@ def bulkImport():
         for user in users:
             lat, lng = geocode_address(user[2])
             new_user = User(email=user[0], full_name=user[1], uaddress = user[2], role=RoleEnum.UNPRIVILEGED, latitude=lat, longitude=lng, phone=user[3])
+            if '@example.com' in user[0]:
+                password = "ParentPassword2@22"
+                encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+                new_user.pswd = encrypted_pswd.decode('utf-8')
             db.session.add(new_user)
             db.session.flush()
             db.session.refresh(new_user)
