@@ -451,6 +451,7 @@ export default function BulkImport(props) {
       </div>
         <Button
         variant="contained"
+        disabled={studentFile.name == null && userFile.name == null}
         onClick={handleUpload}
         >
         Upload Files
