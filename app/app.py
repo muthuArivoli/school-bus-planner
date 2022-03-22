@@ -1492,10 +1492,11 @@ def validate_users(csvreader_user):
             errors['email'] = 'Invalid email format'
             critical = True
         
-        lat_lng = geocode_address(addr)
-        if not lat_lng:
-            errors['address'] = 'Invalid address format'
-            critical = True
+        if addr != "":
+            lat_lng = geocode_address(addr)
+            if not lat_lng:
+                errors['address'] = 'Invalid address format'
+                critical = True
         user_rows.append(row)
         user_resp.append({'row': row, 'errors': errors})
         logging.debug(row)
