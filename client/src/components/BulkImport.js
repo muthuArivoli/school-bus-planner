@@ -428,7 +428,7 @@ export default function BulkImport(props) {
               })}
             >
               <input {...getInputProps()} />
-              <p>Drag'n'drop files</p>
+              <p>Click here to upload files</p>
               <FileUploadIcon></FileUploadIcon>
             </div>
           );
