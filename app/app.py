@@ -1395,6 +1395,9 @@ def validate_users(csvreader_user):
     user_rows = []
     usr_row_ct = 0
     critical = False
+
+    emails = {}
+    names = {}
     for row in csvreader_user:
         #SHOULD HAVE email, name, address, phone number
         errors = {}
@@ -1426,11 +1429,11 @@ def validate_users(csvreader_user):
         #CHECK FOR DUPLICATES
         dup_email = User.query.filter(func.lower(User.email) == func.lower(email)).first()
         if dup_email:
-            errors['dup_email'] = f"Duplicate email found, duplicate user name is {dup_email.full_name}, address is {dup_email.uaddress}, phone is {dup_email.phone}"
+            errors['dup_email'] = f"Duplicate existing email found, duplicate user name is {dup_email.full_name}, address is {dup_email.uaddress}, phone is {dup_email.phone} | "
             critical = True
         dup_name = User.query.filter(func.lower(User.full_name) == func.lower(name)).first()
         if dup_name:
-            errors['dup_name'] = f"Duplicate name found, duplicate user email is {dup_name.email}, address is {dup_name.uaddress}, phone is {dup_name.phone}"
+            errors['dup_name'] = f"Duplicate existing name found, duplicate user email is {dup_name.email}, address is {dup_name.uaddress}, phone is {dup_name.phone} | "
 
         #CHECK DATA TYPES etc.
         if name == "":
@@ -1440,10 +1443,43 @@ def validate_users(csvreader_user):
         if len(name.split(" ")) < 2:
             errors['name'] = "Record should have both a first and last name"
 
+        if name.strip().lower() in names:
+            error_msg = ""
+            for ind in names[name.strip().lower()]:
+                urw = user_rows[ind]
+                error_msg += f"Duplicate name record found, duplicate user email is {urw[0]}, address is {urw[2]}, phone is {urw[3]} | "
+                if 'dup_name' not in user_resp[ind]['errors']:
+                    user_resp[ind]['errors']['dup_name'] = ''
+                user_resp[ind]['errors']['dup_name'] += f"Duplicate name record found, duplicate user email is {email}, address is {addr}, phone is {phone_number} | "
+            if 'dup_name' not in errors:
+                errors['dup_name'] = ''
+            errors['dup_name'] += error_msg
+        else:
+            names[name.strip().lower()] = []
+        
+        names[name.strip().lower()].append(usr_row_ct)
+
         if email == "":
             errors['email'] = "Record must have an email"
             critical = True
         
+        if email.strip().lower() in emails:
+            error_msg = ""
+            for ind in emails[email.strip().lower()]:
+                urw = user_rows[ind]
+                error_msg += f"Duplicate email record found, duplicate user name is {urw[1]}, address is {urw[2]}, phone is {urw[3]} | "
+                if 'dup_email' not in user_resp[ind]['errors']:
+                    user_resp[ind]['errors']['dup_email'] = ''
+                user_resp[ind]['errors']['dup_email'] += f"Duplicate email record found, duplicate user name is {name}, address is {addr}, phone is {phone_number} | "
+            if 'dup_email' not in errors:
+                errors['dup_email'] = ''
+            errors['dup_email'] += error_msg
+            critical = True
+        else:
+            emails[email.strip().lower()] = []
+        
+        emails[email.strip().lower()].append(usr_row_ct)
+
         if addr == "":
             errors['address'] = "Record must have an address"
             critial = True
@@ -1471,6 +1507,7 @@ def validate_students(csvreader_student, user_rows):
     stud_resp = []
     stud_row_ct = 0
     critical = False
+    names = {}
     for row in csvreader_student:
         #SHOULD HAVE name, parent_email, student_id, school_name
         errors = {}
@@ -1505,7 +1542,7 @@ def validate_students(csvreader_student, user_rows):
         name = name.strip()
         dup_name = Student.query.filter(func.lower(Student.name) == func.lower(name)).first()
         if dup_name:
-            errors['dup_name'] = f"Duplicate name found, duplicate student parent is {dup_name.user.full_name}, school is {dup_name.school.name}, id is {dup_name.student_id}"
+            errors['dup_name'] = f"Duplicate existing name found, duplicate student parent is {dup_name.user.email}, school is {dup_name.school.name}, id is {dup_name.student_id} | "
         
 
         #CHECK DATA TYPES etc.
@@ -1515,6 +1552,22 @@ def validate_students(csvreader_student, user_rows):
         if len(name.split(" ")) < 2:
             errors['name'] = "Record should have both a first and last name"
         
+        if name.strip().lower() in names:
+            error_msg = ""
+            for ind in names[name.strip().lower()]:
+                urw = student_rows[ind]
+                error_msg += f"Duplicate name record found, duplicate student parent is {urw[1]}, school is {urw[3]}, id is {urw[2]} | "
+                if 'dup_name' not in stud_resp[ind]['errors']:
+                    stud_resp[ind]['errors']['dup_name'] = ''
+                stud_resp[ind]['errors']['dup_name'] += f"Duplicate name record found, duplicate student parent is {email}, school is {school_name}, id is {student_id} | "
+            if 'dup_name' not in errors:
+                errors['dup_name'] = ''
+            errors['dup_name'] += error_msg
+        else:
+            names[name.strip().lower()] = []
+        
+        names[name.strip().lower()].append(stud_row_ct)
+
         if student_id != "":
             #ADD CHECK for floats and strings
             try:
