@@ -22,7 +22,6 @@ from io import TextIOWrapper
 from werkzeug.utils import secure_filename
 import csv
 import re
-from usps import USPSApi, Address
 
 
 app = Flask(__name__)
@@ -36,7 +35,6 @@ db = SQLAlchemy(app)
 cors = CORS(app)
 api = Blueprint('api', __name__)
 gmaps_key = googlemaps.Client(key="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o")
-usps = USPSApi('954DUKEU6917')
 
 from models import User, Student, School, Route, Stop, UserFilter, StudentFilter, SchoolFilter, RouteFilter, TokenBlocklist, RoleEnum
 
@@ -1455,20 +1453,10 @@ def validate_users(csvreader_user):
             errors['email'] = 'Invalid email format'
             critical = True
         
-        values = re.split(', ? +', addr)
-        stzip = values[2].split(' ')
-        values[2] = stzip[0]
-        values.append(stzip[1])
-        logging.info(values)
-        if len(values) != 4:
+        lat_lng = geocode_address(addr)
+        if not lat_lng:
             errors['address'] = 'Invalid address format'
             critical = True
-        else:
-            #maybe add geocoding stuff and then also add a check if address has two parts for address 1 and 2
-            addr1, city, state, zipcode = values
-            to_addr = Address(name='',address_1=addr1, city=city, state=state, zipcode=zipcode)
-            validation = usps.validate_address(to_addr)
-            logging.debug(validation.result)
         user_rows.append(row)
         user_resp.append({'row': row, 'errors': errors})
         logging.debug(row)
@@ -1671,6 +1659,8 @@ def get_csv(file):
 def geocode_address(addr):
     g = gmaps_key.geocode(addr)
     logging.debug(g)
+    if len(g) == 0:
+        return False
     lat = g[0]["geometry"]["location"]["lat"]
     lng = g[0]["geometry"]["location"]["lng"]
     return lat, lng
