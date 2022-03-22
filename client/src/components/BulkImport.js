@@ -18,6 +18,7 @@ import Stack from '@mui/material/Stack';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import DeleteDialog from './DeleteDialog';
+import './BulkImport.css'
 
 const userColumns = [
   //{ field: 'id', hide: true, width: 30},
