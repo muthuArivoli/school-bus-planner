@@ -7,6 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.sql.operators import contains_op
 
 import enum
+
 from sqlalchemy_filters import Filter, StringField, Field, TimestampField
 from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator, BaseOperator, register_operator
 from datetime import datetime
@@ -56,6 +57,7 @@ class User(db.Model):
     def __repr__(self):
         return "<User(email='{}', uaddress='{}',full_name='{}', pswd='{}', role={}, latitude={}, longitude={})>"\
             .format(self.email, self.uaddress, self.full_name, self.pswd, self.role, self.latitude, self.longitude)
+  
 
 class School(db.Model):
     __tablename__ = 'schools'

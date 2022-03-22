@@ -24,6 +24,7 @@ import RoutePlanner from './RoutePlanner';
 import EmailPage from './EmailPage';
 import ForgotPassword from './ForgotPassword';
 import ResetPassword from './ResetPassword';
+import BulkImport from './BulkImport';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
@@ -304,6 +305,13 @@ export default function App () {
             <PrivateRoute roles={[1, 2]}>
               <AdminDashboard titleText="Email">
                 <EmailPage/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
+          <Route exact path="/bulkimport" element={
+            <PrivateRoute roles={[1, 2]}>
+              <AdminDashboard titleText="Bulk Import">
+                <BulkImport/>
               </AdminDashboard>
             </PrivateRoute>
           } />

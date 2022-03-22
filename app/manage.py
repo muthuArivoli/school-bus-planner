@@ -50,31 +50,31 @@ def seed_db():
         db.session.flush()
         db.session.refresh(new_school)
 
-    parents_table = pd.read_csv('data/parents.csv')
-    names = parents_table['full_name'].to_list()
-    emails = parents_table['email'].to_list()
-    addresses = parents_table['address'].to_list()
+    # parents_table = pd.read_csv('data/parents.csv')
+    # names = parents_table['full_name'].to_list()
+    # emails = parents_table['email'].to_list()
+    # addresses = parents_table['address'].to_list()
 
-    students_table = pd.read_csv('data/students.csv')
-    student_ids = students_table['student_id'].to_list()
-    student_names = students_table['name'].to_list()
-    student_schools = students_table['school'].to_list()
-    parents = students_table['parent'].to_list()
+    # students_table = pd.read_csv('data/students.csv')
+    # student_ids = students_table['student_id'].to_list()
+    # student_names = students_table['name'].to_list()
+    # student_schools = students_table['school'].to_list()
+    # parents = students_table['parent'].to_list()
 
-    for f in range(0, len(names)):
-        lat,lng = geocode_address(addresses[f])
-        new_user = User(email=emails[f], full_name=names[f], uaddress = addresses[f], pswd=encrypted_pswd.decode('utf-8'), role=RoleEnum.UNPRIVILEGED, latitude=lat, longitude=lng, phone="919-555-5555")
-        db.session.add(new_user)
-        db.session.flush()
-        db.session.refresh(new_user)
+    # for f in range(0, len(names)):
+    #     lat,lng = geocode_address(addresses[f])
+    #     new_user = User(email=emails[f], full_name=names[f], uaddress = addresses[f], pswd=encrypted_pswd.decode('utf-8'), role=RoleEnum.UNPRIVILEGED, latitude=lat, longitude=lng, phone="919-555-5555")
+    #     db.session.add(new_user)
+    #     db.session.flush()
+    #     db.session.refresh(new_user)
 
-    for f in range(0,len(student_ids)):
-        associated_school = School.query.filter_by(name = student_schools[f]).first()
-        associated_parent = User.query.filter_by(email = parents[f]).first()
-        new_student = Student(name=student_names[f], school_id=associated_school.id, user_id=associated_parent.id)
-        if not math.isnan(student_ids[f]):
-            new_student.student_id = student_ids[f]
-        db.session.add(new_student)
+    # for f in range(0,len(student_ids)):
+    #     associated_school = School.query.filter_by(name = student_schools[f]).first()
+    #     associated_parent = User.query.filter_by(email = parents[f]).first()
+    #     new_student = Student(name=student_names[f], school_id=associated_school.id, user_id=associated_parent.id)
+    #     if not math.isnan(student_ids[f]):
+    #         new_student.student_id = student_ids[f]
+    #     db.session.add(new_student)
     
     db.session.commit()
 

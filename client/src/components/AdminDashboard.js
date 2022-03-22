@@ -26,6 +26,7 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import HomeIcon from '@mui/icons-material/Home';
 import EmailIcon from '@mui/icons-material/Email';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import axios from 'axios';
 import Menu from '@mui/material/Menu';
 import TextField from '@mui/material/TextField';
@@ -330,6 +331,15 @@ export default function AdminDashboard(props){
               <EmailIcon />
             </ListItemIcon>
             <ListItemText primary="Email" />
+          </ListItemButton>
+          }
+          {
+          (role == 1 || role == 2) &&
+          <ListItemButton component={RouterLink} to="/bulkimport">
+            <ListItemIcon>
+              <FileDownloadIcon />
+            </ListItemIcon>
+            <ListItemText primary="Bulk Import" />
           </ListItemButton>
           }
         </div>

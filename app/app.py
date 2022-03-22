@@ -17,6 +17,12 @@ import requests
 import os
 import geopy.distance
 import googlemaps
+import pandas as pd
+from io import TextIOWrapper
+from werkzeug.utils import secure_filename
+import csv
+import re
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:bus@db:5432/db'
@@ -41,6 +47,8 @@ YOUR_DOMAIN_NAME="mail.hypotheticaltransportfive.email"
 API_KEY = open('email_api.key', 'r').read().strip().replace('\n', '')
 
 DOMAIN = os.getenv("DOMAIN", "https://htfive.colab.duke.edu")
+
+ALLOWED_EXTENSIONS = set(['csv'])
 
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload):
@@ -1228,7 +1236,390 @@ def send_email_route(route_uid=None):
             return {"success": False}
     return {'success': True}
 
+@app.route('/fileValidation', methods = ['POST', 'OPTIONS'])
+@cross_origin()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
+def validateFiles():
+    if request.method == 'OPTIONS':
+        return {'success': True}
+
+    target='/uploadFiles/'
+    logging.debug(os.getcwd())
+    if not os.path.isdir(target):
+        os.mkdir(target)
+    
+    response = {}
+    user_rows = []
+
+    for filename, file in request.files.items():
+        #ADD SOMETHING TO CHECK USERS.CSV first
+        if filename == 'users.csv':
+            csvreader_user = get_csv(file)
+            user_rows, user_resp, critical = validate_users(csvreader_user)
+            logging.info(user_resp)
+            response['users'] = user_resp
+        if filename == 'students.csv':
+            csvreader_student = get_csv(file)
+            stud_rows, stud_resp, critical = validate_students(csvreader_student, user_rows)
+            response['students'] = stud_resp
+    # userFile = request.files.get('parents.csv')
+    # userFile = request.form.get('parents.csv')
+    # content = request.json
+    # userFile = content.get('parents.csv')
+    # logging.debug(userFile)
+
+    # studentFile = request.files.get('students.csv')
+    # text_stream = TextIOWrapper(userFile.stream, encoding='cp932')
+    # for row in csv.reader(text_stream):
+    #     logging.debug(text_stream)
+
+    # df = pd.read_csv(StringIO(userFile))
+    # logging.debug(userFile)
+    response['success'] = True
+    return json.dumps(response)
+
+
+@app.route('/validaterecords', methods=['POST', 'OPTIONS'])
+@cross_origin()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
+def validate():
+    if request.method == 'OPTIONS':
+        return {'success': True}
+
+    response = {}
+    content = request.json
+    no_errors = True
+    if 'users' in content:
+        users = content.get('users')
+        users, user_resp, critical = validate_users(users)
+        logging.debug(user_resp)
+        if critical:
+            no_errors = False
+
+    if 'students' in content:
+        students = content.get('students')
+        students, student_resp, critical = validate_students(students, users)
+        if critical:
+            no_errors = False
+    
+    if no_errors is False:
+        response['users'] = user_resp
+        response['students'] = student_resp
+        response['valid'] = False
+        response['success'] = True
+        return json.dumps(response)
+    
+    else:
+        #LOOP THROUGH ALL VALUES AND ADD OBJECTS TO DB
+        response['success'] = True
+        response['valid'] = True
+        response['users'] = user_resp
+        response['students'] = student_resp
+        return json.dumps(response)
+    
+
+
+@app.route('/bulkimport', methods=['POST', 'OPTIONS'])
+@cross_origin()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
+def bulkImport():
+
+    if request.method == 'OPTIONS':
+        return {'success': True}
+    response = {}
+    content = request.json
+    no_errors = True
+    if 'users' in content:
+        users = content.get('users')
+        users, user_resp, critical = validate_users(users)
+        if critical:
+            no_errors = False
+    if 'students' in content:
+        students = content.get('students')
+        students, student_resp, critical = validate_students(students, users)
+        if critical:
+            no_errors = False
+    
+    if no_errors is False:
+        response['users'] = user_resp
+        response['students'] = student_resp
+        response['valid'] = False
+        response['success'] = True
+        return json.dumps(response)
+    
+    else:
+        #LOOP THROUGH ALL VALUES AND ADD OBJECTS TO DB
+        for user in users:
+            lat, lng = geocode_address(user[2])
+            new_user = User(email=user[0], full_name=user[1], uaddress = user[2], role=RoleEnum.UNPRIVILEGED, latitude=lat, longitude=lng, phone=user[3])
+            db.session.add(new_user)
+            db.session.flush()
+            db.session.refresh(new_user)
+            if '@example.com' not in user[0]:
+                access_token = create_access_token(identity=user[0])
+                link = f"{DOMAIN}/resetpassword?token={access_token}"
+    
+                r = requests.post(
+                f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
+                auth=("api", API_KEY),
+                data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
+                    "to": user[0],
+                    "subject": "Account Creation for Hypothetical Transportation",
+                    "html": f"Please use the following link to set the password for your new account: \n <a href={link}>{link}</a>"})
+            
+
+        for student in students:
+            associated_school = School.query.filter(func.lower(School.name) == func.lower(student[3].strip())).first()
+            associated_parent = User.query.filter(func.lower(User.email) == func.lower(student[1].strip())).first()
+            new_student = Student(name=student[0], school_id=associated_school.id, user_id=associated_parent.id)
+            if student[2] != '':
+                new_student.student_id = int(student[2])
+            db.session.add(new_student)
+        
+        db.session.commit()
+
+        #CREATE RESPONSE
+        response['success'] = True
+        response['valid'] = True
+        response['users'] = len(users)
+        response['students'] = len(students)
+        return json.dumps(response)
+
+
+
 #HELPER METHODS
+
+def validate_users(csvreader_user):
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    user_resp = []
+    user_rows = []
+    usr_row_ct = 0
+    critical = False
+
+    emails = {}
+    names = {}
+    for row in csvreader_user:
+        #SHOULD HAVE email, name, address, phone number
+        errors = {}
+
+        if type(row) is list:
+            if usr_row_ct == 0:
+                if(row[0]!='email' or row[1]!='name' or row[2] != 'address' or row[3]!='phone_number'):
+                    return [], [], True
+                usr_row_ct +=1
+                continue
+            
+            if len(row) != 4:
+                errors['format'] = "Missing values"
+                critical = True
+            
+            email, name, addr, phone_number = row
+        
+        if type(row) is dict:
+            if len(row) != 5:
+                errors['format'] = "Missing values"
+                critical = True
+            email = row.get('email', "")
+            name = row.get("name", "")
+            addr = row.get('address', "")
+            phone_number = row.get('phone', "")
+            row = [email, name, addr, phone_number]
+        
+        logging.debug(email)
+        #CHECK FOR DUPLICATES
+        dup_email = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+        if dup_email:
+            errors['dup_email'] = f"Duplicate existing email found, duplicate user name is {dup_email.full_name}, address is {dup_email.uaddress}, phone is {dup_email.phone} | "
+            critical = True
+        dup_name = User.query.filter(func.lower(User.full_name) == func.lower(name)).first()
+        if dup_name:
+            errors['dup_name'] = f"Duplicate existing name found, duplicate user email is {dup_name.email}, address is {dup_name.uaddress}, phone is {dup_name.phone} | "
+
+        #CHECK DATA TYPES etc.
+        if name == "":
+            errors['name'] = "Record must have name"
+            critical = True
+        
+        if len(name.split(" ")) < 2:
+            errors['name'] = "Record should have both a first and last name"
+
+        if name.strip().lower() in names:
+            error_msg = ""
+            for ind in names[name.strip().lower()]:
+                urw = user_rows[ind]
+                error_msg += f"Duplicate name record found, duplicate user email is {urw[0]}, address is {urw[2]}, phone is {urw[3]} | "
+                if 'dup_name' not in user_resp[ind]['errors']:
+                    user_resp[ind]['errors']['dup_name'] = ''
+                user_resp[ind]['errors']['dup_name'] += f"Duplicate name record found, duplicate user email is {email}, address is {addr}, phone is {phone_number} | "
+            if 'dup_name' not in errors:
+                errors['dup_name'] = ''
+            errors['dup_name'] += error_msg
+        else:
+            names[name.strip().lower()] = []
+        
+        names[name.strip().lower()].append(usr_row_ct)
+
+        if email == "":
+            errors['email'] = "Record must have an email"
+            critical = True
+        
+        if email.strip().lower() in emails:
+            error_msg = ""
+            for ind in emails[email.strip().lower()]:
+                urw = user_rows[ind]
+                error_msg += f"Duplicate email record found, duplicate user name is {urw[1]}, address is {urw[2]}, phone is {urw[3]} | "
+                if 'dup_email' not in user_resp[ind]['errors']:
+                    user_resp[ind]['errors']['dup_email'] = ''
+                user_resp[ind]['errors']['dup_email'] += f"Duplicate email record found, duplicate user name is {name}, address is {addr}, phone is {phone_number} | "
+            if 'dup_email' not in errors:
+                errors['dup_email'] = ''
+            errors['dup_email'] += error_msg
+            critical = True
+        else:
+            emails[email.strip().lower()] = []
+        
+        emails[email.strip().lower()].append(usr_row_ct)
+
+        if addr == "":
+            errors['address'] = "Record must have an address"
+            critical = True
+        
+        if phone_number == "":
+            errors['phone'] = "Record must have a phone number"
+            critical = True
+
+        if(not re.fullmatch(regex,email)):
+            errors['email'] = 'Invalid email format'
+            critical = True
+        
+        if addr != "":
+            lat_lng = geocode_address(addr)
+            if not lat_lng:
+                errors['address'] = 'Invalid address format'
+                critical = True
+        user_rows.append(row)
+        user_resp.append({'row': row, 'errors': errors})
+        logging.debug(row)
+        usr_row_ct +=1    
+    return user_rows, user_resp, critical
+
+def validate_students(csvreader_student, user_rows):
+    student_rows = []
+    stud_resp = []
+    stud_row_ct = 0
+    critical = False
+    names = {}
+    for row in csvreader_student:
+        #SHOULD HAVE name, parent_email, student_id, school_name
+        errors = {}
+
+        if type(row) is list:
+        
+            if stud_row_ct == 0:
+                if(row[0]!='name' or row[1]!='parent_email' or row[2] != 'student_id' or row[3]!='school_name'):
+                    return [], [], True
+                stud_row_ct +=1
+                continue
+            
+            if len(row) != 4:
+                errors['format'] = "Missing values"
+                critical = True
+
+            name, email, student_id, school_name = row
+        
+        if type(row) is dict:
+            if len(row) != 5:
+                errors['format'] = "Missing values"
+            name = row.get('name', "")
+            email = row.get("parentemail", "")
+            student_id = row.get('studentid', "")
+            school_name = row.get('school', "")
+            row = [name, email, student_id, school_name]
+
+        school_name = school_name.strip()
+        email = email.strip()
+
+        #CHECK FOR DUPLICATES in file?
+        name = name.strip()
+        dup_name = Student.query.filter(func.lower(Student.name) == func.lower(name)).first()
+        if dup_name:
+            errors['dup_name'] = f"Duplicate existing name found, duplicate student parent is {dup_name.user.email}, school is {dup_name.school.name}, id is {dup_name.student_id} | "
+        
+
+        #CHECK DATA TYPES etc.
+        if name == "":
+            errors['name'] = "Record must have name"
+            critical = True
+        if len(name.split(" ")) < 2:
+            errors['name'] = "Record should have both a first and last name"
+        
+        if name.strip().lower() in names:
+            error_msg = ""
+            for ind in names[name.strip().lower()]:
+                urw = student_rows[ind]
+                error_msg += f"Duplicate name record found, duplicate student parent is {urw[1]}, school is {urw[3]}, id is {urw[2]} | "
+                if 'dup_name' not in stud_resp[ind]['errors']:
+                    stud_resp[ind]['errors']['dup_name'] = ''
+                stud_resp[ind]['errors']['dup_name'] += f"Duplicate name record found, duplicate student parent is {email}, school is {school_name}, id is {student_id} | "
+            if 'dup_name' not in errors:
+                errors['dup_name'] = ''
+            errors['dup_name'] += error_msg
+        else:
+            names[name.strip().lower()] = []
+        
+        names[name.strip().lower()].append(stud_row_ct)
+
+        if student_id != "":
+            #ADD CHECK for floats and strings
+            try:
+                student_id = int(student_id)
+                if student_id <=0 or student_id > 2147483647:
+                    errors['studentid'] = "ID cannot be negative or out of range"
+                    critical = True
+            except ValueError:
+                errors['studentid'] = "ID is not valid integer"
+                critical = True
+            # errors['student_id'] = "Record must have a numeric ID if provided"
+        
+        if school_name == "":
+            errors['school'] = "Record must have a school"
+            critical = True
+        else:
+            curr_user = User.query.filter_by(email = get_jwt_identity()).first()                
+            existing_school = School.query.filter(func.lower(School.name) == func.lower(school_name)).first()
+            if existing_school is None:
+                errors['school'] = 'Student record must match an existing school'
+                critical = True
+            elif curr_user.role == RoleEnum.SCHOOL_STAFF:
+                ids = [mschool.id for mschool in curr_user.managed_schools]
+                if existing_school.id not in ids:
+                    errors['school'] = 'School staff does not manage school'
+                    critical = True
+        
+        if email == "":
+            errors['parentemail'] = "Record must have an associated user email"
+            critical = True
+        else:
+            existing_parent = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+            imported_user = False
+            if existing_parent is None:
+                if len(user_rows) > 0:
+                    for usr_row in user_rows:
+                        if type(usr_row) is list:
+                            if usr_row[0].strip().lower() == email.lower():
+                                imported_user = True
+                        if type(usr_row) is dict:
+                            if usr_row['email'].strip().lower() == email.lower():
+                                imported_user = True
+        
+                if imported_user is False:
+                    errors['parentemail'] = 'Student record must match a valid user'
+                    critical = True
+        stud_resp.append({'row': row, 'errors': errors})
+        student_rows.append(row)
+        stud_row_ct +=1
+    logging.debug(stud_resp)
+    return student_rows, stud_resp, critical
 
 def get_distance(lat1, long1, lat2, long2):
     coords_1 = (lat1, long1)
@@ -1315,6 +1706,26 @@ def update_stop_calculations(school):
             stop_to_edit.pickup_time = pickup_times[f]
             stop_to_edit.dropoff_time = dropoff_times[f]
     db.session.commit()
+
+def get_csv(file):
+    target='/uploadFiles/'
+    filename = secure_filename(file.filename)
+    logging.debug(filename)
+    file.save("/".join([target, filename]))
+    csvreader = csv.reader(open("/".join([target, filename])))
+    return csvreader
+
+def geocode_address(addr):
+    g = gmaps_key.geocode(addr)
+    logging.debug(g)
+    if len(g) == 0:
+        return False
+    lat = g[0]["geometry"]["location"]["lat"]
+    lng = g[0]["geometry"]["location"]["lng"]
+    return lat, lng
+
+    
+
 
 app.register_blueprint(api, url_prefix='/api')
 
