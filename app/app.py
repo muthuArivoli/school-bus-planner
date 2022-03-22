@@ -1426,11 +1426,11 @@ def validate_users(csvreader_user):
         #CHECK FOR DUPLICATES
         dup_email = User.query.filter(func.lower(User.email) == func.lower(email)).first()
         if dup_email:
-            errors['dup_email'] = "Email already exists (duplicate)"
+            errors['dup_email'] = f"Duplicate email found, duplicate user name is {dup_email.full_name}, address is {dup_email.uaddress}, phone is {dup_email.phone}"
             critical = True
         dup_name = User.query.filter(func.lower(User.full_name) == func.lower(name)).first()
         if dup_name:
-            errors['dup_name'] = "Name already exists (duplicate)"
+            errors['dup_name'] = f"Duplicate name found, duplicate user email is {dup_name.email}, address is {dup_name.uaddress}, phone is {dup_name.phone}"
 
         #CHECK DATA TYPES etc.
         if name == "":
@@ -1502,7 +1502,7 @@ def validate_students(csvreader_student, user_rows):
         name = name.strip()
         dup_name = Student.query.filter(func.lower(Student.name) == func.lower(name)).first()
         if dup_name:
-            errors['dup_name'] = 'Name already exists (duplicate)'
+            errors['dup_name'] = f"Duplicate name found, duplicate student parent is {dup_name.user.full_name}, school is {dup_name.school.name}, id is {dup_name.student_id}"
         
 
         #CHECK DATA TYPES etc.
