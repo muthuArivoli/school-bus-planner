@@ -35,7 +35,7 @@ const studentColumns = [
   { field: 'school', headerName: "School Name", editable: true, flex: 1},
 ];
 
-export default function BulkImport() {
+export default function BulkImport(props) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
   const maxNum = 2;
@@ -91,7 +91,9 @@ export default function BulkImport() {
           console.log(res.data.students);
           console.log(res.data.users);
           handleDialogClose();
-          alert(`You have successfully imported ${res.data.students} students and ${res.data.users} users`);
+          props.setSnackbarMsg(`You have successfully imported ${res.data.students} students and ${res.data.users} users`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("success");
           navigate("/users");
         }
         else{
@@ -277,7 +279,9 @@ export default function BulkImport() {
       }, [])
 
   const onDropReject = React.useCallback(rejectedFiles => {
-          alert("Invalid File")
+      props.setSnackbarMsg("Invalid File");
+      props.setShowSnackbar(true);
+      props.setSnackbarSeverity("error");
       }, [])
       
   const {getRootProps, getInputProps} = useDropzone({onDrop});
@@ -453,13 +457,13 @@ export default function BulkImport() {
         </Button>
       <Dialog open={dialogOpen} onClose={handleDialogClose} maxWidth="xl" sx={{ disableScrollLock: true }} scroll={'paper'}>
         <DialogContent dividers={true}>
-          <Stack direction="row" spacing={5} alignItems="center">
+          <Stack direction="column" spacing={5} alignItems="center">
 
             {checkUsersPresent() ? <Stack spacing={1} alignItems="center">
               <Typography variant="h5" align="center">
                 {userFile.name}
               </Typography>
-              <div style={{ height: 650, width: 800 }}>
+              <div style={{ height: 350, width: 800 }}>
                 <div style={{ display: 'flex', height: '100%' }}>
                   <div style={{ flexGrow: 1 }}>
                     <Box sx={{
@@ -505,7 +509,7 @@ export default function BulkImport() {
               <Typography variant="h5" align="center">
                 {studentFile.name}
               </Typography>
-              <div style={{ height: 650, width: 800 }}>
+              <div style={{ height: 350, width: 800 }}>
                 <div style={{ display: 'flex', height: '100%' }}>
                   <div style={{ flexGrow: 1 }}>
                     <Box sx={{
