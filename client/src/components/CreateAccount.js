@@ -146,12 +146,15 @@ export default function SignUp(props) {
     let req = {
       email: data.get('email'),
       name: data.get('name'),
-      address: address,
       role: role,
-      latitude: latitude,
-      longitude: longitude,
       phone: phone
     };
+
+    if(role == 0){
+      req.address = address;
+      req.latitude = latitude;
+      req.longitude = longitude;
+    }
 
     if(role == 2){
       req.managed_schools = managedSchools.map((value)=>{return value.id});
@@ -269,12 +272,12 @@ export default function SignUp(props) {
   }
 
   React.useEffect(() => {
-    let disabled = email == "" || name == "" || address == "" || phone == "" || checkEmail != null;
+    let disabled = email == "" || name == "" || (role == 0 && address == "") || phone == "" || checkEmail != null;
     for (let i=0; i<students.length; i++){
       disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "";
     }
     setDisable(disabled);
-  }, [email, name, address, students, phone])
+  }, [email, name, address, students, phone, role])
 
   return (
     <ThemeProvider theme={theme}>
@@ -323,20 +326,6 @@ export default function SignUp(props) {
                   autoComplete="email"
                 />
               </Grid>
-              <Grid item xs={12} sx={{ height: 450 }} >
-                <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
-              </Grid>
-              <Grid item xs={12} sx={{ mt: 2}}>
-                <TextField
-                  required
-                  fullWidth
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  id="phone"
-                  label="Phone Number"
-                  name="phone"
-                />
-              </Grid>
               <Grid item xs={12}>
                {
                currRole == 1 && 
@@ -347,11 +336,15 @@ export default function SignUp(props) {
                   value={role}
                   onChange={(e)=>{
                     setManagedSchools([]);
+                    setAddress("");
+                    setLatitude(null);
+                    setLongitude(null);
+                    setStudents([]);
                     setRole(parseInt(e.target.value));
                   }}
                   name="role-group"
                 >
-                  <FormControlLabel value={0} control={<Radio />} label="No Role" />
+                  <FormControlLabel value={0} control={<Radio />} label="Parent" />
                   <FormControlLabel value={1} control={<Radio />} label="Admin" />
                   <FormControlLabel value={2} control={<Radio />} label="School Staff" />
                   <FormControlLabel value={3} control={<Radio />} label="Driver" />
@@ -387,7 +380,24 @@ export default function SignUp(props) {
                 />
                 }
               </Grid>
-              {students.map((element, index) => (
+              {
+              role == 0 &&
+              <Grid item xs={12} sx={{ height: 450 }} >
+                <GoogleMap address={address} setAddress={setAddress} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
+              </Grid>
+              }
+              <Grid item xs={12} sx={{ mt: 2}}>
+                <TextField
+                  required
+                  fullWidth
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  id="phone"
+                  label="Phone Number"
+                  name="phone"
+                />
+              </Grid>
+              {role == 0 && students.map((element, index) => (
                   <React.Fragment key={index}>
                   <Box
                     sx={{
@@ -464,9 +474,12 @@ export default function SignUp(props) {
                 </Grid>
                 </React.Fragment>
             ))}
+            {
+            role == 0 &&
             <Button onClick={addStudent} color="primary">
                 Add Student
             </Button>
+            }
             </Grid>
             <Button
               type="submit"

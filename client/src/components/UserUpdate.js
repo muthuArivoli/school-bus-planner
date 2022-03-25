@@ -192,11 +192,13 @@ export default function UserUpdate(props) {
       let req = {
         name: data.name,
         email: data.email,
-        address: data.address,
         role: data.role,
-        latitude: latitude,
-        longitude: longitude,
         phone: data.phone
+      }
+      if(data.role == 0){
+        req.address = data.address;
+        req.latitude = latitude;
+        req.longitude = longitude;
       }
       if(data.role == 2) {
         req.managed_schools = data.managedSchools.map((value)=>{return value.id});
@@ -272,9 +274,11 @@ export default function UserUpdate(props) {
                   autoComplete="email"
                 />
               </Grid>
+              {data.role == 0 &&
               <Grid item xs={12} sx={{ height: 450 }} >
                 <GoogleMap address={data.address} setAddress={handleAddressChange} latitude={latitude} setLatitude={setLatitude} longitude={longitude} setLongitude={setLongitude}/>
               </Grid>
+              }
               <Grid item xs={12} sx={{ mt: 2 }}>
                 <TextField
                   required
@@ -288,7 +292,7 @@ export default function UserUpdate(props) {
               </Grid>
               <Grid item xs={12}>
               {
-              currRole == 1 && currId != id &&
+              currRole == 1 && currId != id && data.role !=0 &&
               <FormControl>
                 <FormLabel id="role-group-label">Role</FormLabel>
                 <RadioGroup
@@ -297,7 +301,6 @@ export default function UserUpdate(props) {
                   onChange={handleRoleChange}
                   name="role-group"
                 >
-                  <FormControlLabel value={0} control={<Radio />} label="No Role" />
                   <FormControlLabel value={1} control={<Radio />} label="Admin" />
                   <FormControlLabel value={2} control={<Radio />} label="School Staff" />
                   <FormControlLabel value={3} control={<Radio />} label="Driver" />
@@ -338,8 +341,8 @@ export default function UserUpdate(props) {
                 <Button type="submit"
                   variant="contained"
                   fullWidth
-                  sx={{ mt: 3, mb: 2 }}
-                  disabled={data.email == "" || data.address == "" || data.name == "" || (data.email.toLowerCase()!=oldEmail.toLowerCase() && checkEmail != null)}
+                  sx={{ mb: 2 }}
+                  disabled={data.email == "" || (data.address == "" && data.role == 0) || data.name == "" || (data.email.toLowerCase()!=oldEmail.toLowerCase() && checkEmail != null)}
                   >
                     Submit
                 </Button>
