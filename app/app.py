@@ -355,16 +355,13 @@ def users(user_id=None):
         email = content.get('email', None)
         name = content.get('name', None)
         role = content.get('role', 0)
-        address = content.get('address', None)
-        longitude = content.get('longitude', None)
-        latitude = content.get('latitude', None)
         phone = content.get('phone', None)
 
-        if not email or not name or not address or not longitude or not latitude or role is None or phone is None:
+        if not email or not name or role is None or phone is None:
             logging.debug('MISSING A FIELD')
             return {'success': False, "msg": "Invalid Query Syntax"}
         
-        if type(email) is not str or type(name) is not str or type(address) is not str or type(latitude) is not float or type(longitude) is not float or type(role) is not int or role < 0 or role > 3 or type(phone) is not str:
+        if type(email) is not str or type(name) is not str or type(role) is not int or role < 0 or role > 3 or type(phone) is not str:
             logging.debug('WRONG FIELD TYPE')
             return {'success': False, "msg": "Invalid Query Syntax"}
         
@@ -375,7 +372,16 @@ def users(user_id=None):
         if user:
             return {'success': False, 'msg': 'User with this email exists'}
 
-        new_user = User(email=email, full_name=name, uaddress=address, role=RoleEnum(role), latitude=latitude, longitude=longitude, phone=phone)
+        new_user = User(email=email, full_name=name, role=RoleEnum(role), phone=phone)
+        if new_user.role == RoleEnum.UNPRIVILEGED:
+            address = content.get('address', None)
+            longitude = content.get('longitude', None)
+            latitude = content.get('latitude', None)
+            if type(address) is not str and type(latitude) is not str and type(longitude) is not str:
+                return {'success': False, "msg": "Invalid Query Syntax"}
+            new_user.uaddress = address
+            new_user.latitude = latitude
+            new_user.longitude = longitude
         if new_user.role == RoleEnum.SCHOOL_STAFF:
             managed_schools = content.get('managed_schools', [])
             if type(managed_schools) is not list:
@@ -440,7 +446,7 @@ def users(user_id=None):
             if type(full_name) is not str:
                 return {'success': False, "msg": "Invalid Query Syntax"}
             user.full_name = full_name
-        if 'address' in content:
+        if 'address' in content and user.role == RoleEnum.UNPRIVILEGED:
             address = content.get('address', None)
             longitude = content.get('longitude', None)
             latitude = content.get('latitude', None)
@@ -451,7 +457,7 @@ def users(user_id=None):
             user.uaddress = address
             user.longitude = longitude
             user.latitude = latitude
-        if 'role' in content and curr_user.role == RoleEnum.ADMIN:
+        if 'role' in content and user.role != RoleEnum.UNPRIVILEGED and curr_user.role == RoleEnum.ADMIN:
             role = content.get('role', None)
             if type(role) is not int or role < 0 or role > 3:
                 return {'success': False, "msg": "Invalid Query Syntax"}
@@ -567,6 +573,9 @@ def students(student_uid = None):
         user = User.query.filter_by(id=user_id).first()
         if user is None:
             return {'success': False, 'msg': 'Student doesn\'t belong to a user'}
+        
+        if user.role != RoleEnum.UNPRIVILEGED:
+            return {'success': False, 'msg': 'Student can\' be added to a privileged role'}
 
         school = School.query.filter_by(id=school_id).first()
         if school is None:
@@ -641,6 +650,11 @@ def students(student_uid = None):
             user_id = content.get('user_id', None)
             if type(user_id) is not int:
                 return {'success': False, "msg": "Invalid Query Syntax"}
+            user = User.query.filter_by(id=user_id).first()
+            if user is None:
+                return {'success': False, 'msg': 'Student doesn\'t belong to a user'}
+            if user.role != RoleEnum.UNPRIVILEGED:
+                return {'success': False, 'msg': 'Student can\'t be added to a privileged role'}
             student.user_id = user_id
         try:
             db.session.commit()
