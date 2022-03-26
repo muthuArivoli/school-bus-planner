@@ -128,15 +128,21 @@ export default function UserDetail(props) {
           </Typography>
         </Stack>
           <Stack direction="row" spacing={25} justifyContent="center"> 
+          {
+            data.role == 0 && 
           <Typography variant="h5" align="center">
             Address: {data.uaddress}
           </Typography>
+          }
           <Typography variant="h5" align="center">
             Phone Number: {data.phone}
           </Typography>
           </Stack>
-        
+
+        {
+          data.role == 0 &&
         <UserDetailMid rows={rows}/>
+        }
 
         <Stack direction="row" spacing={3} justifyContent="center">
           {
