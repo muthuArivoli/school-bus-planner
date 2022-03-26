@@ -145,17 +145,32 @@ export default function UserDetail(props) {
         }
 
         <Stack direction="row" spacing={3} justifyContent="center">
+          
+        <Button
+          component={RouterLink}
+          to={"/students/create"}
+          color="primary"
+          variant="contained"
+          size="small"
+          style={{ marginLeft: 16 }}
+          >
+            Create Student
+          </Button>
+
+
           {
           (role == 1 || role == 2) &&
           <Button component={RouterLink}
               to={"/users/" + id +"/update"}
               color="primary"
-              variant="outlined"
+              variant="contained"
               size="small"
               style={{ }}>
               Modify
           </Button>
           }
+
+
           {
           (role == 1 || role == 2) && !(role == 2 && data.role != 0) &&
           <DeleteDialog dialogTitle="Delete User?" dialogDesc={`Please confirm you would like to delete user ${data.full_name}`} onAccept={handleDelete}/>
