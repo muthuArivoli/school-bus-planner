@@ -293,37 +293,52 @@ export default function AdminDashboard(props){
           </Toolbar>
           <Divider />
           <List>
-          <div>
+          <div> 
+          { 
+          role == 0 &&
           <ListItemButton component={RouterLink} to="/">
             <ListItemIcon>
               <HomeIcon />
             </ListItemIcon>
             <ListItemText primary="Home" />
           </ListItemButton>
+          }
+          {
+          (role == 1 || role == 2 || role == 3) &&
           <ListItemButton component={RouterLink} to="/users">
             <ListItemIcon>
               <AccountBoxIcon />
             </ListItemIcon>
             <ListItemText primary="Users" />
           </ListItemButton>
+          }
+          {
+          (role == 1 || role == 2 || role == 3) &&
           <ListItemButton component={RouterLink} to="/students">
             <ListItemIcon>
               <PersonIcon />
             </ListItemIcon>
             <ListItemText primary="Students" />
           </ListItemButton>
+          }
+          {
+          (role == 1 || role == 2 || role == 3) &&
           <ListItemButton component={RouterLink} to="/schools">
             <ListItemIcon>
               <SchoolIcon />
             </ListItemIcon>
             <ListItemText primary="Schools" />
           </ListItemButton>
+          }
+          {
+          (role == 1 || role == 2 || role == 3) &&
           <ListItemButton component={RouterLink} to="/routes">
             <ListItemIcon>
               <DirectionsBusIcon />
             </ListItemIcon>
             <ListItemText primary="Routes" />
           </ListItemButton>
+          }
           {
           (role == 1 || role == 2) &&
           <ListItemButton component={RouterLink} to="/email">

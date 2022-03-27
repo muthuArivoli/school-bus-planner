@@ -17,7 +17,6 @@ import StudentDetail from './StudentDetail';
 import StudentCreate from './StudentCreate';
 import StudentUpdate from './StudentUpdate';
 import RouteDetail from './RouteDetail/RouteDetail';
-import ParentDashboard from './ParentDashboard';
 import ParentView from './ParentView';
 import StudentView from './StudentView';
 import RoutePlanner from './RoutePlanner';
@@ -29,54 +28,13 @@ import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 
-function AuthRoute(props) {
-  const [loading, setLoading] = React.useState(true);
-  const [auth, setAuth] = React.useState(false);
-
-  React.useEffect( () => {
-    if (localStorage.getItem('token') == null){
-      setAuth(false);
-      setLoading(false);
-    }
-    else{
-
-    const result = axios.get(
-      process.env.REACT_APP_BASE_URL+`/current_user`, {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      }
-    ).then((res) => {
-      console.log(res.data);
-      if(res.data.success){
-        setAuth(true);
-        if(props.admin != res.data.user.role)
-          props.setAdmin(res.data.user.role);
-        setLoading(false);
-      }
-    }).catch((res) => {
-      localStorage.removeItem('token');
-      setAuth(false);
-      setLoading(false);
-    });
-
-    }
-
-
-}, []);
-
-  if (loading)
-    return <Box alignItems="center" justifyContent="center" sx={{ display: 'flex' }}><CircularProgress /></Box>;
-  return auth ? props.children : <Navigate to="/login" />;
-}
-
 function LoginRoute(props) {
   const [loading, setLoading] = React.useState(true);
-  const [auth, setAuth] = React.useState(false);
+  const [auth, setAuth] = React.useState(-1);
 
   React.useEffect( () => {
     if (localStorage.getItem('token') == null){
-      setAuth(false);
+      setAuth(-1);
       setLoading(false);
     }
     else{
@@ -90,12 +48,12 @@ function LoginRoute(props) {
     ).then((res) => {
       console.log(res.data);
       if(res.data.success){
-        setAuth(true);
+        setAuth(res.data.user.role);
         setLoading(false);
       }
     }).catch((res) => {
       localStorage.removeItem('token');
-      setAuth(false);
+      setAuth(-1);
       setLoading(false);
     });
 
@@ -106,14 +64,14 @@ function LoginRoute(props) {
 
   if (loading)
     return <div>Loading...</div>;
-  return auth ? <Navigate to="/"/> : props.children;
+  return auth == 0 ? <Navigate to="/"/> : auth == -1 ? props.children : <Navigate to="/users"/>;
 }
 
 function PrivateRoute({ roles = [1,2,3], children }) {
 
   const [loading, setLoading] = React.useState(true);
   const [auth, setAuth] = React.useState(false);
-  const [role, setRole] = React.useState(0);
+  const [role, setRole] = React.useState(-1);
 
   React.useEffect( () => {
       if (localStorage.getItem('token') == null){
@@ -148,48 +106,27 @@ function PrivateRoute({ roles = [1,2,3], children }) {
 
   if (loading)
     return <Box sx={{ display: 'flex' }}><CircularProgress /></Box>;
-  return auth ? (roles.includes(role) ? children : <Navigate to='/'/>) : <Navigate to="/login" />;
+  return auth ? (roles.includes(role) ? children : (role == 0 ? <Navigate to='/'/> : <Navigate to="/users"/>)) : <Navigate to="/login" />;
 }
 
 export default function App () {
-
-    const [admin, setAdmin] = React.useState(0);
 
     return (
       <BrowserRouter>
         <Routes>
           <Route exact path="/" element={
-            <AuthRoute setAdmin={setAdmin} admin={admin}>
-              {
-              admin != 0 &&
+            <PrivateRoute roles={[0]}>
               <AdminDashboard titleText="Parent Dashboard">
                 <ParentView/>
               </AdminDashboard>
-              }
-              {
-              admin == 0 &&
-              <ParentDashboard titleText="Parent Dashboard">
-                <ParentView/>
-              </ParentDashboard>
-              }
-            </AuthRoute>
-          }
-          />
+            </PrivateRoute>
+          } />
           <Route exact path="/students/:id/view" element={
-            <AuthRoute setAdmin={setAdmin} admin={admin}>
-              {
-              admin != 0 &&
-              <AdminDashboard titleText="Parent Student View">
+            <PrivateRoute roles={[0]}>
+              <AdminDashboard titleText="Student View">
                 <StudentView/>
               </AdminDashboard>
-              }
-              {
-              admin == 0 &&
-              <ParentDashboard titleText="Student View">
-                <StudentView/>
-              </ParentDashboard>
-              }
-            </AuthRoute>
+            </PrivateRoute>
           }
           />
           <Route exact path="/schools" element={
