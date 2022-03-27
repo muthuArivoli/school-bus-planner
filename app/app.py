@@ -248,7 +248,11 @@ def user_options(username=None):
 def get_user_id():
     args = request.args
     email = args.get('email', '')
-    user = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+    parents = args.get('parents', False)
+    if not parents: 
+        user = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+    else:
+        user = User.query.filter(func.lower(User.email) == func.lower(email)).filter_by(role=RoleEnum.UNPRIVILEGED).first()
     if user is None:
         return {'success': True, 'id': None}
     return {'success': True, 'id': user.id}
