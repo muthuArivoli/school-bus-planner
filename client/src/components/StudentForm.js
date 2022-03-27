@@ -31,7 +31,7 @@ export default function StudentForm(props) {
                   headers: {
                       Authorization: `Bearer ${localStorage.getItem('token')}`
                   },
-                  params: {sort: "email", dir: "asc"}
+                  params: {sort: "email", dir: "asc", role: 0}
                 }
               );
               if (result.data.success){
@@ -59,7 +59,7 @@ export default function StudentForm(props) {
                   headers: {
                       Authorization: `Bearer ${localStorage.getItem('token')}`
                   },
-                  params: {email: props.email}
+                  params: {email: props.email, parents: true}
                 }
               );
               if (result.data.success){
