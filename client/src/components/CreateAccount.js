@@ -81,7 +81,7 @@ export default function SignUp(props) {
   };
 
   const addStudent = () => {
-      setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": null}])
+      setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": null, "email": ""}])
       setRoutes([...routes, []]);
   }
 
@@ -420,6 +420,17 @@ export default function SignUp(props) {
                         value={element["name"] || ""}
                         onChange={(e) => handleStudentChange(index, "name", e.target.value)}
                         fullWidth
+                    />
+                    </Grid>
+                    <Grid item xs={12}>
+                    <TextField
+                      required
+                      error={checkEmail != null}
+                      helperText={checkEmail != null ? "Email already taken":""}
+                      fullWidth
+                      onChange={(e) => handleStudentChange(index, "email", e.target.value)}
+                      id="student-email"
+                      label="Email Address"
                     />
                     </Grid>
                     <Grid item xs={12}>
