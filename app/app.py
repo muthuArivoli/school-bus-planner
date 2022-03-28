@@ -1049,7 +1049,7 @@ def send_email_system():
     if email_type not in ["general", "route"] or type(subject) is not str or type(body) is not str:
         return {'success': False, "msg": "Invalid Query Syntax"}
 
-    users = User.query.all()
+    users = User.query.filter_by(role=RoleEnum.UNPRIVILEGED).all()
     for user in users:
         student_txt = ""
         if '@example.com' in user.email:
