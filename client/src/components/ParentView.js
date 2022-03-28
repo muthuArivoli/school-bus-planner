@@ -10,8 +10,24 @@ import Box from '@mui/material/Box';
 import { Helmet } from 'react-helmet';
 
 const columns = [
-  { field: 'name', headerName: 'Full Name', width: 250},
-  {
+  { field: 'name', headerName: 'Student', width: 250,
+  renderCell: (row) => (
+    <>
+    {console.log(row)}
+    <Button
+      component={RouterLink}
+      to={"/students/" + row.row.id +"/view"} 
+      color="primary"
+      size="small"
+      style={{ marginLeft: 16 }}
+    >
+    {row.row.name}
+    </Button>
+  </>
+
+)}
+
+/*   {
     field: 'id',
     headerName: 'Detailed View',
     width: 250,
@@ -28,7 +44,7 @@ const columns = [
         </Button>
       </>
     ),
-  },
+  }, */
 ];
 
 function NoStudentsOverlay() {
