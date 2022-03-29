@@ -22,10 +22,6 @@ export default function StudentForm(props) {
     const [schools, setSchools] = React.useState([]);
     const [routes, setRoutes] = React.useState([]);
 
-    // const [snackbarOpen, setSnackbarOpen] = React.useState(false);
-    // const [snackbarMsg, setSnackbarMsg] = React.useState("");
-    // const [snackbarSeverity, setSnackbarSeverity] = React.useState("error");
-
     const [checkEmail, setCheckEmail] = React.useState(null);
 
     let navigate = useNavigate()
@@ -41,7 +37,6 @@ export default function StudentForm(props) {
                 }
               );
               if (result.data.success){
-                //console.log(result.data.users);
                 let arr = result.data.users.map((value) => {
                   return value.email;
                 });
@@ -97,9 +92,7 @@ export default function StudentForm(props) {
                 }
               );
               if (result.data.success){
-                //console.log(result.data.schools);
                 let arr = result.data.schools.map((value) => {
-                  //console.log({label: value.name, id: value.id});
                   return {label: value.name, id: value.id};
                 });
                 setSchools(arr);
@@ -159,7 +152,6 @@ export default function StudentForm(props) {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             }
           }).then((result) => {
-            //console.log(result.data);
             if (result.data.success){
                 let newRoutes = result.data.school.routes.map((value) => {return {label: value.name, id: value.id}});
                 setRoutes(newRoutes);
@@ -172,13 +164,6 @@ export default function StudentForm(props) {
               }
           })
       }
-
-      // const handleClose = (event, reason) => {
-      //   if (reason === 'clickaway') {
-      //     return;
-      //   }
-      //   setSnackbarOpen(false);
-      // };
 
     return (
       <ThemeProvider theme={theme}>

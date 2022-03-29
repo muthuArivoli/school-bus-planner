@@ -20,12 +20,11 @@ export default function CreateSchool(props) {
 
     const handleSubmit = (event) => {
       event.preventDefault();
-      // eslint-disable-next-line no-console
       let req = {
         name: name,
         school_id: school.id,
         user_id: user,
-        email: studentEmail
+        //email: studentEmail
       }
       console.log(req);
       if (studentId != null && studentId != "") {

@@ -174,6 +174,7 @@ export default function SignUp(props) {
               user_id: res.data.id,
               name: students[i]["name"],
               school_id:  students[i]["school_id"],
+              //email: students[i]["email"],
             }
             if (students[i]["id"] != "" && students[i]["id"] != null){
               reqS.student_id = parseInt(students[i]["id"]);
