@@ -36,7 +36,7 @@ cors = CORS(app)
 api = Blueprint('api', __name__)
 gmaps_key = googlemaps.Client(key="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o")
 
-from models import User, Student, School, Route, Stop, UserFilter, StudentFilter, SchoolFilter, RouteFilter, TokenBlocklist, RoleEnum
+from models import User, Student, School, Route, Stop, Login, UserFilter, StudentFilter, SchoolFilter, RouteFilter, TokenBlocklist, RoleEnum
 
 db.create_all()
 
@@ -62,11 +62,19 @@ def admin_required(roles):
         @wraps(fn)
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
-            user = User.query.filter_by(email = get_jwt_identity()).first()
-            if user.role in roles:
-                return fn(*args, **kwargs)
-            else:
-                return jsonify(msg="User not authorized to do this action"), 403
+            login = Login.query.filter_by(email = get_jwt_identity()).first()
+            user = login.user
+            if user is not None:
+                if user.role in roles:
+                    return fn(*args, **kwargs)
+                else:
+                    return jsonify(msg="User not authorized to do this action"), 403
+            student = login.student
+            if student is not None:
+                if "Student" in roles:
+                    return fn(*args, **kwargs)
+                else:
+                    return jsonify(msg="User not authorized to do this action"), 403
         return decorator
     return cust_wrapper
 
@@ -95,7 +103,11 @@ def current_user_options(student_id=None):
 @cross_origin()
 def get_current_user():
     verify_jwt_in_request()
-    user = User.query.filter_by(email = get_jwt_identity()).first()
+    # user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    if login is None:
+        return {'success': False, 'msg': 'Invalid User ID'}
+    user = login.user
     if user is None:
         return {'success': False, 'msg': 'Invalid User ID'}
     return {'success': True, 'user': user.as_dict()}
@@ -107,7 +119,10 @@ def get_current_user_student(student_id=None):
     if student_id is None:
         return {'success': False, "msg": "Invalid Query Syntax"}
     verify_jwt_in_request()
-    user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    if login is None:
+        return {'success': False, "msg": "Invalid User ID"}
+    user = login.user
     if user is None:
         return {'success': False, "msg": "Invalid User ID"}
     student = Student.query.filter_by(id=student_id).first()
@@ -126,7 +141,10 @@ def get_current_user_student(student_id=None):
 @cross_origin()
 def patch_current_user():
     verify_jwt_in_request()
-    user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    if login is None:
+        return {'success': False, "msg": "Invalid User ID"}
+    user = login.user
     if user is None:
         return {'success': False, "msg": "Invalid User ID"}
     content = request.json
@@ -135,7 +153,7 @@ def patch_current_user():
         if type(pswd) is not str:
             return {'success': False, "msg": "Invalid Query Syntax"}
         encrypted_pswd = bcrypt.hashpw(pswd.encode('utf-8'), bcrypt.gensalt())
-        user.pswd = encrypted_pswd.decode('utf-8')
+        login.pswd = encrypted_pswd.decode('utf-8')
         try:
             db.session.commit()
         except SQLAlchemyError:
@@ -162,14 +180,15 @@ def login():
 
     if not email or not password:
         return {'success': False, "msg": "Invalid Query Syntax"}
-    user = User.query.filter(func.lower(User.email) == func.lower(email)).first()
-    if not user:
+    login = Login.query.filter(func.lower(Login.email) == func.lower(email)).first()
+    # user = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+    if not login:
         return {"success": False, "msg": "There is no account associated with that email"}
-    if user.pswd is None:
+    if login.pswd is None:
         return {"success": False, "msg": "Password has not been set"} 
-    if not bcrypt.checkpw(password.encode('utf-8'), user.pswd.encode('utf-8')):
+    if not bcrypt.checkpw(password.encode('utf-8'), login.pswd.encode('utf-8')):
         return {"success": False, "msg": "Invalid password"}
-    access_token = create_access_token(identity=user.email)
+    access_token = create_access_token(identity=login.email)
     return {"success": True, "access_token": access_token}
 
 @app.route('/logout', methods = ['POST'])
@@ -186,8 +205,8 @@ def forgot_password():
     email = request.json.get('email', None)
     if email is None:
         return {'success': False, "msg": "Invalid Query Syntax"}
-    user = User.query.filter_by(email=email).first()
-    if not user:
+    login = Login.query.filter_by(email=email).first()
+    if not login:
         return {"success": False, "msg": "There is no account associated with that email"}
     access_token = create_access_token(identity=email)
 
@@ -250,12 +269,14 @@ def get_user_id():
     email = args.get('email', '')
     parents = args.get('parents', False)
     if not parents: 
-        user = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+        user = Login.query.filter(func.lower(Login.email) == func.lower(email)).first()
+        # user = User.query.filter(func.lower(User.email) == func.lower(email)).first()
     else:
-        user = User.query.filter(func.lower(User.email) == func.lower(email)).filter_by(role=RoleEnum.UNPRIVILEGED).first()
+        # user = User.query.filter(func.lower(User.email) == func.lower(email)).filter_by(role=RoleEnum.UNPRIVILEGED).first()
+        user = Login.query.filter(func.lower(Login.email) == func.lower(email)).first()
     if user is None:
         return {'success': True, 'id': None}
-    return {'success': True, 'id': user.id}
+    return {'success': True, 'id': user.user.id}
 
 
 @app.route('/user/<user_id>', methods = ['GET'])
@@ -263,7 +284,8 @@ def get_user_id():
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
 def users_get(user_id=None):
-    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
 
     if user_id is not None:
             
@@ -310,14 +332,20 @@ def users_get(user_id=None):
     if role_search is not None:
         base_query = base_query.filter_by(role=RoleEnum(role_search))
 
+    #QUICK FIX FOR RIGHT NOW
+    if sort == 'email':
+        sort = ''
+
     if sort and direction == 'desc':
         sort = '-'+sort
     if page:
-        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
+        # user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
+        user_filt = UserFilter(data={'full_name': name_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
         users = user_filt.get_objects()
         record_num = user_filt.count
     else:
-        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort}, query=base_query, operator=OrOperator)
+        user_filt = UserFilter(data={'full_name': name_search, 'order_by': sort}, query=base_query, operator=OrOperator)
+        # user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort}, query=base_query, operator=OrOperator)
         users = user_filt.apply()
         record_num = users.count()
 
@@ -330,7 +358,8 @@ def users_get(user_id=None):
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 def users(user_id=None):
-    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
     if request.method == 'DELETE':
         user = User.query.filter_by(id=user_id).first()
         if user is None:
@@ -372,11 +401,18 @@ def users(user_id=None):
         if curr_user.role == RoleEnum.SCHOOL_STAFF and role != 0:
             return {'success': False, "msg": "Invalid User Permissions"}
 
-        user = User.query.filter_by(email=email).first()
-        if user:
+        login = Login.query.filter_by(email = email).first()
+        if login:
             return {'success': False, 'msg': 'User with this email exists'}
 
-        new_user = User(email=email, full_name=name, role=RoleEnum(role), phone=phone)
+        new_login = Login(email=email)
+        try:
+            db.session.add(new_login)
+            db.session.flush()
+            db.session.refresh(new_login)
+        except SQLAlchemyError:
+            return {'success': False, "msg": "Database Error"}
+        new_user = User(full_name=name, role=RoleEnum(role), phone=phone, login_id = new_login.id)
         if new_user.role == RoleEnum.UNPRIVILEGED:
             address = content.get('address', None)
             longitude = content.get('longitude', None)
@@ -441,10 +477,10 @@ def users(user_id=None):
             email = content.get('email', None)
             if type(email) is not str:
                 return {'success': False, "msg": "Invalid Query Syntax"}
-            email_user = User.query.filter_by(email=email).first()
-            if email_user and email_user.id != int(user_id):
+            email_user = Login.query.filter_by(email=email).first()
+            if email_user and email_user.user.id != int(user_id):
                 return {'success': False, "msg": "Account already exists with this email"}
-            user.email = email
+            email_user.email = email
         if 'name' in content:
             full_name = content.get('name', None)
             if type(full_name) is not str:
@@ -499,8 +535,8 @@ def student_options(student_uid=None):
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
 def students_get(student_uid=None):
-    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
-
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
     if student_uid is not None:
         student = Student.query.filter_by(id=student_uid).first()
         if student is None:
@@ -547,7 +583,9 @@ def students_get(student_uid=None):
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 def students(student_uid = None):
-    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    # curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
     if request.method == 'DELETE':
         student = Student.query.filter_by(id=student_uid).first()
         if student is None:
@@ -567,6 +605,7 @@ def students(student_uid = None):
         name = content.get('name', None)
         school_id = content.get('school_id', None)
         user_id = content.get('user_id', None)
+        email = content.get('email', None)
 
         if not name or not school_id or not user_id:
             return {'success': False, "msg": "Invalid Query Syntax"}
@@ -589,6 +628,39 @@ def students(student_uid = None):
             ids = [mschool.id for mschool in curr_user.managed_schools]
             if school_id not in ids:
                 return {'success': False, "msg":"Invalid User Permissions"}
+        
+        if email is not None:
+            if type(email) is not str:
+                return {'success': False, "msg": "Invalid Query Syntax"}
+            login = Login(email=email)
+            try:
+                db.session.add(login)
+                db.session.flush()
+                db.session.refresh(login)
+                new_student = Student(name=name, school_id=school_id, user_id=user_id, login_id = login.id)
+                try:
+                    db.session.add(new_student)
+                    db.session.flush()
+                    db.session.refresh(new_student)
+                except SQLAlchemyError:
+                    return {'success': False, "msg": "Database Error"}
+            except SQLAlchemyError:
+                return {'success': False, "msg": "Database Error"}
+
+            access_token = create_access_token(identity=email)
+            link = f"{DOMAIN}/resetpassword?token={access_token}"
+ 
+            r = requests.post(
+            f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
+            auth=("api", API_KEY),
+            data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
+                "to": email,
+                "subject": "Account Creation for Hypothetical Transportation",
+                "html": f"Please use the following link to set the password for your new account: \n <a href={link}>{link}</a>"})
+            if r.status_code != 200:
+                return {'success': False}
+            return {'success': True, 'id': new_student.id}
+        
 
         new_student = Student(name=name, school_id=school_id, user_id=user_id)
         try:
@@ -597,7 +669,6 @@ def students(student_uid = None):
             db.session.refresh(new_student)
         except SQLAlchemyError:
             return {'success': False, "msg": "Database Error"}
-
         if 'route_id' in content:
             route_id = content.get("route_id", None)
             if type(route_id) is not int:
@@ -680,7 +751,9 @@ def schools_options(school_uid=None):
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
 def schools_get(school_uid=None):
-    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    # curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
     if school_uid is not None:
 
         school = School.query.filter_by(id=school_uid).first()
@@ -725,7 +798,9 @@ def schools_get(school_uid=None):
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 @cross_origin()
 def schools(school_uid = None):  
-    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    # curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
     if request.method == 'DELETE':
         if curr_user.role == RoleEnum.SCHOOL_STAFF:
             return {'success': False, "msg":"Invalid User Permissions"}
@@ -844,7 +919,9 @@ def route_options(route_uid=None):
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
 def routes_get(route_uid=None):
-    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
+    # curr_user = User.query.filter_by(email = get_jwt_identity()).first()
     if route_uid is not None:
         route = Route.query.filter_by(id=route_uid).first()
         if route is None:
@@ -891,7 +968,9 @@ def routes_get(route_uid=None):
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 def routes(route_uid = None):
-    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    # curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
     if request.method == 'DELETE':
         route = Route.query.filter_by(id=route_uid).first()
         if route is None:
@@ -1036,7 +1115,9 @@ def email_options(uid=None):
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN])
 def send_email_system():
-    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    # curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
 
     content = request.json
     email_type = content.get("email_type", None)
@@ -1052,7 +1133,7 @@ def send_email_system():
     users = User.query.filter_by(role=RoleEnum.UNPRIVILEGED).all()
     for user in users:
         student_txt = ""
-        if '@example.com' in user.email:
+        if '@example.com' in user.login.email:
             continue
         if email_type == 'route':
             for student in user.children:
@@ -1091,7 +1172,7 @@ def send_email_system():
         f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
         auth=("api", API_KEY),
         data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
-            "to": user.email,
+            "to": user.login.email,
             "subject": subject,
             "text": body + student_txt})
         if r.status_code != 200:
@@ -1104,7 +1185,9 @@ def send_email_system():
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 def send_email_school(school_uid=None):
-    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    # curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
     school = School.query.filter_by(id=school_uid).first()
     if curr_user.role == RoleEnum.SCHOOL_STAFF:
         ids = [mschool.id for mschool in curr_user.managed_schools]
@@ -1129,7 +1212,7 @@ def send_email_school(school_uid=None):
     for user_id in user_ids:
         student_txt = ""
         user = User.query.filter_by(id=user_id).first()
-        if '@example.com' in user.email:
+        if '@example.com' in user.login.email:
             continue
         if email_type == 'route':
             for student in user.children:
@@ -1168,7 +1251,7 @@ def send_email_school(school_uid=None):
         f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
         auth=("api", API_KEY),
         data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
-            "to": user.email,
+            "to": user.login.email,
             "subject": subject,
             "text": body + student_txt})
         if r.status_code != 200:
@@ -1182,7 +1265,10 @@ def send_email_school(school_uid=None):
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF])
 def send_email_route(route_uid=None):
-    curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    # curr_user = User.query.filter_by(email = get_jwt_identity()).first()
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
+
     route = Route.query.filter_by(id=route_uid).first()
     if curr_user.role == RoleEnum.SCHOOL_STAFF:
         ids = [mschool.id for mschool in curr_user.managed_schools]
@@ -1207,7 +1293,7 @@ def send_email_route(route_uid=None):
     for user_id in user_ids:
         student_txt = ""
         user = User.query.filter_by(id=user_id).first()
-        if '@example.com' in user.email:
+        if '@example.com' in user.login.email:
             continue
         if email_type == 'route':
             for student in user.children:
@@ -1246,7 +1332,7 @@ def send_email_route(route_uid=None):
         f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
         auth=("api", API_KEY),
         data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
-            "to": user.email,
+            "to": user.login.email,
             "subject": subject,
             "text": body + student_txt})
         if r.status_code != 200:
@@ -1369,11 +1455,14 @@ def bulkImport():
         #LOOP THROUGH ALL VALUES AND ADD OBJECTS TO DB
         for user in users:
             lat, lng = geocode_address(user[2])
-            new_user = User(email=user[0], full_name=user[1], uaddress = user[2], role=RoleEnum.UNPRIVILEGED, latitude=lat, longitude=lng, phone=user[3])
             if '@example.com' in user[0]:
                 password = "ParentPassword2@22"
                 encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-                new_user.pswd = encrypted_pswd.decode('utf-8')
+            new_login = Login(email=user[0], pswd=encrypted_pswd.decode('utf-8'))
+            db.session.add(new_login)
+            db.session.flush()
+            db.session.refresh(new_login)
+            new_user = User(full_name=user[1], uaddress = user[2], role=RoleEnum.UNPRIVILEGED, latitude=lat, longitude=lng, phone=user[3],login_id=new_login.id)
             db.session.add(new_user)
             db.session.flush()
             db.session.refresh(new_user)
@@ -1392,7 +1481,9 @@ def bulkImport():
 
         for student in students:
             associated_school = School.query.filter(func.lower(School.name) == func.lower(student[3].strip())).first()
-            associated_parent = User.query.filter(func.lower(User.email) == func.lower(student[1].strip())).first()
+            login = Login.query.filter(func.lower(Login.email) == func.lower(student[1].strip())).first()
+            associated_parent = login.user
+            
             new_student = Student(name=student[0], school_id=associated_school.id, user_id=associated_parent.id)
             if student[2] != '':
                 new_student.student_id = int(student[2])
@@ -1451,13 +1542,15 @@ def validate_users(csvreader_user):
         
         logging.debug(email)
         #CHECK FOR DUPLICATES
-        dup_email = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+        # dup_email = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+        dup_email = Login.query.filter(func.lower(Login.email) == func.lower(email)).first()
         if dup_email:
-            errors['dup_email'] = f"Duplicate existing email found, duplicate user name is {dup_email.full_name}, address is {dup_email.uaddress}, phone is {dup_email.phone} | "
+            if dup_email.user is not None:
+                errors['dup_email'] = f"Duplicate existing email found, duplicate user name is {dup_email.user.full_name}, address is {dup_email.user.uaddress}, phone is {dup_email.user.phone} | "
             critical = True
         dup_name = User.query.filter(func.lower(User.full_name) == func.lower(name)).first()
         if dup_name:
-            errors['dup_name'] = f"Duplicate existing name found, duplicate user email is {dup_name.email}, address is {dup_name.uaddress}, phone is {dup_name.phone} | "
+            errors['dup_name'] = f"Duplicate existing name found, duplicate user email is {dup_name.login.email}, address is {dup_name.uaddress}, phone is {dup_name.phone} | "
 
         #CHECK DATA TYPES etc.
         if name == "":
@@ -1611,7 +1704,9 @@ def validate_students(csvreader_student, user_rows):
             errors['school'] = "Record must have a school"
             critical = True
         else:
-            curr_user = User.query.filter_by(email = get_jwt_identity()).first()                
+            # curr_user = User.query.filter_by(email = get_jwt_identity()).first() 
+            login = Login.query.filter_by(email = get_jwt_identity()).first()
+            curr_user = login.user               
             existing_school = School.query.filter(func.lower(School.name) == func.lower(school_name)).first()
             if existing_school is None:
                 errors['school'] = 'Student record must match an existing school'
@@ -1626,7 +1721,9 @@ def validate_students(csvreader_student, user_rows):
             errors['parentemail'] = "Record must have an associated user email"
             critical = True
         else:
-            existing_parent = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+            # existing_parent = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+            login = Login.query.filter(func.lower(Login.email) == func.lower(email)).first()
+            existing_parent = login.user
             imported_user = False
             if existing_parent is None:
                 if len(user_rows) > 0:

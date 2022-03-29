@@ -1,7 +1,7 @@
 from flask.cli import FlaskGroup
 import bcrypt
 from app import app, db
-from models import User, School, Student, RoleEnum
+from models import User, School, Student, RoleEnum, Login
 import pandas as pd
 import googlemaps
 import logging
@@ -23,7 +23,11 @@ def create_db():
 def seed_db_admin():
     password = 'AdminPassword'
     encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-    new_user = User(email='admin@example.com', full_name='Admin', pswd=encrypted_pswd.decode('utf-8'), role=RoleEnum.ADMIN, phone="919-555-5555")
+    new_login = Login(email='admin@example.com',pswd=encrypted_pswd.decode('utf-8'))
+    db.session.add(new_login)
+    db.session.flush()
+    db.session.refresh(new_login)
+    new_user = User(full_name='Admin', role=RoleEnum.ADMIN, phone="919-555-5555", login_id = new_login.id)
     db.session.add(new_user)
     db.session.commit()
 

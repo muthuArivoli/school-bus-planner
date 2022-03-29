@@ -44,6 +44,7 @@ export default function CreateSchool(props) {
           navigate("/students");
         }
         else{
+          console.log(res.data)
           props.setSnackbarMsg(`Student not successfully created`);
           props.setShowSnackbar(true);
           props.setSnackbarSeverity("error");
