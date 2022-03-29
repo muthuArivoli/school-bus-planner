@@ -16,13 +16,15 @@ export default function CreateSchool(props) {
   const [studentId, setStudentId] = React.useState(null);
   const [email, setEmail] = React.useState("");
 
+  const [studentEmail, setStudentEmail] = React.useState("");
+
     const handleSubmit = (event) => {
       event.preventDefault();
-      // eslint-disable-next-line no-console
       let req = {
         name: name,
         school_id: school.id,
-        user_id: user
+        user_id: user,
+        //email: studentEmail
       }
       console.log(req);
       if (studentId != null && studentId != "") {
@@ -78,6 +80,8 @@ export default function CreateSchool(props) {
         route={route}
         updateRoute={setRoute}
         handleSubmit={handleSubmit}
+        studentEmail={studentEmail}
+        setStudentEmail={setStudentEmail}
         title="Create Student"
       />
       </>

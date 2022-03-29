@@ -22,6 +22,8 @@ export default function StudentForm(props) {
     const [schools, setSchools] = React.useState([]);
     const [routes, setRoutes] = React.useState([]);
 
+    const [checkEmail, setCheckEmail] = React.useState(null);
+
     let navigate = useNavigate()
 
         React.useEffect(()=> {
@@ -35,7 +37,6 @@ export default function StudentForm(props) {
                 }
               );
               if (result.data.success){
-                console.log(result.data.users);
                 let arr = result.data.users.map((value) => {
                   return value.email;
                 });
@@ -91,9 +92,7 @@ export default function StudentForm(props) {
                 }
               );
               if (result.data.success){
-                console.log(result.data.schools);
                 let arr = result.data.schools.map((value) => {
-                  console.log({label: value.name, id: value.id});
                   return {label: value.name, id: value.id};
                 });
                 setSchools(arr);
@@ -113,6 +112,36 @@ export default function StudentForm(props) {
             getRoutes("", props.school);
           }, [props.school]);
 
+          React.useEffect(()=>{
+            let active = true;
+            const fetchData = async() => {
+              const result = await axios.get(
+                process.env.REACT_APP_BASE_URL+'/check_email', {
+                  headers: {
+                      Authorization: `Bearer ${localStorage.getItem('token')}`
+                  },
+                  params: {email: props.studentEmail}
+                }
+              );
+              if (result.data.success){
+                console.log(result.data);
+                if (active){
+                  setCheckEmail(result.data.id);
+                }
+              }
+              else{
+                props.setSnackbarMsg(`Email could not be verified`);
+                props.setShowSnackbar(true);
+                props.setSnackbarSeverity("error");
+                props.updateUser(null);
+              }
+            }
+            fetchData();
+            return () => {
+              active = false;
+            };
+          }, [props.studentEmail]);
+
       const getRoutes = (e, value) => {
 
           if (value == null || value.id == ""){
@@ -123,7 +152,6 @@ export default function StudentForm(props) {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             }
           }).then((result) => {
-            console.log(result.data);
             if (result.data.success){
                 let newRoutes = result.data.school.routes.map((value) => {return {label: value.name, id: value.id}});
                 setRoutes(newRoutes);
@@ -163,7 +191,20 @@ export default function StudentForm(props) {
                         id="name"
                         value={props.name}
                         onChange={(e) => props.updateName(e.target.value)}
-                        fullWidth
+                        
+                    />
+                    </Grid>
+                    <Grid item xs={12}>
+                    <TextField
+                      required
+                      error={checkEmail != null}
+                      helperText={checkEmail != null ? "Email already taken":""}
+                      fullWidth
+                      onChange={(e) => props.setStudentEmail(e.target.value)}
+                      id="email"
+                      label="Email Address"
+                      name="email"
+                      autoComplete="email"
                     />
                     </Grid>
                     <Grid item xs={12}>
@@ -179,7 +220,7 @@ export default function StudentForm(props) {
                             props.updateStudentId(input);
                           }
                         }}
-                        fullWidth
+                        
                     />
                     </Grid>
                     <Grid item xs={12}>
@@ -190,7 +231,7 @@ export default function StudentForm(props) {
                             freeSolo
                             options={users}
                             id="user"
-                            required
+                            
                             inputValue={props.email}
                             onInputChange={(e, new_value) => props.setEmail(new_value)}
                             renderInput={(params) => 
@@ -209,7 +250,7 @@ export default function StudentForm(props) {
                         options={schools}
                         id="school"
                         autoSelect
-                        required
+                        
                         value={props.school}
                         onChange={(e, new_val) => {
                             getRoutes(e, new_val);
@@ -235,11 +276,11 @@ export default function StudentForm(props) {
                     </Grid>
                     <Grid item xs={12}>
                     <Button type="submit"
-                  variant="contained"
-                  fullWidth
-                  sx={{ mt: 3, mb: 2 }}
-                  disabled={props.school == null || props.school.id == "" || props.user == null || props.name == ""}
-                  >
+                      variant="contained"
+                      fullWidth
+                      sx={{ mt: 3, mb: 2 }}
+                      disabled={props.school == null || props.school.id == "" || props.user == null || props.name == "" || props.studentEmail == ""}
+                      >
                     Submit
                     </Button>
                     </Grid>
