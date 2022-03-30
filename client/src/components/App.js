@@ -106,7 +106,7 @@ function PrivateRoute({ roles = [1,2,3], children }) {
 
   if (loading)
     return <Box sx={{ display: 'flex' }}><CircularProgress /></Box>;
-  return auth ? (roles.includes(role) ? children : (role == 0 ? <Navigate to='/'/> : <Navigate to="/users"/>)) : <Navigate to="/login" />;
+  return auth ? (roles.includes(role) ? children : (role == 0 ? <Navigate to='/'/> : role == 4 ? <Navigate to='/'/> : <Navigate to="/users"/>)) : <Navigate to="/login" />;
 }
 
 export default function App () {
@@ -114,6 +114,12 @@ export default function App () {
     return (
       <BrowserRouter>
         <Routes>
+        <Route exact path="/" element={
+            <PrivateRoute roles={[4]}>
+              <AdminDashboard titleText="Student Dashboard">
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
           <Route exact path="/" element={
             <PrivateRoute roles={[0]}>
               <AdminDashboard titleText="Parent Dashboard">

@@ -44,14 +44,15 @@ class User(db.Model):
     latitude = db.Column(db.Float())
     phone = db.Column(db.String())
     login_id = db.Column(db.Integer, ForeignKey('login_credentials.id'))
-    login = relationship("Login", uselist=False)
+    login = relationship("Login", uselist=False, cascade="all, delete-orphan", back_populates="user",  single_parent=True)
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
         main['children'] = [child.as_dict() for child in self.children]
         if self.role == RoleEnum.SCHOOL_STAFF:
             main['managed_schools'] = [school.as_dict() for school in self.managed_schools]
-        main['email'] = self.login.as_dict()['email']
+        if self.login_id is not None:
+            main['email'] = self.login.as_dict()['email']
         return main
 
     def __repr__(self):
@@ -138,7 +139,7 @@ class Student(db.Model):
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
     user = relationship("User", back_populates="children")
     login_id = db.Column(db.Integer, ForeignKey('login_credentials.id'))
-    login = relationship("Login", back_populates = "student", uselist=False)
+    login = relationship("Login", uselist=False, cascade="all, delete-orphan", back_populates="student",  single_parent=True)
     __table_args__ = (
         CheckConstraint(student_id >= 0, name='check_id_positive'),
         {})
@@ -157,7 +158,8 @@ class Student(db.Model):
                     main['in_range'] = True
                     break
         main['user'] = {c.key: getattr(self.user, c.key) for c in inspect(self.user).mapper.column_attrs}
-        main['email'] = self.login.as_dict()['email']
+        if self.login_id is not None:
+            main['email'] = self.login.as_dict()['email']
         return main
 
     def __repr__(self):
@@ -171,7 +173,7 @@ class Login(db.Model):
     email = db.Column(db.String(), unique=True)
     pswd = db.Column(db.String())
     user = relationship("User", uselist=False, back_populates="login")
-    student = relationship("Student", uselist=False, back_populates='login')
+    student = relationship("Student", uselist=False, back_populates="login")
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -179,8 +181,8 @@ class Login(db.Model):
         return main
 
     def __repr__(self):
-        return "<Login(email='{}', pswd={})>"\
-            .format(self.email, self.pswd)
+        return "<Login(email='{}')>"\
+            .format(self.email)
 
 
 class TokenBlocklist(db.Model):

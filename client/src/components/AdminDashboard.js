@@ -150,6 +150,7 @@ export default function AdminDashboard(props){
         }
       )
       if(result.data.success){
+        console.log(result.data)
         setRole(result.data.user.role);
       }
       else{
@@ -295,7 +296,7 @@ export default function AdminDashboard(props){
           <List>
           <div> 
           { 
-          role == 0 &&
+          (role == 0 || role == 4) &&
           <ListItemButton component={RouterLink} to="/">
             <ListItemIcon>
               <HomeIcon />

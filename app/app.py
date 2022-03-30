@@ -106,11 +106,19 @@ def get_current_user():
     # user = User.query.filter_by(email = get_jwt_identity()).first()
     login = Login.query.filter_by(email = get_jwt_identity()).first()
     if login is None:
-        return {'success': False, 'msg': 'Invalid User ID'}
+        return {'success': False, 'msg': 'Invalid Email'}
     user = login.user
+    student = login.student
+    returned_obj = {}
     if user is None:
-        return {'success': False, 'msg': 'Invalid User ID'}
-    return {'success': True, 'user': user.as_dict()}
+        if student is None:
+            return {'success': False, 'msg': 'Invalid User ID'}
+        else:
+            returned_obj = student.as_dict()
+            returned_obj['role'] = 4
+    else:
+        returned_obj = user.as_dict()
+    return {'success': True, 'user': returned_obj}
 
 @app.route("/current_user/<student_id>", methods = ['GET'])
 @jwt_required()
@@ -143,10 +151,11 @@ def patch_current_user():
     verify_jwt_in_request()
     login = Login.query.filter_by(email = get_jwt_identity()).first()
     if login is None:
-        return {'success': False, "msg": "Invalid User ID"}
+        return {'success': False, "msg": "Invalid Login"}
     user = login.user
-    if user is None:
-        return {'success': False, "msg": "Invalid User ID"}
+    student = login.student
+    if user is None and student is None:
+        return {'success': False, 'msg': 'Invalid User or Student Account'}
     content = request.json
     if 'password' in content:
         pswd = content.get('password', None)
@@ -286,6 +295,8 @@ def get_user_id():
 def users_get(user_id=None):
     login = Login.query.filter_by(email = get_jwt_identity()).first()
     curr_user = login.user
+    if curr_user is None:
+        return {'success': False, "msg": "Invalid User"}
 
     if user_id is not None:
             
@@ -364,6 +375,8 @@ def users(user_id=None):
         user = User.query.filter_by(id=user_id).first()
         if user is None:
             return {'success':False, 'msg': 'Invalid Email'}
+        
+        login = user.login
         students = Student.query.filter_by(user_id = user_id)
         
         if curr_user.role == RoleEnum.SCHOOL_STAFF:
@@ -378,6 +391,7 @@ def users(user_id=None):
             db.session.delete(student)
         try:
             db.session.delete(user)
+            db.session.delete(login)
             db.session.commit()
         except SQLAlchemyError:
             return {'success': False, 'msg': 'Database Error'}
@@ -590,6 +604,8 @@ def students(student_uid = None):
         student = Student.query.filter_by(id=student_uid).first()
         if student is None:
             return {'sucess': False, 'msg': 'Invalid Student Id'}
+        
+        login = student.login
 
         if curr_user.role == RoleEnum.SCHOOL_STAFF:
             ids = [school.id for school in curr_user.managed_schools]
@@ -597,6 +613,7 @@ def students(student_uid = None):
                 return {'success': False, "msg":"Invalid User Permissions"}
 
         db.session.delete(student)
+        db.session.delete(login)
         db.session.commit()
         return {'success': True}
     
@@ -638,12 +655,11 @@ def students(student_uid = None):
                 db.session.flush()
                 db.session.refresh(login)
                 new_student = Student(name=name, school_id=school_id, user_id=user_id, login_id = login.id)
-                try:
-                    db.session.add(new_student)
-                    db.session.flush()
-                    db.session.refresh(new_student)
-                except SQLAlchemyError:
-                    return {'success': False, "msg": "Database Error"}
+                db.session.add(new_student)
+                db.session.flush()
+                db.session.refresh(new_student)
+            except SQLAlchemyError:
+                return {'success': False, "msg": "Database Error"}
             except SQLAlchemyError:
                 return {'success': False, "msg": "Database Error"}
 
@@ -659,16 +675,14 @@ def students(student_uid = None):
                 "html": f"Please use the following link to set the password for your new account: \n <a href={link}>{link}</a>"})
             if r.status_code != 200:
                 return {'success': False}
-            return {'success': True, 'id': new_student.id}
-        
-
-        new_student = Student(name=name, school_id=school_id, user_id=user_id)
-        try:
-            db.session.add(new_student)
-            db.session.flush()
-            db.session.refresh(new_student)
-        except SQLAlchemyError:
-            return {'success': False, "msg": "Database Error"}
+        else:
+            new_student = Student(name=name, school_id=school_id, user_id=user_id)
+            try:
+                db.session.add(new_student)
+                db.session.flush()
+                db.session.refresh(new_student)
+            except SQLAlchemyError:
+                return {'success': False, "msg": "Database Error"}
         if 'route_id' in content:
             route_id = content.get("route_id", None)
             if type(route_id) is not int:
@@ -1458,10 +1472,11 @@ def bulkImport():
             if '@example.com' in user[0]:
                 password = "ParentPassword2@22"
                 encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            new_login = Login(email=user[0], pswd=encrypted_pswd.decode('utf-8'))
+            new_login = Login(email=user[0])
             db.session.add(new_login)
             db.session.flush()
             db.session.refresh(new_login)
+            new_login.pswd=encrypted_pswd.decode('utf-8')
             new_user = User(full_name=user[1], uaddress = user[2], role=RoleEnum.UNPRIVILEGED, latitude=lat, longitude=lng, phone=user[3],login_id=new_login.id)
             db.session.add(new_user)
             db.session.flush()
@@ -1635,7 +1650,7 @@ def validate_students(csvreader_student, user_rows):
             if stud_row_ct == 0:
                 if(row[0]!='name' or row[1]!='parent_email' or row[2] != 'student_id' or row[3]!='school_name'):
                     return [], [], True
-                stud_rows.append(row)
+                student_rows.append(row)
                 stud_resp.append({'row': row, 'errors': errors})
                 stud_row_ct +=1
                 continue
@@ -1723,9 +1738,10 @@ def validate_students(csvreader_student, user_rows):
         else:
             # existing_parent = User.query.filter(func.lower(User.email) == func.lower(email)).first()
             login = Login.query.filter(func.lower(Login.email) == func.lower(email)).first()
-            existing_parent = login.user
-            imported_user = False
-            if existing_parent is None:
+            if login:
+                existing_parent = login.user
+                imported_user = False                    
+            if login is None:
                 if len(user_rows) > 0:
                     for usr_row in user_rows:
                         if type(usr_row) is list:

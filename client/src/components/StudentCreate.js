@@ -24,7 +24,7 @@ export default function CreateSchool(props) {
         name: name,
         school_id: school.id,
         user_id: user,
-        //email: studentEmail
+        email: studentEmail
       }
       console.log(req);
       if (studentId != null && studentId != "") {
