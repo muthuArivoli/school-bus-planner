@@ -16,6 +16,7 @@ export default function CreateSchool(props) {
   console.log(hasParentEmail);
 
 
+
   const [school, setSchool] = React.useState({id: "", label: ""});
   const [user, setUser] = React.useState(null);
   const [route, setRoute] = React.useState({id: "", label: ""});
@@ -65,6 +66,13 @@ export default function CreateSchool(props) {
       });
     }
 
+    var parentEmailField="";
+    if (parentEmail == null){
+      parentEmailField = email; 
+    }else {parentEmailField = parentEmail};
+    console.log("Parent Email Field");
+    console.log(parentEmailField);
+    console.log({parentEmailField});
 
     return(
 
@@ -81,8 +89,7 @@ export default function CreateSchool(props) {
         updateStudentId={setStudentId}
         user={user}
         updateUser={setUser}
-        email={email}//{parentEmail}
-        setEmail={setEmail}
+        email={parentEmailField} 
         school={school}
         updateSchool={setSchool}
         route={route}
