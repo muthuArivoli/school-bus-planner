@@ -170,6 +170,7 @@ class Student(db.Model):
                     main['in_range'] = True
                     break
         main['user'] = {c.key: getattr(self.user, c.key) for c in inspect(self.user).mapper.column_attrs}
+        main['user']['email'] = self.user.login.email 
         if self.login_id is not None:
             main['email'] = self.login.as_dict()['email']
         return main
