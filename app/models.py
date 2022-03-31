@@ -10,6 +10,8 @@ import enum
 
 from sqlalchemy_filters import Filter, StringField, Field, TimestampField
 from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator, BaseOperator, register_operator
+from sqlalchemy import func
+from sqlalchemy_filters.fields import MethodField
 from datetime import datetime
 import logging
 import geopy.distance
@@ -45,6 +47,14 @@ class User(db.Model):
     phone = db.Column(db.String())
     login_id = db.Column(db.Integer, ForeignKey('login_credentials.id'))
     login = relationship("Login", uselist=False, cascade="all, delete-orphan", back_populates="user",  single_parent=True)
+
+    @hybrid_property
+    def email_field(self):
+        return self.login.email
+    
+    @email_field.expression
+    def email_field(cls):
+        return Login.email
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -222,10 +232,13 @@ class CaseContainsOperator(BaseOperator):
 class UserFilter(Filter):
     # email = StringField(lookup_operator=CaseContainsOperator)
     full_name = StringField(lookup_operator=CaseContainsOperator)
+    email = Field(field_name="login.email", lookup_operator=CaseContainsOperator, data_source_name="email")
+    email_field = StringField(lookup_operator=CaseContainsOperator)
 
     class Meta:
         model = User
         page_size = 10
+    
 
 class StudentFilter(Filter):
     student_id = Field(lookup_operator = EqualsOperator)

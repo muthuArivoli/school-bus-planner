@@ -344,18 +344,18 @@ def users_get(user_id=None):
         base_query = base_query.filter_by(role=RoleEnum(role_search))
 
     #QUICK FIX FOR RIGHT NOW
-    if sort == 'email':
-        sort = ''
+    # if sort == 'email':
+    #     sort = ''
 
     if sort and direction == 'desc':
         sort = '-'+sort
     if page:
         # user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
-        user_filt = UserFilter(data={'full_name': name_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
+        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
         users = user_filt.get_objects()
         record_num = user_filt.count
     else:
-        user_filt = UserFilter(data={'full_name': name_search, 'order_by': sort}, query=base_query, operator=OrOperator)
+        user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort}, query=base_query, operator=OrOperator)
         # user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort}, query=base_query, operator=OrOperator)
         users = user_filt.apply()
         record_num = users.count()
