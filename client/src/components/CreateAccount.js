@@ -51,6 +51,8 @@ export default function SignUp(props) {
   //Represents user id if email already exists, null otherwise
   const [checkEmail, setCheckEmail] = React.useState(null);
 
+  //const [checkStudentEmail, setCheckStudentEmail] = React.useState([]);
+
   const [currRole, setCurrRole] = React.useState(0);
 
   React.useEffect(()=>{
@@ -81,7 +83,7 @@ export default function SignUp(props) {
   };
 
   const addStudent = () => {
-      setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": null, "email": ""}])
+      setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": null, "email": "", "emailCheck": null}])
       setRoutes([...routes, []]);
   }
 
@@ -101,7 +103,7 @@ export default function SignUp(props) {
           setCheckEmail(result.data.id);
         }
       }
-      else{
+      else {
         props.setSnackbarMsg(`Email could not be verified`);
         props.setShowSnackbar(true);
         props.setSnackbarSeverity("error");
@@ -113,6 +115,42 @@ export default function SignUp(props) {
       active = false;
     };
   }, [email]);
+
+  React.useEffect(()=>{
+    let active = true;
+
+    const fetchData = async() => {
+
+      for (var i=0;i<students.length;i++) {
+        const result = await axios.get(
+          process.env.REACT_APP_BASE_URL+'/check_email', {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            },
+            params: {email: students[i].email}
+          }
+        );
+        if (result.data.success){
+          //console.log(result.data);
+          if (active){
+            handleStudentChange(i, "emailCheck", result.data.id);
+          }
+        }
+        else{
+          props.setSnackbarMsg(`Email could not be verified`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("error");
+          props.updateUser(null);
+        }
+      }
+    }
+
+
+    fetchData();
+    return () => {
+      active = false;
+    };
+  }, [students]);
 
   React.useEffect(() => {
     const fetchData = async() => {
@@ -275,10 +313,14 @@ export default function SignUp(props) {
   React.useEffect(() => {
     let disabled = email == "" || name == "" || (role == 0 && address == "") || phone == "" || checkEmail != null;
     for (let i=0; i<students.length; i++){
-      disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "";
+      disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "" || students[i].emailCheck != null;
     }
     setDisable(disabled);
-  }, [email, name, address, students, phone, role])
+  }, [email, name, address, students, phone, role]);
+
+  const print = () => {
+    console.log(students[students.length-1].email);
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -300,6 +342,7 @@ export default function SignUp(props) {
           <Typography component="h1" variant="h5">
             Create User
           </Typography>
+          <Button onClick={print}>Check</Button>
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
@@ -426,8 +469,8 @@ export default function SignUp(props) {
                     <Grid item xs={12}>
                     <TextField
                       required
-                      error={checkEmail != null}
-                      helperText={checkEmail != null ? "Email already taken":""}
+                      error={students[index].emailCheck != null}
+                      helperText={students[index].emailCheck != null ? "Email already taken":""}
                       fullWidth
                       onChange={(e) => handleStudentChange(index, "email", e.target.value)}
                       id="student-email"
@@ -502,6 +545,7 @@ export default function SignUp(props) {
             >
               Create Account
             </Button>
+            
           </Box>
         </Box>
       </Container>
