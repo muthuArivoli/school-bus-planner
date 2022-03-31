@@ -24,7 +24,6 @@ export default function CreateSchool(props) {
         name: name,
         school_id: school.id,
         user_id: user,
-        email: studentEmail
       }
       console.log(req);
       if (studentId != null && studentId != "") {
@@ -32,6 +31,10 @@ export default function CreateSchool(props) {
       }
       if(route != null && route.id != "") {
         req.route_id = route.id;
+      }
+
+      if(studentEmail != null && studentEmail != "") {
+        req.email = studentEmail;
       }
       console.log(req);
       axios.post(process.env.REACT_APP_BASE_URL+'/student', req, {

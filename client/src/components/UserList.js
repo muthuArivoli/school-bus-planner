@@ -62,7 +62,7 @@ const columns = [
 
 function Table({columns,data, setSortModel}){
 
-  const mappingss = {"name.name": 'name', "email": "email_field", "admin": "admin"};
+  const mappingss = {"name.name": 'name', "email": "email", "admin": "admin"};
 
   const{
     getTableProps,

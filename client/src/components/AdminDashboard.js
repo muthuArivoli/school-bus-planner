@@ -296,7 +296,7 @@ export default function AdminDashboard(props){
           <List>
           <div> 
           { 
-          (role == 0 || role == 4) &&
+          (role == 0) &&
           <ListItemButton component={RouterLink} to="/">
             <ListItemIcon>
               <HomeIcon />

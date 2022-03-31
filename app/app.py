@@ -131,11 +131,19 @@ def get_current_user_student(student_id=None):
     if login is None:
         return {'success': False, "msg": "Invalid User ID"}
     user = login.user
-    if user is None:
+    student = login.student
+    if user is None and student is None:
         return {'success': False, "msg": "Invalid User ID"}
-    student = Student.query.filter_by(id=student_id).first()
-    if student.user_id != user.id:
-        return {'success': False, 'msg':"User not authorized to do this action"}
+    
+    if student is not None:
+        if student.id != int(student_id):
+            return {'success': False, "msg": "Invalid User ID"}
+
+    if user is not None:
+        student = Student.query.filter_by(id=student_id).first()
+        if student.user_id != user.id:
+            return {'success': False, 'msg':"User not authorized to do this action"}
+
     in_range_stops = []
     if student.route is not None:
         stops = student.route.stops
@@ -277,15 +285,23 @@ def get_user_id():
     args = request.args
     email = args.get('email', '')
     parents = args.get('parents', False)
-    if not parents: 
-        user = Login.query.filter(func.lower(Login.email) == func.lower(email)).first()
-        # user = User.query.filter(func.lower(User.email) == func.lower(email)).first()
-    else:
-        # user = User.query.filter(func.lower(User.email) == func.lower(email)).filter_by(role=RoleEnum.UNPRIVILEGED).first()
-        user = Login.query.filter(func.lower(Login.email) == func.lower(email)).first()
-    if user is None:
+    login = Login.query.filter(func.lower(Login.email) == func.lower(email)).first()
+    if login is None:
         return {'success': True, 'id': None}
-    return {'success': True, 'id': user.user.id}
+    user = login.user
+    student = login.student
+
+    final = None
+
+    if student is not None:
+        if not parents:
+            final = student.id
+    
+    if user is not None:
+        if not parents or user.role == RoleEnum.UNPRIVILEGED:
+            final = user.id
+
+    return {'success': True, 'id': final}
 
 
 @app.route('/user/<user_id>', methods = ['GET'])
@@ -343,20 +359,14 @@ def users_get(user_id=None):
     if role_search is not None:
         base_query = base_query.filter_by(role=RoleEnum(role_search))
 
-    #QUICK FIX FOR RIGHT NOW
-    # if sort == 'email':
-    #     sort = ''
-
     if sort and direction == 'desc':
         sort = '-'+sort
     if page:
-        # user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
         user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
         users = user_filt.get_objects()
         record_num = user_filt.count
     else:
         user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort}, query=base_query, operator=OrOperator)
-        # user_filt = UserFilter(data={'full_name': name_search, 'email': email_search, 'order_by': sort}, query=base_query, operator=OrOperator)
         users = user_filt.apply()
         record_num = users.count()
 

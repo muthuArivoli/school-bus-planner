@@ -196,7 +196,6 @@ export default function StudentForm(props) {
                     </Grid>
                     <Grid item xs={12}>
                     <TextField
-                      required
                       error={checkEmail != null}
                       helperText={checkEmail != null ? "Email already taken":""}
                       fullWidth
@@ -279,7 +278,7 @@ export default function StudentForm(props) {
                       variant="contained"
                       fullWidth
                       sx={{ mt: 3, mb: 2 }}
-                      disabled={props.school == null || props.school.id == "" || props.user == null || props.name == "" || props.studentEmail == ""}
+                      disabled={props.school == null || props.school.id == "" || props.user == null || props.name == "" || checkEmail != null}
                       >
                     Submit
                     </Button>

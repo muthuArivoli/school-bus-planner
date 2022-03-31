@@ -49,12 +49,14 @@ class User(db.Model):
     login = relationship("Login", uselist=False, cascade="all, delete-orphan", back_populates="user",  single_parent=True)
 
     @hybrid_property
-    def email_field(self):
+    def email(self):
         return self.login.email
     
-    @email_field.expression
-    def email_field(cls):
-        return Login.email
+    @email.expression
+    def email(cls):
+        return select(Login.email).\
+                where(Login.id==cls.login_id).\
+                label('email')
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -230,16 +232,13 @@ class CaseContainsOperator(BaseOperator):
         )
 
 class UserFilter(Filter):
-    # email = StringField(lookup_operator=CaseContainsOperator)
     full_name = StringField(lookup_operator=CaseContainsOperator)
-    email = Field(field_name="login.email", lookup_operator=CaseContainsOperator, data_source_name="email")
-    email_field = StringField(lookup_operator=CaseContainsOperator)
+    email = StringField(lookup_operator=CaseContainsOperator)
 
     class Meta:
         model = User
         page_size = 10
     
-
 class StudentFilter(Filter):
     student_id = Field(lookup_operator = EqualsOperator)
     school_id = Field(lookup_operator = EqualsOperator)
