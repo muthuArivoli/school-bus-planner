@@ -183,7 +183,7 @@ export default function StudentForm(props) {
                     />
                     </Grid>
                     <Grid item xs={12}>
-                    <>{console.log(props)}</>
+                    
                         <Autocomplete
                             autoFocus
                             required
