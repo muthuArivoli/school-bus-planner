@@ -16,6 +16,8 @@ export default function UserUpdate(props) {
   const [studentId, setStudentId] = React.useState(null);
   const [email, setEmail] = React.useState("");
 
+  const [studentEmail, setStudentEmail] = React.useState("");
+
     const handleSubmit = (event) => {
       event.preventDefault();
       // eslint-disable-next-line no-console
@@ -114,6 +116,8 @@ export default function UserUpdate(props) {
         route={route}
         updateRoute={setRoute}
         handleSubmit={handleSubmit}
+        studentEmail={studentEmail}
+        setStudentEmail={setStudentEmail}
         title="Update Student"
       />
       </>
