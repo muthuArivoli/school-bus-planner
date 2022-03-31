@@ -17,6 +17,7 @@ export default function UserUpdate(props) {
   const [email, setEmail] = React.useState("");
 
   const [studentEmail, setStudentEmail] = React.useState("");
+  const [originalStudentEmail, setOriginalStudentEmail] = React.useState("");
 
     const handleSubmit = (event) => {
       event.preventDefault();
@@ -80,6 +81,8 @@ export default function UserUpdate(props) {
           setSchool({label: result.data.student.school.name, id: result.data.student.school.id});
           setUser(result.data.student.user.id);
           setEmail(result.data.student.user.email);
+          setStudentEmail(result.data.student.email);
+          setOriginalStudentEmail(result.data.student.email);
           if(result.data.student.route_id != null){
             setRoute({label: result.data.student.route.name, id: result.data.student.route.id})
           }
@@ -118,6 +121,7 @@ export default function UserUpdate(props) {
         handleSubmit={handleSubmit}
         studentEmail={studentEmail}
         setStudentEmail={setStudentEmail}
+        originalStudentEmail={originalStudentEmail}
         title="Update Student"
       />
       </>
