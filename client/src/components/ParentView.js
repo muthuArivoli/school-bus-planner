@@ -27,24 +27,7 @@ const columns = [
 
 )}
 
-/*   {
-    field: 'id',
-    headerName: 'Detailed View',
-    width: 250,
-    renderCell: (params) => (
-      <>
-        <Button
-          component={RouterLink}
-          to={"/students/" + params.value +"/view"}
-          color="primary"
-          size="small"
-          style={{ marginLeft: 16 }}
-        >
-          View Student
-        </Button>
-      </>
-    ),
-  }, */
+
 ];
 
 function NoStudentsOverlay() {

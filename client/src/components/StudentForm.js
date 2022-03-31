@@ -183,6 +183,7 @@ export default function StudentForm(props) {
                     />
                     </Grid>
                     <Grid item xs={12}>
+                    <>{console.log(props)}</>
                         <Autocomplete
                             autoFocus
                             required
@@ -194,13 +195,15 @@ export default function StudentForm(props) {
                             inputValue={props.email}
                             onInputChange={(e, new_value) => props.setEmail(new_value)}
                             renderInput={(params) => 
-                            <TextField {...params} label="Parent Email" 
+                            <>{console.log(params.inputProps.ref.current)}
+                            <TextField {...params} 
+                            label="Parent Email" 
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: <InputAdornment position="start">{props.user == null ? <CloseIcon/> : <CheckIcon/>}</InputAdornment>,
-                            }}/>}
-                        />
-                        </Grid>
+                            }}/> </>} 
+                        /> 
+                    </Grid>
                     <Grid item xs={12}>
                     <Autocomplete
                         autoFocus

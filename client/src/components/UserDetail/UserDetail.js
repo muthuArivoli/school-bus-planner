@@ -148,9 +148,9 @@ export default function UserDetail(props) {
           
         <Button
           component={RouterLink}
-          to={"/students/create"}
+          to={"/students/create?email=" + data.email}
           color="primary"
-          variant="contained"
+          variant="outlined"
           size="small"
           style={{ marginLeft: 16 }}
           >
@@ -163,7 +163,7 @@ export default function UserDetail(props) {
           <Button component={RouterLink}
               to={"/users/" + id +"/update"}
               color="primary"
-              variant="contained"
+              variant="outlined"
               size="small"
               style={{ }}>
               Modify

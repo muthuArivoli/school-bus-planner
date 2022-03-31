@@ -26,6 +26,7 @@ export default function StudentDetail(props) {
   const [inRange, setInRange] = React.useState("No");
 
   const [role, setRole] = React.useState(0);
+  const [email, setEmail] = React.useState("");
 
   React.useEffect(()=>{
     const fetchData = async() => {
@@ -92,6 +93,9 @@ export default function StudentDetail(props) {
         setData(result.data.student);
         setSchool(result.data.student.school.name);
         setUser(result.data.student.user);
+
+        console.log("student email");
+        console.log(result.data.student);
         if(result.data.student.route_id != null){
           setRoute(result.data.student.route.name);
         }
@@ -104,6 +108,11 @@ export default function StudentDetail(props) {
         }
         else{
           setInRange("No");
+        }
+
+        if(result.data.student.user.email != null){
+          setEmail(result.data.student.user.email);
+
         }
 
       }
@@ -146,7 +155,11 @@ export default function StudentDetail(props) {
           <Typography variant="h5" align="center">
             Student ID: {data.student_id}
           </Typography>
-
+          { email != null &&
+          <Typography variant = "h5" align = "center">
+            Student Email: {email}
+          </Typography>
+          }   
         </Stack>
 
         <Stack direction="row" spacing={20} justifyContent="center">

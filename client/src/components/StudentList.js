@@ -103,7 +103,7 @@ const columns = [
 
 function Table({columns,data, setSortModel}){
 
-  const mappingss = {"name.name": 'name', "student_id": "student_id", "school": "school", "route.name": "route", "in_range":"in_range"};
+  const mappingss = {"name.name": 'name', "student_id": "student_id", "email": "email","parent_name.name": "parent_name", "school": "school", "route.name": "route", "in_range":"in_range"};
 
   const{
     getTableProps,
@@ -185,6 +185,10 @@ export default function DataTable(props) {
         accessor: "student_id"
       },
       {
+        Header: "Student Email",
+        accessor: "email"
+      },
+      {
         Header: "School",
         accessor: "school",
         Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/schools/" + row.row.original.school_id}>{row.row.original.school.name}</Link></>)
@@ -203,9 +207,9 @@ export default function DataTable(props) {
       },
       {
         Header: "Parent Name",
-        accessor: "parent_name",
+        accessor: "parent_name.name",
         Cell: (row) => (<>{console.log(row)}{<Link component={RouterLink} to={"/users/" + row.row.original.parent_name.id}>{row.row.original.parent_name.name}</Link>}</>),
-        disableSortBy: true
+        
       },
       {
         Header: "Parent Phone",

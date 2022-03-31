@@ -7,7 +7,14 @@ import { Helmet } from 'react-helmet';
 
 export default function CreateSchool(props) {
 
-  let navigate = useNavigate();
+   let navigate = useNavigate();
+
+  var urlParams = new URLSearchParams(window.location.search);
+  var parentEmail = urlParams.get("email");
+  var hasParentEmail = urlParams.has("email");
+  console.log(parentEmail);
+  console.log(hasParentEmail);
+
 
   const [school, setSchool] = React.useState({id: "", label: ""});
   const [user, setUser] = React.useState(null);
@@ -15,6 +22,8 @@ export default function CreateSchool(props) {
   const [name, setName] = React.useState("")
   const [studentId, setStudentId] = React.useState(null);
   const [email, setEmail] = React.useState("");
+
+
 
     const handleSubmit = (event) => {
       event.preventDefault();
@@ -56,7 +65,9 @@ export default function CreateSchool(props) {
       });
     }
 
+
     return(
+
       <>
       <Helmet>
         <title>
@@ -70,7 +81,7 @@ export default function CreateSchool(props) {
         updateStudentId={setStudentId}
         user={user}
         updateUser={setUser}
-        email={email}
+        email={email}//{parentEmail}
         setEmail={setEmail}
         school={school}
         updateSchool={setSchool}

@@ -31,6 +31,7 @@ import axios from 'axios';
 import Menu from '@mui/material/Menu';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
+import { buttontheme } from './ButtonColor';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -265,15 +266,20 @@ export default function AdminDashboard(props){
               {props.titleText}
             </Typography>
             <Grid container spacing={2} justifyContent="flex-end">
+            <ThemeProvider theme = {buttontheme}>
             <Button
+              color = "neutral"
               variant="contained"
               onClick={handleClick}
             >
               Change Password
             </Button>
-            <Button variant="contained" onClick={handleLogout}>
+            </ThemeProvider>
+            <ThemeProvider theme = {buttontheme}>
+            <Button color = "neutral" variant="contained" onClick={handleLogout}>
               Logout
             </Button>
+            </ThemeProvider>
             </Grid>
 
           </Toolbar>
