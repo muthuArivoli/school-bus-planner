@@ -22,7 +22,6 @@ export default function StudentForm(props) {
     function useQuery(){
       return new URLSearchParams(location.search);
     }
-    console.log(useQuery().has("id"));
     var parentID = useQuery().get("id");
 
     const [parentEmail, setParentEmail] = React.useState(""); 
@@ -224,16 +223,19 @@ export default function StudentForm(props) {
                             options={users}
                             id="user"
                             required
-                            inputValue={parentEmail}//{props.email}
-                            onInputChange={(e, new_value) => props.setEmail(new_value)}
+           
+                            value = {parentEmail}
+                            onInputChange={(e, new_value) => props.setEmail(new_value)} 
                             renderInput={(params) => 
                             
-                            <TextField {...params} 
-                            label="Parent Email" 
-                            InputProps={{
-                              ...params.InputProps,
-                              startAdornment: <InputAdornment position="start">{props.user == null ? <CloseIcon/> : <CheckIcon/>}</InputAdornment>,
-                            }}/> } 
+                              <TextField {...params} 
+                              label="Parent Email" 
+                              
+                              InputProps={{
+                                ...params.InputProps,
+                                startAdornment: <InputAdornment position="start">{props.user == null ? <CloseIcon/> : <CheckIcon/>}</InputAdornment>,
+                              }} />
+                            }  
                         /> 
                     </Grid>
                     <Grid item xs={12}>
