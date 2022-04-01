@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid'
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -18,11 +18,44 @@ const theme = createTheme();
 
 export default function StudentForm(props) {
 
+    let location = useLocation();
+    function useQuery(){
+      return new URLSearchParams(location.search);
+    }
+    console.log(useQuery().has("id"));
+    var parentID = useQuery().get("id");
+
+    const [parentEmail, setParentEmail] = React.useState(""); 
+    const [parentid, setParentId] = React.useState("");
     const [users, setUsers] = React.useState([]);
     const [schools, setSchools] = React.useState([]);
     const [routes, setRoutes] = React.useState([]);
 
     let navigate = useNavigate()
+
+    React.useEffect(() => {
+      const fetchData = async() => {
+        const result = await axios.get(
+          process.env.REACT_APP_BASE_URL+`/user/`+ parentID, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        );
+        if (result.data.success){
+
+          console.log(result.data.user.email);
+          setParentEmail(result.data.user.email);
+        }
+        else{
+          props.setSnackbarMsg(`User could not be loaded`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("error");
+          navigate("/users");
+        }
+      }; 
+      fetchData();  // error
+    }, []);
 
         React.useEffect(()=> {
             const fetchData = async() => {
@@ -35,7 +68,6 @@ export default function StudentForm(props) {
                 }
               );
               if (result.data.success){
-                console.log(result.data.users);
                 let arr = result.data.users.map((value) => {
                   return value.email;
                 });
@@ -192,16 +224,16 @@ export default function StudentForm(props) {
                             options={users}
                             id="user"
                             required
-                            inputValue={props.email}
+                            inputValue={parentEmail}//{props.email}
                             onInputChange={(e, new_value) => props.setEmail(new_value)}
                             renderInput={(params) => 
-                            <>{console.log(params.inputProps.ref.current)}
+                            
                             <TextField {...params} 
                             label="Parent Email" 
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: <InputAdornment position="start">{props.user == null ? <CloseIcon/> : <CheckIcon/>}</InputAdornment>,
-                            }}/> </>} 
+                            }}/> } 
                         /> 
                     </Grid>
                     <Grid item xs={12}>

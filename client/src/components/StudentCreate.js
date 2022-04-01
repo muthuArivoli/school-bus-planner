@@ -1,6 +1,6 @@
 import * as React from 'react';
 import StudentForm from './StudentForm';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
 
@@ -8,13 +8,6 @@ import { Helmet } from 'react-helmet';
 export default function CreateSchool(props) {
 
    let navigate = useNavigate();
-
-  var urlParams = new URLSearchParams(window.location.search);
-  var parentEmail = urlParams.get("email");
-  var hasParentEmail = urlParams.has("email");
-  console.log(parentEmail);
-  console.log(hasParentEmail);
-
 
 
   const [school, setSchool] = React.useState({id: "", label: ""});
@@ -66,14 +59,6 @@ export default function CreateSchool(props) {
       });
     }
 
-    var parentEmailField="";
-    if (parentEmail == null){
-      parentEmailField = email; 
-    }else {parentEmailField = parentEmail};
-    console.log("Parent Email Field");
-    console.log(parentEmailField);
-    console.log({parentEmailField});
-
     return(
 
       <>
@@ -89,7 +74,8 @@ export default function CreateSchool(props) {
         updateStudentId={setStudentId}
         user={user}
         updateUser={setUser}
-        email={parentEmailField} 
+        email= {email} 
+        setEmail ={setEmail}
         school={school}
         updateSchool={setSchool}
         route={route}
