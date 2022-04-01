@@ -63,17 +63,20 @@ export default function GoogleMaps(props) {
     }
 
     if (inputValue === '') {
-      setOptions(value ? [value] : []);
+      //setOptions(value ? [value] : []);
       return undefined;
     }
+
+    //console.log(value);
+    //console.log(inputValue);
 
     fetch({ input: inputValue }, (results) => {
       if (active) {
         let newOptions = [];
 
-        if (value) {
-          newOptions = [value];
-        }
+        // if (value) {
+        //   newOptions = [value];
+        // }
 
         if (results) {
           newOptions = [...newOptions, ...results];
@@ -86,13 +89,14 @@ export default function GoogleMaps(props) {
     return () => {
       active = false;
     };
-  }, [value, inputValue, fetch]);
+  }, [inputValue]);
 
   return (
     
     <Autocomplete
       id="google-map-demo"
       sx={{ width: 400, mb: 2 }}
+      //isOptionEqualToValue={(option, value) => option.value == value.value}
       getOptionLabel={(option) =>
         typeof option === 'string' ? option : option.description
       }

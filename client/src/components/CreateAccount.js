@@ -51,7 +51,7 @@ export default function SignUp(props) {
   //Represents user id if email already exists, null otherwise
   const [checkEmail, setCheckEmail] = React.useState(null);
 
-  //const [checkStudentEmail, setCheckStudentEmail] = React.useState([]);
+  const [checkStudentEmail, setCheckStudentEmail] = React.useState([]);
 
   const [currRole, setCurrRole] = React.useState(0);
 
@@ -116,10 +116,34 @@ export default function SignUp(props) {
     };
   }, [email]);
 
+  const checkEmailTakenStudent = (student_list, index) => {
+    let ret = false;
+    if (student_list.length != 0) {
+      let cur_email = student_list[index].email;
+      if (cur_email == email) {
+        ret = true;
+      }
+      for (var i = 0; i < student_list.length; i++) {
+        if (i != index) {
+          let cur_student = student_list[i];
+          if (cur_student != undefined) {
+            let em = cur_student.email;
+            if (em == cur_email) {
+              ret = true;
+            }
+          }
+        }
+      }
+    }
+    return ret;
+  };
+
   React.useEffect(()=>{
     let active = true;
 
     const fetchData = async() => {
+
+      let student_checks = JSON.parse(JSON.stringify(checkStudentEmail)); 
 
       for (var i=0;i<students.length;i++) {
         const result = await axios.get(
@@ -131,9 +155,12 @@ export default function SignUp(props) {
           }
         );
         if (result.data.success){
-          //console.log(result.data);
-          if (active){
-            handleStudentChange(i, "emailCheck", result.data.id);
+          if (active){  
+            let entry = "";
+            if (result.data.id != null || checkEmailTakenStudent(students, i)) {
+              entry = students[i].email;
+            }
+            student_checks[i] = entry;
           }
         }
         else{
@@ -143,6 +170,7 @@ export default function SignUp(props) {
           props.updateUser(null);
         }
       }
+      setCheckStudentEmail(student_checks);
     }
 
 
@@ -256,9 +284,9 @@ export default function SignUp(props) {
 
   const handleStudentChange = (index, ty, new_val, index_val=0) => {
     const updatedValues = students.map((value, i) => {
-      if (i === index) {
+      if (i == index) {
           let new_obj = JSON.parse(JSON.stringify(value));
-          new_obj[ty] = new_val
+          new_obj[ty] = new_val;
 
           if (ty =="school"){
             new_obj["school_id"] = index_val;
@@ -313,13 +341,13 @@ export default function SignUp(props) {
   React.useEffect(() => {
     let disabled = email == "" || name == "" || (role == 0 && address == "") || phone == "" || checkEmail != null;
     for (let i=0; i<students.length; i++){
-      disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "" || students[i].emailCheck != null;
+      disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "" || checkStudentEmail[i] != "";
     }
     setDisable(disabled);
   }, [email, name, address, students, phone, role]);
 
   const print = () => {
-    console.log(students[students.length-1].email);
+    console.log(checkStudentEmail);
   };
 
   return (
@@ -469,8 +497,8 @@ export default function SignUp(props) {
                     <Grid item xs={12}>
                     <TextField
                       required
-                      error={students[index].emailCheck != null}
-                      helperText={students[index].emailCheck != null ? "Email already taken":""}
+                      error={checkStudentEmail[index] != ""}
+                      helperText={checkStudentEmail[index] != "" ? "Email already taken":""}
                       fullWidth
                       onChange={(e) => handleStudentChange(index, "email", e.target.value)}
                       id="student-email"
