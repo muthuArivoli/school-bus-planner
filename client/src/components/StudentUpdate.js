@@ -40,6 +40,12 @@ export default function UserUpdate(props) {
       else{
         req.route_id = null;
       }
+      if(studentEmail != null && studentEmail != "") {
+        req.email = studentEmail;
+      }
+      else{
+        req.email = null;
+      }
       console.log(req);
       axios.patch(process.env.REACT_APP_BASE_URL+`/student/${id}`, req, {
         headers: {

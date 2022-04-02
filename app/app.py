@@ -755,6 +755,30 @@ def students(student_uid = None):
             if user.role != RoleEnum.UNPRIVILEGED:
                 return {'success': False, 'msg': 'Student can\'t be added to a privileged role'}
             student.user_id = user_id
+        if 'email' in content:
+            email = content.get('email', None)
+            if email is None and student.login is not None:
+                db.session.delete(student.login)
+            elif email is not None and student.login is None:
+                login = Login(email=email)
+                db.session.add(login)
+                db.session.flush()
+                db.session.refresh(login)
+                student.login = login
+                access_token = create_access_token(identity=email)
+                link = f"{DOMAIN}/resetpassword?token={access_token}"
+    
+                r = requests.post(
+                f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
+                auth=("api", API_KEY),
+                data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
+                    "to": email,
+                    "subject": "Account Creation for Hypothetical Transportation",
+                    "html": f"Please use the following link to set the password for your new account: \n <a href={link}>{link}</a>"})
+                if r.status_code != 200:
+                    return {'success': False}
+            elif email is not None and student.login is not None:
+                student.login.email = email
         try:
             db.session.commit()
         except SQLAlchemyError:

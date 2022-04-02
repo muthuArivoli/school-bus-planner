@@ -11,7 +11,6 @@ import throttle from 'lodash/throttle';
 const autocompleteService = { current: null };
 
 export default function GoogleMaps(props) {
-  const [value, setValue] = React.useState(null);
   const [inputValue, setInputValue] = React.useState('');
   const [options, setOptions] = React.useState([]);
 
@@ -67,16 +66,9 @@ export default function GoogleMaps(props) {
       return undefined;
     }
 
-    //console.log(value);
-    //console.log(inputValue);
-
     fetch({ input: inputValue }, (results) => {
       if (active) {
         let newOptions = [];
-
-        // if (value) {
-        //   newOptions = [value];
-        // }
 
         if (results) {
           newOptions = [...newOptions, ...results];
@@ -96,7 +88,7 @@ export default function GoogleMaps(props) {
     <Autocomplete
       id="google-map-demo"
       sx={{ width: 400, mb: 2 }}
-      //isOptionEqualToValue={(option, value) => option.value == value.value}
+      isOptionEqualToValue={(option, value) => option.value == value.value}
       getOptionLabel={(option) =>
         typeof option === 'string' ? option : option.description
       }
