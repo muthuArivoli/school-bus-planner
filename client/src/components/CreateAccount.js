@@ -83,7 +83,7 @@ export default function SignUp(props) {
   };
 
   const addStudent = () => {
-      setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": null, "email": "", "emailCheck": null}])
+      setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": null, "email": ""}])
       setRoutes([...routes, []]);
   }
 
@@ -119,16 +119,16 @@ export default function SignUp(props) {
   const checkEmailTakenStudent = (student_list, index) => {
     let ret = false;
     if (student_list.length != 0) {
-      let cur_email = student_list[index].email;
-      if (cur_email == email) {
+      let cur_email = student_list[index]['email'];
+      if (cur_email != "" && cur_email == email) {
         ret = true;
       }
       for (var i = 0; i < student_list.length; i++) {
         if (i != index) {
           let cur_student = student_list[i];
           if (cur_student != undefined) {
-            let em = cur_student.email;
-            if (em == cur_email) {
+            let em = cur_student['email'];
+            if (em != "" && em == cur_email) {
               ret = true;
             }
           }
@@ -143,7 +143,7 @@ export default function SignUp(props) {
 
     const fetchData = async() => {
 
-      let student_checks = JSON.parse(JSON.stringify(checkStudentEmail)); 
+      let student_checks = []; 
 
       for (var i=0;i<students.length;i++) {
         const result = await axios.get(
@@ -155,13 +155,11 @@ export default function SignUp(props) {
           }
         );
         if (result.data.success){
-          if (active){  
-            let entry = "";
+            let entry = null;
             if (result.data.id != null || checkEmailTakenStudent(students, i)) {
               entry = students[i].email;
             }
-            student_checks[i] = entry;
-          }
+            student_checks = [...student_checks, entry];
         }
         else{
           props.setSnackbarMsg(`Email could not be verified`);
@@ -170,7 +168,9 @@ export default function SignUp(props) {
           props.updateUser(null);
         }
       }
-      setCheckStudentEmail(student_checks);
+      if(active){
+        setCheckStudentEmail(student_checks);
+      }
     }
 
 
@@ -240,13 +240,15 @@ export default function SignUp(props) {
               user_id: res.data.id,
               name: students[i]["name"],
               school_id:  students[i]["school_id"],
-              email: students[i]["email"],
             }
             if (students[i]["id"] != "" && students[i]["id"] != null){
               reqS.student_id = parseInt(students[i]["id"]);
             }
             if (students[i]["route_id"] != null){
               reqS.route_id = students[i]["route_id"];
+            }
+            if(students[i]["email"] != "" && students[i]["email"] != null){
+              reqS.email = students[i]["email"];
             }
             console.log(reqS)
             const re = await axios.post(process.env.REACT_APP_BASE_URL+"/student", reqS, {
@@ -341,14 +343,10 @@ export default function SignUp(props) {
   React.useEffect(() => {
     let disabled = email == "" || name == "" || (role == 0 && address == "") || phone == "" || checkEmail != null;
     for (let i=0; i<students.length; i++){
-      disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "" || checkStudentEmail[i] != "";
+      disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "" || checkStudentEmail.length != students.length || (students[i]["email"] != "" && checkStudentEmail[i] != null);
     }
     setDisable(disabled);
-  }, [email, name, address, students, phone, role]);
-
-  const print = () => {
-    console.log(checkStudentEmail);
-  };
+  }, [email, name, address, students, phone, role, checkStudentEmail]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -370,7 +368,6 @@ export default function SignUp(props) {
           <Typography component="h1" variant="h5">
             Create User
           </Typography>
-          <Button onClick={print}>Check</Button>
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
@@ -496,10 +493,10 @@ export default function SignUp(props) {
                     </Grid>
                     <Grid item xs={12}>
                     <TextField
-                      required
-                      error={checkStudentEmail[index] != ""}
-                      helperText={checkStudentEmail[index] != "" ? "Email already taken":""}
+                      error={checkStudentEmail[index] != null}
+                      helperText={checkStudentEmail[index] != null ? "Email already taken":""}
                       fullWidth
+                      value={element["email"] || ""}
                       onChange={(e) => handleStudentChange(index, "email", e.target.value)}
                       id="student-email"
                       label="Email Address"
@@ -528,6 +525,7 @@ export default function SignUp(props) {
                         onChange={(e, newValue) => {handleStudentChange(index, "school", newValue == null ? "" : newValue.label, newValue == null ? 0 : newValue.id);
                                                     updateRoutes(index, newValue == null ? "" : newValue.id);
                                                     }}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
                         renderInput={(params) => <TextField {...params} label="School Name" />}
                     />
                     </Grid>
@@ -538,6 +536,7 @@ export default function SignUp(props) {
                         options={routes[index]}
                         autoSelect
                         value={element["route"] || ""}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
                         onChange={(e, newValue) => handleStudentChange(index, "route", newValue == null ? "" : newValue.label, newValue == null ? null :newValue.id)}
                         renderInput={(params) => <TextField {...params} label="Route Name" />}
                     />
