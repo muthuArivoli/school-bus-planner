@@ -16,6 +16,9 @@ export default function UserUpdate(props) {
   const [studentId, setStudentId] = React.useState(null);
   const [email, setEmail] = React.useState("");
 
+  const [studentEmail, setStudentEmail] = React.useState("");
+  const [originalStudentEmail, setOriginalStudentEmail] = React.useState("");
+
     const handleSubmit = (event) => {
       event.preventDefault();
       // eslint-disable-next-line no-console
@@ -36,6 +39,12 @@ export default function UserUpdate(props) {
       }
       else{
         req.route_id = null;
+      }
+      if(studentEmail != null && studentEmail != "") {
+        req.email = studentEmail;
+      }
+      else{
+        req.email = null;
       }
       console.log(req);
       axios.patch(process.env.REACT_APP_BASE_URL+`/student/${id}`, req, {
@@ -78,6 +87,8 @@ export default function UserUpdate(props) {
           setSchool({label: result.data.student.school.name, id: result.data.student.school.id});
           setUser(result.data.student.user.id);
           setEmail(result.data.student.user.email);
+          setStudentEmail(result.data.student.email);
+          setOriginalStudentEmail(result.data.student.email);
           if(result.data.student.route_id != null){
             setRoute({label: result.data.student.route.name, id: result.data.student.route.id})
           }
@@ -114,6 +125,9 @@ export default function UserUpdate(props) {
         route={route}
         updateRoute={setRoute}
         handleSubmit={handleSubmit}
+        studentEmail={studentEmail}
+        setStudentEmail={setStudentEmail}
+        originalStudentEmail={originalStudentEmail}
         title="Update Student"
       />
       </>

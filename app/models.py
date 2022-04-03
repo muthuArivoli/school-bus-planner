@@ -10,6 +10,8 @@ import enum
 
 from sqlalchemy_filters import Filter, StringField, Field, TimestampField
 from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator, BaseOperator, register_operator
+from sqlalchemy import func
+from sqlalchemy_filters.fields import MethodField
 from datetime import datetime
 import logging
 import geopy.distance
@@ -35,28 +37,39 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(), unique=True)
     full_name = db.Column(db.String())
     uaddress = db.Column(db.String())
-    pswd = db.Column(db.String())
     managed_schools = relationship("School", secondary=managed_school_table, back_populates="school_managers")
     role = db.Column(db.Enum(RoleEnum))
     children = relationship("Student", back_populates="user", cascade="all, delete-orphan")
     longitude = db.Column(db.Float())
     latitude = db.Column(db.Float())
     phone = db.Column(db.String())
+    login_id = db.Column(db.Integer, ForeignKey('login_credentials.id'))
+    login = relationship("Login", uselist=False, cascade="all, delete-orphan", back_populates="user",  single_parent=True)
+
+    @hybrid_property
+    def email(self):
+        return self.login.email
+    
+    @email.expression
+    def email(cls):
+        return select(Login.email).\
+                where(Login.id==cls.login_id).\
+                label('email')
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
-        main.pop('pswd')
         main['children'] = [child.as_dict() for child in self.children]
         if self.role == RoleEnum.SCHOOL_STAFF:
             main['managed_schools'] = [school.as_dict() for school in self.managed_schools]
+        if self.login_id is not None:
+            main['email'] = self.login.as_dict()['email']
         return main
 
     def __repr__(self):
-        return "<User(email='{}', uaddress='{}',full_name='{}', pswd='{}', role={}, latitude={}, longitude={})>"\
-            .format(self.email, self.uaddress, self.full_name, self.pswd, self.role, self.latitude, self.longitude)
+        return "<User(uaddress='{}',full_name='{}', role={}, latitude={}, longitude={})>"\
+            .format(self.uaddress, self.full_name, self.role, self.latitude, self.longitude)
   
 
 class School(db.Model):
@@ -137,6 +150,8 @@ class Student(db.Model):
     route = relationship("Route", back_populates="students")
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
     user = relationship("User", back_populates="children")
+    login_id = db.Column(db.Integer, ForeignKey('login_credentials.id'))
+    login = relationship("Login", uselist=False, cascade="all, delete-orphan", back_populates="student",  single_parent=True)
     __table_args__ = (
         CheckConstraint(student_id >= 0, name='check_id_positive'),
         {})
@@ -155,12 +170,33 @@ class Student(db.Model):
                     main['in_range'] = True
                     break
         main['user'] = {c.key: getattr(self.user, c.key) for c in inspect(self.user).mapper.column_attrs}
-        main['user'].pop('pswd')
+        main['user']['email'] = self.user.login.email 
+        if self.login_id is not None:
+            main['email'] = self.login.as_dict()['email']
         return main
 
     def __repr__(self):
         return "<Student(name='{}', school_id={}, user_id={})>"\
             .format(self.name, self.school_id, self.user_id)
+        
+class Login(db.Model):
+    __tablename__ = 'login_credentials'
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(), unique=True)
+    pswd = db.Column(db.String())
+    user = relationship("User", uselist=False, back_populates="login")
+    student = relationship("Student", uselist=False, back_populates="login")
+
+    def as_dict(self):
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        main.pop('pswd')
+        return main
+
+    def __repr__(self):
+        return "<Login(email='{}')>"\
+            .format(self.email)
+
 
 class TokenBlocklist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -197,13 +233,13 @@ class CaseContainsOperator(BaseOperator):
         )
 
 class UserFilter(Filter):
-    email = StringField(lookup_operator=CaseContainsOperator)
     full_name = StringField(lookup_operator=CaseContainsOperator)
+    email = StringField(lookup_operator=CaseContainsOperator)
 
     class Meta:
         model = User
         page_size = 10
-
+    
 class StudentFilter(Filter):
     student_id = Field(lookup_operator = EqualsOperator)
     school_id = Field(lookup_operator = EqualsOperator)

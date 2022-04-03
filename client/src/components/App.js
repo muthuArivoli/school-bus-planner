@@ -31,6 +31,7 @@ import Box from '@mui/material/Box';
 function LoginRoute(props) {
   const [loading, setLoading] = React.useState(true);
   const [auth, setAuth] = React.useState(-1);
+  const [student, setStudent] = React.useState(null);
 
   React.useEffect( () => {
     if (localStorage.getItem('token') == null){
@@ -49,6 +50,9 @@ function LoginRoute(props) {
       console.log(res.data);
       if(res.data.success){
         setAuth(res.data.user.role);
+        if(res.data.user.role == 4){
+          setStudent(res.data.user.id)
+        }
         setLoading(false);
       }
     }).catch((res) => {
@@ -64,7 +68,7 @@ function LoginRoute(props) {
 
   if (loading)
     return <div>Loading...</div>;
-  return auth == 0 ? <Navigate to="/"/> : auth == -1 ? props.children : <Navigate to="/users"/>;
+  return auth == 0 ? <Navigate to="/"/> : auth == -1 ? props.children : auth == 4 ? <Navigate to={`/students/${student}/view`}/>: <Navigate to="/users"/>;
 }
 
 function PrivateRoute({ roles = [1,2,3], children }) {
@@ -72,6 +76,7 @@ function PrivateRoute({ roles = [1,2,3], children }) {
   const [loading, setLoading] = React.useState(true);
   const [auth, setAuth] = React.useState(false);
   const [role, setRole] = React.useState(-1);
+  const [student, setStudent] = React.useState(null);
 
   React.useEffect( () => {
       if (localStorage.getItem('token') == null){
@@ -91,6 +96,9 @@ function PrivateRoute({ roles = [1,2,3], children }) {
         if(res.data.success){
           setAuth(true);
           setRole(res.data.user.role);
+          if(res.data.user.role == 4){
+            setStudent(res.data.user.id);
+          }
           setLoading(false);
         }
       }).catch((res) => {
@@ -106,7 +114,7 @@ function PrivateRoute({ roles = [1,2,3], children }) {
 
   if (loading)
     return <Box sx={{ display: 'flex' }}><CircularProgress /></Box>;
-  return auth ? (roles.includes(role) ? children : (role == 0 ? <Navigate to='/'/> : <Navigate to="/users"/>)) : <Navigate to="/login" />;
+  return auth ? (roles.includes(role) ? children : (role == 0 ? <Navigate to='/'/> : role == 4 ? <Navigate to={`/students/${student}/view`}/> : <Navigate to="/users"/>)) : <Navigate to="/login" />;
 }
 
 export default function App () {
@@ -122,7 +130,7 @@ export default function App () {
             </PrivateRoute>
           } />
           <Route exact path="/students/:id/view" element={
-            <PrivateRoute roles={[0]}>
+            <PrivateRoute roles={[0, 4]}>
               <AdminDashboard titleText="Student View">
                 <StudentView/>
               </AdminDashboard>

@@ -39,6 +39,7 @@ export default function SignIn() {
           navigate("/login");
         }
         else {
+          console.log(res.data)
           setAlert(true);
         }
       }).catch((error) => {
@@ -55,6 +56,7 @@ export default function SignIn() {
                 Authorization: `Bearer ${query.get("token")}`
             }
           }).then((res)=> {
+              console.log(res);
               if(!res.data.success){
                   navigate("/login");
               }
