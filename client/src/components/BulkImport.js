@@ -34,6 +34,8 @@ const studentColumns = [
   { field: 'parentemail', headerName: "Parent Email", editable: true, flex: 1},
   { field: 'studentid', headerName: "Student ID", type: 'number', editable: true, width: 150},
   { field: 'school', headerName: "School Name", editable: true, flex: 1},
+  { field: 'studentemail', headerName: "Student Email", editable: true, flex: 1.5},
+  { field: 'phone', headerName: "Phone #", editable: true, width: 150},
 ];
 
 export default function BulkImport(props) {
@@ -199,7 +201,7 @@ export default function BulkImport(props) {
     let errors = {};
 
     for (var i=0; i<student_rows.length; i++) {      
-      let newRow = {id: i, name: student_rows[i]['row'][0], parentemail: student_rows[i]['row'][1], studentid: student_rows[i]['row'][2], school: student_rows[i]['row'][3]};
+      let newRow = {id: i, name: student_rows[i]['row'][0], parentemail: student_rows[i]['row'][1], studentid: student_rows[i]['row'][2], school: student_rows[i]['row'][3], studentemail: student_rows[i]['row'][4], phone: student_rows[i]['row'][5]};
       rows.push(newRow);
       errors[i] = student_rows[i]['errors'];
     }
@@ -269,7 +271,7 @@ export default function BulkImport(props) {
         complete: function(results) {
           console.log("Finished:", results.data);
           console.log(results.data[0])
-          if(JSON.stringify(results.data[0]) == JSON.stringify(["name", "parent_email", "student_id", "school_name"])){
+          if(JSON.stringify(results.data[0]) == JSON.stringify(["name", "parent_email", "student_id", "school_name","student_email", "phone_number"])){
             setStudentFile(file);
           }
           else if(JSON.stringify(results.data[0]) == JSON.stringify(["email", "name", "address", "phone_number"])){
@@ -323,6 +325,12 @@ export default function BulkImport(props) {
     if (event.field == "name" && studentErrorRows[event.id]["dup_name"] != undefined) {
       console.log(studentErrorRows[event.id]["dup_name"]);
       let msg = JSON.stringify(studentErrorRows[event.id]["dup_name"])
+      setPopoverMessage(msg);
+      setAnchorEl(i.currentTarget);
+    }
+    if (event.field == "studentemail" && studentErrorRows[event.id]["dup_email"] != undefined) {
+      console.log(studentErrorRows[event.id]["dup_email"]);
+      let msg = JSON.stringify(studentErrorRows[event.id]["dup_email"]);
       setPopoverMessage(msg);
       setAnchorEl(i.currentTarget);
     }
@@ -399,6 +407,19 @@ export default function BulkImport(props) {
       const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
       const newRows = [...state];
       newRows[rowIndex]["school"] = row.value;
+      setStudentRows(newRows);
+    }
+    if (row.field === "studentemail") {
+      const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...state];
+      newRows[rowIndex]["studentemail"] = row.value;
+      setStudentRows(newRows);
+    }
+  
+    if (row.field === "phone") {
+      const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
+      const newRows = [...state];
+      newRows[rowIndex]["phone"] = row.value;
       setStudentRows(newRows);
     }
   };
@@ -540,7 +561,7 @@ export default function BulkImport(props) {
                           if (errorDict.length == 0) {
                             return '';
                           } else {
-                            if ((params.field in errorDict) || ("dup_name" in errorDict && params.field == "name")){
+                            if ((params.field in errorDict) || ("dup_name" in errorDict && params.field == "name") || ("dup_email" in errorDict && params.field == "studentemail")){
                               return 'hot';
                             }
                           }
