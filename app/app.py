@@ -36,7 +36,7 @@ cors = CORS(app)
 api = Blueprint('api', __name__)
 gmaps_key = googlemaps.Client(key="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o")
 
-from models import User, Student, School, Route, Stop, Login, UserFilter, StudentFilter, SchoolFilter, RouteFilter, TokenBlocklist, RoleEnum
+from models import User, Student, School, Route, Stop, Login, Bus, UserFilter, StudentFilter, SchoolFilter, RouteFilter, TokenBlocklist, RoleEnum
 
 db.create_all()
 
@@ -1150,6 +1150,89 @@ def routes(route_uid = None):
         except SQLAlchemyError:
             return {'success': False, "msg": "Erorr Committing Stops"}
         return {'success': True}
+    return {'success': False}
+
+@app.route('/bus/<bus_uid>', methods = ['OPTIONS'])
+@app.route('/bus', methods = ['OPTIONS'])
+@cross_origin()
+def bus_options(route_uid=None):
+    return {'success':True}
+
+@app.route('/bus', methods = ['POST'])
+@app.route('/bus/<bus_uid>', methods = ['DELETE'])
+@cross_origin()
+@admin_required(roles=[RoleEnum.DRIVER])
+def bus_post(bus_uid=None):
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
+    if request.method == 'DELETE':
+        bus = Bus.query.filter_by(id=bus_uid).first()
+        if bus is None:
+            return {'success': False, 'msg': 'Invalid Bus Id'}
+        try:
+            #WRITE TO TRANSIT LOG
+            db.session.delete(bus)
+            db.session.commit()
+        except SQLAlchemyError:
+            return {'success': False, "msg": "Database Error"}
+        return {'success': True}
+
+    if request.method == 'POST':
+        content = request.json
+        number = content.get('number', None)
+        route_id = content.get('route_id', None)
+        direction = content.get('direction', None)
+        ignore_error = content.get('ignore_error', False)
+
+        if number is None or route_id is None or direction is None:
+            return {'success': False, "msg": "Invalid Query Syntax"}
+        
+        if type(number) is not int or type(route_id) is not int or type(direction) is not int:
+            return {'success': False, "msg": "Invalid Query Syntax"}
+
+        route = Route.query.filter_by(id=route_id).first()
+        if route is None:
+            return {'success': False, "msg": "Invalid Route"}
+
+
+        if route.bus is not None:
+            if ignore_error:
+                db.session.delete(route.bus)
+                db.session.flush()
+                db.session.refresh(route)
+            else:    
+                return {'success': False, "msg": "Route already has other bus", "error": True}
+        
+        if curr_user.bus is not None:
+            if ignore_error:
+                db.session.delete(curr_user.bus)
+                db.session.flush()
+                db.session.refresh(curr_user)
+            else:    
+                return {'success': False, "msg": "Driver already has other bus", "error": True}
+        
+        bus = Bus.query.filter_by(number=number).first()
+        if bus is not None:
+            if ignore_error:
+                db.session.delete(bus)
+                db.session.flush()
+            else:    
+                return {'success': False, "msg": "Bus already has other run", "error": True}
+        
+        start_time = datetime.now()
+        new_bus = Bus(number = number, start_time=start_time, route_id = route_id, user_id=curr_user.id)
+
+        ## WRITE TO TRANSIT LOG
+
+        try:
+            db.session.add(new_bus)
+            db.session.flush()
+            db.session.refresh(new_bus)
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"success": False, "msg": "Database Error"}
+        return {'success': True, 'id': new_bus.id}
+
     return {'success': False}
 
 @app.route('/email/route/<uid>', methods = ['OPTIONS'])
