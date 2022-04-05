@@ -51,6 +51,8 @@ export default function SignUp(props) {
   //Represents user id if email already exists, null otherwise
   const [checkEmail, setCheckEmail] = React.useState(null);
 
+  const [checkStudentEmail, setCheckStudentEmail] = React.useState([]);
+
   const [currRole, setCurrRole] = React.useState(0);
 
   React.useEffect(()=>{
@@ -81,7 +83,7 @@ export default function SignUp(props) {
   };
 
   const addStudent = () => {
-      setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": null}])
+      setStudents([...students, {"name": "", "id": "", "school": "", "school_id":0, "route": "", "route_id": null, "email": ""}])
       setRoutes([...routes, []]);
   }
 
@@ -101,7 +103,7 @@ export default function SignUp(props) {
           setCheckEmail(result.data.id);
         }
       }
-      else{
+      else {
         props.setSnackbarMsg(`Email could not be verified`);
         props.setShowSnackbar(true);
         props.setSnackbarSeverity("error");
@@ -113,6 +115,70 @@ export default function SignUp(props) {
       active = false;
     };
   }, [email]);
+
+  const checkEmailTakenStudent = (student_list, index) => {
+    let ret = false;
+    if (student_list.length != 0) {
+      let cur_email = student_list[index]['email'];
+      if (cur_email != "" && cur_email == email) {
+        ret = true;
+      }
+      for (var i = 0; i < student_list.length; i++) {
+        if (i != index) {
+          let cur_student = student_list[i];
+          if (cur_student != undefined) {
+            let em = cur_student['email'];
+            if (em != "" && em == cur_email) {
+              ret = true;
+            }
+          }
+        }
+      }
+    }
+    return ret;
+  };
+
+  React.useEffect(()=>{
+    let active = true;
+
+    const fetchData = async() => {
+
+      let student_checks = []; 
+
+      for (var i=0;i<students.length;i++) {
+        const result = await axios.get(
+          process.env.REACT_APP_BASE_URL+'/check_email', {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            },
+            params: {email: students[i].email}
+          }
+        );
+        if (result.data.success){
+            let entry = null;
+            if (result.data.id != null || checkEmailTakenStudent(students, i)) {
+              entry = students[i].email;
+            }
+            student_checks = [...student_checks, entry];
+        }
+        else{
+          props.setSnackbarMsg(`Email could not be verified`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("error");
+          props.updateUser(null);
+        }
+      }
+      if(active){
+        setCheckStudentEmail(student_checks);
+      }
+    }
+
+
+    fetchData();
+    return () => {
+      active = false;
+    };
+  }, [students]);
 
   React.useEffect(() => {
     const fetchData = async() => {
@@ -181,6 +247,9 @@ export default function SignUp(props) {
             if (students[i]["route_id"] != null){
               reqS.route_id = students[i]["route_id"];
             }
+            if(students[i]["email"] != "" && students[i]["email"] != null){
+              reqS.email = students[i]["email"];
+            }
             console.log(reqS)
             const re = await axios.post(process.env.REACT_APP_BASE_URL+"/student", reqS, {
               headers: {
@@ -217,9 +286,9 @@ export default function SignUp(props) {
 
   const handleStudentChange = (index, ty, new_val, index_val=0) => {
     const updatedValues = students.map((value, i) => {
-      if (i === index) {
+      if (i == index) {
           let new_obj = JSON.parse(JSON.stringify(value));
-          new_obj[ty] = new_val
+          new_obj[ty] = new_val;
 
           if (ty =="school"){
             new_obj["school_id"] = index_val;
@@ -274,10 +343,10 @@ export default function SignUp(props) {
   React.useEffect(() => {
     let disabled = email == "" || name == "" || (role == 0 && address == "") || phone == "" || checkEmail != null;
     for (let i=0; i<students.length; i++){
-      disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "";
+      disabled = disabled || students[i]["name"] == "" || students[i]["school"] == "" || checkStudentEmail.length != students.length || (students[i]["email"] != "" && checkStudentEmail[i] != null);
     }
     setDisable(disabled);
-  }, [email, name, address, students, phone, role])
+  }, [email, name, address, students, phone, role, checkStudentEmail]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -424,6 +493,17 @@ export default function SignUp(props) {
                     </Grid>
                     <Grid item xs={12}>
                     <TextField
+                      error={checkStudentEmail[index] != null}
+                      helperText={checkStudentEmail[index] != null ? "Email already taken":""}
+                      fullWidth
+                      value={element["email"] || ""}
+                      onChange={(e) => handleStudentChange(index, "email", e.target.value)}
+                      id="student-email"
+                      label="Email Address"
+                    />
+                    </Grid>
+                    <Grid item xs={12}>
+                    <TextField
                         label="Student ID"
                         type="text"
                         value={element["id"] || ""}
@@ -445,6 +525,7 @@ export default function SignUp(props) {
                         onChange={(e, newValue) => {handleStudentChange(index, "school", newValue == null ? "" : newValue.label, newValue == null ? 0 : newValue.id);
                                                     updateRoutes(index, newValue == null ? "" : newValue.id);
                                                     }}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
                         renderInput={(params) => <TextField {...params} label="School Name" />}
                     />
                     </Grid>
@@ -455,6 +536,7 @@ export default function SignUp(props) {
                         options={routes[index]}
                         autoSelect
                         value={element["route"] || ""}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
                         onChange={(e, newValue) => handleStudentChange(index, "route", newValue == null ? "" : newValue.label, newValue == null ? null :newValue.id)}
                         renderInput={(params) => <TextField {...params} label="Route Name" />}
                     />
@@ -490,6 +572,7 @@ export default function SignUp(props) {
             >
               Create Account
             </Button>
+            
           </Box>
         </Box>
       </Container>

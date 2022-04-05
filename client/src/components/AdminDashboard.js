@@ -31,6 +31,7 @@ import axios from 'axios';
 import Menu from '@mui/material/Menu';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
+import DepartureBoardIcon from '@mui/icons-material/DepartureBoard';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -150,6 +151,7 @@ export default function AdminDashboard(props){
         }
       )
       if(result.data.success){
+        console.log(result.data)
         setRole(result.data.user.role);
       }
       else{
@@ -295,7 +297,7 @@ export default function AdminDashboard(props){
           <List>
           <div> 
           { 
-          role == 0 &&
+          (role == 0) &&
           <ListItemButton component={RouterLink} to="/">
             <ListItemIcon>
               <HomeIcon />
@@ -355,6 +357,15 @@ export default function AdminDashboard(props){
               <FileDownloadIcon />
             </ListItemIcon>
             <ListItemText primary="Bulk Import" />
+          </ListItemButton>
+          }
+          {
+          (role == 3) &&
+          <ListItemButton component={RouterLink} to="/bus">
+            <ListItemIcon>
+              < DepartureBoardIcon/>
+            </ListItemIcon>
+            <ListItemText primary="Bus Run" />
           </ListItemButton>
           }
         </div>

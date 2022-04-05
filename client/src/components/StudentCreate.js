@@ -16,13 +16,14 @@ export default function CreateSchool(props) {
   const [studentId, setStudentId] = React.useState(null);
   const [email, setEmail] = React.useState("");
 
+  const [studentEmail, setStudentEmail] = React.useState("");
+
     const handleSubmit = (event) => {
       event.preventDefault();
-      // eslint-disable-next-line no-console
       let req = {
         name: name,
         school_id: school.id,
-        user_id: user
+        user_id: user,
       }
       console.log(req);
       if (studentId != null && studentId != "") {
@@ -30,6 +31,10 @@ export default function CreateSchool(props) {
       }
       if(route != null && route.id != "") {
         req.route_id = route.id;
+      }
+
+      if(studentEmail != null && studentEmail != "") {
+        req.email = studentEmail;
       }
       console.log(req);
       axios.post(process.env.REACT_APP_BASE_URL+'/student', req, {
@@ -44,6 +49,7 @@ export default function CreateSchool(props) {
           navigate("/students");
         }
         else{
+          console.log(res.data)
           props.setSnackbarMsg(`Student not successfully created`);
           props.setShowSnackbar(true);
           props.setSnackbarSeverity("error");
@@ -77,6 +83,8 @@ export default function CreateSchool(props) {
         route={route}
         updateRoute={setRoute}
         handleSubmit={handleSubmit}
+        studentEmail={studentEmail}
+        setStudentEmail={setStudentEmail}
         title="Create Student"
       />
       </>
