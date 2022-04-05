@@ -103,7 +103,7 @@ const columns = [
 
 function Table({columns,data, setSortModel}){
 
-  const mappingss = {"name.name": 'name', "student_id": "student_id", "school": "school", "route.name": "route", "in_range":"in_range"};
+  const mappingss = {"name.name": 'name', "student_id": "student_id", "email": "email", "school": "school", "route.name": "route", "in_range":"in_range"};
 
   const{
     getTableProps,
@@ -185,6 +185,11 @@ export default function DataTable(props) {
         accessor: "student_id"
       },
       {
+        Header: "Student Email",
+        accessor: "user.email"
+      },
+
+      {
         Header: "School",
         accessor: "school",
         Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/schools/" + row.row.original.school_id}>{row.row.original.school.name}</Link></>)
@@ -224,7 +229,7 @@ export default function DataTable(props) {
   const [sortModel, setSortModel] = React.useState([]);
   const [filterStr, setFilterStr] = React.useState("");
   const [loading , setLoading] = React.useState(true);
-  const mappings = {"name": "name", "student_id": "student_id", "school": "school_id"} 
+  const mappings = {"name": "name", "student_id": "student_id","email":"email", "school": "school_id"} 
 
   const [showAll, setShowAll] = React.useState(false);
 

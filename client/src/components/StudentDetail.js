@@ -27,6 +27,7 @@ export default function StudentDetail(props) {
 
   const [role, setRole] = React.useState(0);
 
+  const [email, setEmail] = React.useState("");
   React.useEffect(()=>{
     const fetchData = async() => {
       const result = await axios.get(
@@ -106,6 +107,12 @@ export default function StudentDetail(props) {
           setInRange("No");
         }
 
+        //currently shows parent email 
+        if(result.data.student.user.email != null){
+          setEmail(result.data.student.user.email);
+
+        }
+
       }
       else{
         props.setSnackbarMsg(`Student could not be loaded`);
@@ -146,6 +153,13 @@ export default function StudentDetail(props) {
           <Typography variant="h5" align="center">
             Student ID: {data.student_id}
           </Typography>
+
+          { email != null &&
+          <Typography variant = "h5" align = "center">
+            Student Email: {email}
+          </Typography>
+          }   
+
 
         </Stack>
 
