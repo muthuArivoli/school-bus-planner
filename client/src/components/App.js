@@ -27,6 +27,7 @@ import BulkImport from './BulkImport';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
+import BusRun from './BusRun';
 
 function LoginRoute(props) {
   const [loading, setLoading] = React.useState(true);
@@ -137,6 +138,13 @@ export default function App () {
             </PrivateRoute>
           }
           />
+          <Route exact path="/bus" element={
+            <PrivateRoute roles={[3]}>
+              <AdminDashboard titleText="Bus Run">
+                <BusRun/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
           <Route exact path="/schools" element={
             <PrivateRoute>
               <AdminDashboard titleText="School List">

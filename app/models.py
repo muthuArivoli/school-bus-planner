@@ -47,6 +47,7 @@ class User(db.Model):
     phone = db.Column(db.String())
     login_id = db.Column(db.Integer, ForeignKey('login_credentials.id'))
     login = relationship("Login", uselist=False, cascade="all, delete-orphan", back_populates="user",  single_parent=True)
+    bus = relationship("Bus", back_populates="user", uselist=False, cascade="all")
 
     @hybrid_property
     def email(self):
@@ -65,6 +66,8 @@ class User(db.Model):
             main['managed_schools'] = [school.as_dict() for school in self.managed_schools]
         if self.login_id is not None:
             main['email'] = self.login.as_dict()['email']
+        if self.role == RoleEnum.DRIVER:
+            main['bus'] = self.bus.as_dict() if self.bus is not None else None
         return main
 
     def __repr__(self):
@@ -108,6 +111,7 @@ class Route(db.Model):
     description = db.Column(db.String())
     students = relationship("Student", back_populates="route")
     stops = relationship("Stop", back_populates="route", cascade="all, delete-orphan")
+    bus = relationship("Bus", back_populates="route", uselist=False)
 
     @hybrid_property
     def student_count(self):
@@ -123,6 +127,8 @@ class Route(db.Model):
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
         main['students'] = [student.as_dict() for student in self.students]
+        main['in_transit'] = (self.bus is not None)
+        main['bus'] = self.bus.as_dict() if self.bus is not None else None
         main['stops'] = [stop.as_dict() for stop in self.stops]
         main['school'] = {c.key: getattr(self.school, c.key) for c in inspect(self.school).mapper.column_attrs}
         main['school']['arrival_time'] = self.school.arrival_time.isoformat()
@@ -165,6 +171,7 @@ class Student(db.Model):
         main['in_range'] = False
         if self.route is not None:
             main['route'] = {c.key: getattr(self.route, c.key) for c in inspect(self.route).mapper.column_attrs}
+            main['route']['bus'] = self.route.bus.as_dict() if self.route.bus is not None else None
             for stop in self.route.stops:
                 if get_distance(stop.latitude, stop.longitude, self.user.latitude, self.user.longitude) < 0.3:
                     main['in_range'] = True
@@ -224,6 +231,27 @@ class Stop(db.Model):
     def __repr__(self):
         return "<Stop(name='{}', route_id={}, latitude={}, longitude={}, index={}, pickup_time={}, dropoff_time={})>"\
             .format(self.name, self.route_id, self.latitude, self.longitude, self.index, self.pickup_time, self.dropoff_time)
+
+class Bus(db.Model):
+    __tablename__ = 'buses'
+
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.Integer, unique=True)
+    start_time = db.Column(db.Time())
+    direction = db.Column(db.Integer)
+    route_id = db.Column(db.Integer, ForeignKey('routes.id'))
+    route = relationship("Route", back_populates="bus")
+    user_id = db.Column(db.Integer, ForeignKey('users.id'))
+    user = relationship("User", back_populates="bus")
+
+    def as_dict(self):
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        main['user'] = {c.key: getattr(self.user, c.key) for c in inspect(self.user).mapper.column_attrs}
+        main['user']['email'] = self.user.login.email 
+        main['route'] = {c.key: getattr(self.route, c.key) for c in inspect(self.route).mapper.column_attrs}
+        main['start_time'] = self.start_time.isoformat()
+        return main
+
 
 @register_operator(sql_operator=contains_op)
 class CaseContainsOperator(BaseOperator):
