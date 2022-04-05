@@ -103,7 +103,7 @@ const columns = [
 
 function Table({columns,data, setSortModel}){
 
-  const mappingss = {"name.name": 'name', "student_id": "student_id", "email": "email", "school": "school", "route.name": "route", "in_range":"in_range"};
+  const mappingss = {"name.name": 'name', "student_id": "student_id", "user.email": "email", "school": "school", "route.name": "route", "in_range":"in_range", "parent_name": "parent_name"};
 
   const{
     getTableProps,
@@ -229,7 +229,7 @@ export default function DataTable(props) {
   const [sortModel, setSortModel] = React.useState([]);
   const [filterStr, setFilterStr] = React.useState("");
   const [loading , setLoading] = React.useState(true);
-  const mappings = {"name": "name", "student_id": "student_id","email":"email", "school": "school_id"} 
+  const mappings = {"name": "name", "student_id": "student_id","email":"email", "school": "school_id", "parent_name": "parent_name"} 
 
   const [showAll, setShowAll] = React.useState(false);
 
