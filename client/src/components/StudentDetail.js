@@ -24,6 +24,9 @@ export default function StudentDetail(props) {
 
   const [route, setRoute] = React.useState("No Route");
   const [inRange, setInRange] = React.useState("No");
+  const [bus, setBus] = React.useState("");
+  const [inTransit, setInTransit] = React.useState("");
+  const [busDriver, setBusDriver] = React.useState("");
 
   const [role, setRole] = React.useState(0);
 
@@ -93,8 +96,13 @@ export default function StudentDetail(props) {
         setData(result.data.student);
         setSchool(result.data.student.school.name);
         setUser(result.data.student.user);
+
+        console.log("result.data.student");
+        console.log(result.data.student); 
         if(result.data.student.route_id != null){
           setRoute(result.data.student.route.name);
+          setBus(result.data.student.route.bus);
+
         }
         else {
           setRoute("No Route");
@@ -141,10 +149,10 @@ export default function StudentDetail(props) {
     <Stack spacing={2} justifyContent="center">
         <Typography variant="h4" align="center">
                 Student Info
-              </Typography>
-        </Stack>
+        </Typography>
+    </Stack>
 
-      <Stack spacing={4} sx={{ width: '100%'}}>
+      <Stack spacing={5} sx={{ width: '100%'}}>
         <Stack direction="row" spacing={15} justifyContent="center">
           <Typography variant="h5" align="center">
             Name: {data.name}
@@ -158,8 +166,6 @@ export default function StudentDetail(props) {
             Student Email: {email}
           </Typography>
           }   
-
-
         </Stack>
 
         <Stack direction="row" spacing={20} justifyContent="center">
@@ -168,11 +174,13 @@ export default function StudentDetail(props) {
               {"School: "} 
               <Link component={RouterLink} to={"/schools/" + data.school_id}>
                 {school}
-            </Link>
+              </Link>
             </Typography>
           </Stack>
-          <Stack spacing={1} justifyContent="center">
-            {
+        </Stack>
+        
+        <Stack direction="row" spacing={15} justifyContent="center">
+        {
             route == "No Route" &&
             <Typography variant="h5" align="center">
               Route: {route}
@@ -192,8 +200,28 @@ export default function StudentDetail(props) {
             </Typography> 
             </>
             }
+          {
+          route != "No Route" &&
+          <Typography variant="h5" align="center">
+            Route In Transit: {/* */}
+          </Typography>
+          }  
+        </Stack>
 
-          </Stack>
+                
+        <Stack direction="row" spacing={15} justifyContent="center">
+
+          {
+          route != "No Route" &&
+          <Typography variant="h5" align="center">
+            Bus: {bus}
+          </Typography>
+          }
+          { route != "No Route" &&
+          <Typography variant = "h5" align = "center">
+            Bus Driver: {/* */}
+          </Typography>
+          }   
         </Stack>
 
         <Divider id="divider" variant="fullWidth" style={{width:'100%'}}/>
