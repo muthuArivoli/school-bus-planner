@@ -107,9 +107,8 @@ export default function StudentDetail(props) {
           setInRange("No");
         }
 
-        //currently shows parent email 
-        if(result.data.student.user.email != null){
-          setEmail(result.data.student.user.email);
+        if(result.data.student.email != null){
+          setEmail(result.data.student.email);
 
         }
 

@@ -103,7 +103,7 @@ const columns = [
 
 function Table({columns,data, setSortModel}){
 
-  const mappingss = {"name.name": 'name', "student_id": "student_id", "user.email": "email", "school": "school", "route.name": "route", "in_range":"in_range", "parent_name": "parent_name"};
+  const mappingss = {"name.name": 'name', "student_id": "student_id", "email": "email", "school": "school", "route.name": "route", "in_range":"in_range", "parent_name": "parent_name"};
 
   const{
     getTableProps,
@@ -186,7 +186,7 @@ export default function DataTable(props) {
       },
       {
         Header: "Student Email",
-        accessor: "user.email"
+        accessor: "email"
       },
 
       {
