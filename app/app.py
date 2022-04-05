@@ -22,6 +22,7 @@ from io import TextIOWrapper
 from werkzeug.utils import secure_filename
 import csv
 import re
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 app = Flask(__name__)
@@ -1981,9 +1982,20 @@ def geocode_address(addr):
     return lat, lng
 
     
+def remove_buses():
+    buses = Bus.query.all()
+    for bus in buses:
+        if bus.start_time + timedelta(minutes=180) < datetime.now():
+            logging.info(f"Kill bus {bus.number} {datetime.now()}")
+            db.session.delete(bus)
+            db.session.commit()
 
 
 app.register_blueprint(api, url_prefix='/api')
+
+scheduler = BackgroundScheduler(daemon=True)
+scheduler.add_job(remove_buses, trigger='interval', seconds=180)
+scheduler.start()
 
 if __name__ == "__main__":
     app.run(debug=True)
