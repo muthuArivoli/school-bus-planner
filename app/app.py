@@ -1220,7 +1220,7 @@ def bus_post(bus_uid=None):
                 return {'success': False, "msg": "Bus already has other run", "error": True}
         
         start_time = datetime.now()
-        new_bus = Bus(number = number, start_time=start_time, route_id = route_id, user_id=curr_user.id)
+        new_bus = Bus(number = number, start_time=start_time, route_id = route_id, user_id=curr_user.id, direction=direction)
 
         ## WRITE TO TRANSIT LOG
 

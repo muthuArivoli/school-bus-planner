@@ -18,6 +18,12 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
+import { DateTime } from 'luxon';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 export default function StudentDetail(props) {
 
@@ -33,6 +39,12 @@ export default function StudentDetail(props) {
   const [busRunDialogOpen, setBusRunDialogOpen] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState("");
 
+ 
+  function tConvert(time) {
+    let date_time = DateTime.fromISO(time, {zone: 'utc'});
+    return date_time.setZone("America/New_York").toLocaleString(DateTime.TIME_SIMPLE);
+  }
+
   React.useEffect(()=>{
     const fetchData = async() => {
       const result = await axios.get(
@@ -44,6 +56,9 @@ export default function StudentDetail(props) {
       )
       if(result.data.success){
           console.log(result.data.user.bus)
+        if(result.data.user.bus != null) {
+            result.data.user.bus.start_time = tConvert(result.data.user.bus.start_time)
+        }
         setBus(result.data.user.bus);
       }
       else{
@@ -107,7 +122,7 @@ export default function StudentDetail(props) {
         route_id: route.id,
         number: number,
         ignore_error: ignore,
-        direction: 1
+        direction: direction
     };
     console.log(req);
     axios.post(process.env.REACT_APP_BASE_URL+"/bus", req, {
@@ -165,8 +180,40 @@ export default function StudentDetail(props) {
             }
 
         </Stack>
-        
-        <Dialog
+
+        <Stack direction="row" spacing={15} justifyContent="center">
+            {bus != null && 
+            <>
+          <Typography variant="h5" align="center">
+            Start Time: {bus.start_time}
+          </Typography>
+          <Typography variant="h5" align="center">
+            Direction: {bus.direction == 0 ? "To School" : "From School"}
+          </Typography>
+          </>
+            }
+
+        </Stack>
+
+        <Stack direction="row" spacing={3} justifyContent="center">
+          <Button
+              onClick={()=>{setBusRunDialogOpen(true)}}
+              color="primary"
+              variant="outlined"
+              size="small"
+              >
+              Start Bus Run
+          </Button>
+          {
+          (bus != null) &&
+          <DeleteDialog buttonDesc={"Stop Bus Run"} dialogTitle="Stop Bus Run?" dialogDesc={`Please confirm you would like to stop the bus run`} onAccept={handleDelete}/>
+          }
+        </Stack>
+        </Stack>
+    </Grid>
+
+            
+    <Dialog
         open={busRunDialogOpen}
         onClose={()=>setBusRunDialogOpen(false)}
         aria-labelledby="alert-dialog-title"
@@ -176,6 +223,8 @@ export default function StudentDetail(props) {
           Start Bus Run?
         </DialogTitle>
         <DialogContent>
+        <Grid container spacing={2}>
+            <Grid item xs={12} sx={{mt: 2}}>
             <Autocomplete
             fullWidth
             options={routes}
@@ -186,6 +235,8 @@ export default function StudentDetail(props) {
             isOptionEqualToValue={(option, value) => option.id === value.id}
             renderInput={(params) => <TextField {...params} label={"Route Name" } />}
             />
+            </Grid>
+            <Grid item xs={12}>
             <TextField 
             autoFocus
             required
@@ -195,6 +246,24 @@ export default function StudentDetail(props) {
             fullWidth
             inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
             />
+            </Grid>
+            <Grid item xs={12}>
+            <FormControl>
+                <FormLabel id="role-group-label">Direction</FormLabel>
+                <RadioGroup
+                  aria-labelledby="role-group-label"
+                  value={direction}
+                  onChange={(e)=>{
+                    setDirection(parseInt(e.target.value));
+                  }}
+                  name="role-group"
+                >
+                  <FormControlLabel value={0} control={<Radio />} label="To School" />
+                  <FormControlLabel value={1} control={<Radio />} label="From School" />
+                </RadioGroup>
+                </FormControl>
+            </Grid>
+            </Grid>
         </DialogContent>
         <DialogActions>
         <Button onClick={()=>handleAccept(false)} disabled={number == "" || route == null}>Submit</Button>
@@ -218,25 +287,6 @@ export default function StudentDetail(props) {
         <Button onClick={()=>handleAccept(true)} disabled={number == "" || route == null}>Confirm</Button>
         </DialogActions>
       </Dialog>
-
-
-
-        <Stack direction="row" spacing={3} justifyContent="center">
-          <Button
-              onClick={()=>{setBusRunDialogOpen(true)}}
-              color="primary"
-              variant="outlined"
-              size="small"
-              >
-              Start Bus Run
-          </Button>
-          {
-          (bus != null) &&
-          <DeleteDialog buttonDesc={"Stop Bus Run"} dialogTitle="Stop Bus Run?" dialogDesc={`Please confirm you would like to stop the bus run`} onAccept={handleDelete}/>
-          }
-        </Stack>
-        </Stack>
-    </Grid>
     </>
   );
 }

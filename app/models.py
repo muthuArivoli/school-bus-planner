@@ -238,6 +238,7 @@ class Bus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.Integer, unique=True)
     start_time = db.Column(db.Time())
+    direction = db.Column(db.Integer)
     route_id = db.Column(db.Integer, ForeignKey('routes.id'))
     route = relationship("Route", back_populates="bus")
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
