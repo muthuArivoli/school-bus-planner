@@ -575,6 +575,7 @@ def students_get(student_uid=None):
     args = request.args
     name_search = args.get('name', '')
     id_search = args.get('id', None, type=int)
+    email_search = args.get('email', '')
     page = args.get('page', None, type=int)
     sort = args.get('sort', None)
     direction = args.get('dir', None)
@@ -591,11 +592,11 @@ def students_get(student_uid=None):
     if sort and direction == 'desc':
         sort = '-'+sort
     if page:
-        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
+        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'email': email_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
         students = student_filt.get_objects()
         record_num = student_filt.count
     else:
-        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort}, query=base_query, operator=OrOperator)
+        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'email': email_search, 'order_by': sort}, query=base_query, operator=OrOperator)
         students = student_filt.apply()
         record_num = students.count()
 
