@@ -37,7 +37,7 @@ cors = CORS(app)
 api = Blueprint('api', __name__)
 gmaps_key = googlemaps.Client(key="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o")
 
-from models import User, Student, School, Route, Stop, Login, Bus, UserFilter, StudentFilter, SchoolFilter, RouteFilter, TokenBlocklist, RoleEnum
+from models import User, Student, School, Route, Stop, Login, Bus, Log, UserFilter, StudentFilter, SchoolFilter, RouteFilter, LogFilter, TokenBlocklist, RoleEnum
 
 db.create_all()
 
@@ -1171,7 +1171,8 @@ def bus_post(bus_uid=None):
         if bus is None:
             return {'success': False, 'msg': 'Invalid Bus Id'}
         try:
-            #WRITE TO TRANSIT LOG
+            duration = datetime.now() - bus.start_time
+            bus.log.duration = int(duration.total_seconds())
             db.session.delete(bus)
             db.session.commit()
         except SQLAlchemyError:
@@ -1198,6 +1199,8 @@ def bus_post(bus_uid=None):
 
         if route.bus is not None:
             if ignore_error:
+                duration = datetime.now() - route.bus.start_time
+                route.bus.log.duration = int(duration.total_seconds())
                 db.session.delete(route.bus)
                 db.session.flush()
                 db.session.refresh(route)
@@ -1206,6 +1209,8 @@ def bus_post(bus_uid=None):
         
         if curr_user.bus is not None:
             if ignore_error:
+                duration = datetime.now() - curr_user.bus.start_time
+                curr_user.bus.log.duration = int(duration.total_seconds())
                 db.session.delete(curr_user.bus)
                 db.session.flush()
                 db.session.refresh(curr_user)
@@ -1215,15 +1220,22 @@ def bus_post(bus_uid=None):
         bus = Bus.query.filter_by(number=number).first()
         if bus is not None:
             if ignore_error:
+                duration = datetime.now() - bus.start_time
+                bus.log.duration = int(duration.total_seconds())
                 db.session.delete(bus)
                 db.session.flush()
             else:    
                 return {'success': False, "msg": "Bus already has other run", "error": True}
         
         start_time = datetime.now()
-        new_bus = Bus(number = number, start_time=start_time, route_id = route_id, user_id=curr_user.id, direction=direction)
-
-        ## WRITE TO TRANSIT LOG
+        new_log = Log(number=number, start_time=start_time, direction=direction, user_id=curr_user.id, route_id=route_id, school_id=route.school_id)
+        try:
+            db.session.add(new_log)
+            db.session.flush()
+            db.session.refresh(new_log)
+        except SQLAlchemyError:
+            return {"success": False, "msg": "Database Error"}
+        new_bus = Bus(number = number, start_time=start_time, route_id = route_id, user_id=curr_user.id, direction=direction, log_id = new_log.id)
 
         try:
             db.session.add(new_bus)
@@ -1235,6 +1247,47 @@ def bus_post(bus_uid=None):
         return {'success': True, 'id': new_bus.id}
 
     return {'success': False}
+
+@app.route('/bus', methods = ['GET'])
+@cross_origin()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
+def get_log():
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
+
+    content = request.json
+    school_id = content.get('school_id', None)
+    route_id = content.get('route_id', None)
+    user_id = content.get('user_id', None)
+    number = content.get('number', None)
+    page = args.get('page', None,type=int)
+    sort = args.get('sort', None)
+    direction = args.get('dir', 'asc')
+
+    base_query = Log.query
+    record_num = None
+
+    if curr_user.role == RoleEnum.SCHOOL_STAFF:
+        ids = set()
+        for school in curr_user.managed_schools:
+            for log in school.logs:
+                ids.add(log.id)
+        base_query = Log.query.filter(Log.id.in_(ids))
+
+    if sort and direction == 'desc':
+        sort = '-'+sort
+    if page:
+        log_filt = LogFilter(data={'school_id': school_id, 'route_id': route_id, 'user_id': user_id, 'number': number, 'order_by': sort, 'page': page}, query=base_query).paginate()
+        logs = log_filt.get_objects()
+        record_num = log_filt.count
+    else:
+        log_filt = LogFilter(data={'school_id': school_id, 'route_id': route_id, 'user_id': user_id, 'number': number, 'order_by': sort}, query=base_query)
+        logs = log_filt.apply()
+        record_num = logs.count()
+
+    all_logs = [log.as_dict() for log in logs]
+    return {'success':True, "logs": all_logs, "records": record_num}
+    
 
 @app.route('/email/route/<uid>', methods = ['OPTIONS'])
 @app.route('/email/school/<uid>', methods = ['OPTIONS'])
@@ -1987,6 +2040,8 @@ def remove_buses():
     for bus in buses:
         if bus.start_time + timedelta(minutes=180) < datetime.now():
             logging.info(f"Kill bus {bus.number} {datetime.now()}")
+            duration = datetime.now() - bus.start_time
+            bus.log.duration = int(duration.total_seconds())
             db.session.delete(bus)
             db.session.commit()
 

@@ -8,7 +8,7 @@ from sqlalchemy.sql.operators import contains_op
 
 import enum
 
-from sqlalchemy_filters import Filter, StringField, Field, TimestampField
+from sqlalchemy_filters import Filter, StringField, Field, TimestampField, DateTimeField
 from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator, BaseOperator, register_operator
 from sqlalchemy import func
 from sqlalchemy_filters.fields import MethodField
@@ -48,6 +48,7 @@ class User(db.Model):
     login_id = db.Column(db.Integer, ForeignKey('login_credentials.id'))
     login = relationship("Login", uselist=False, cascade="all, delete-orphan", back_populates="user",  single_parent=True)
     bus = relationship("Bus", back_populates="user", uselist=False, cascade="all")
+    logs = relationship("Log", back_populates="user", cascade="all, delete-orphan")
 
     @hybrid_property
     def email(self):
@@ -88,6 +89,7 @@ class School(db.Model):
     latitude = db.Column(db.Float())
     arrival_time = db.Column(db.Time())
     departure_time = db.Column(db.Time())
+    logs = relationship("Log", back_populates="school", cascade="all, delete-orphan")
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -112,6 +114,7 @@ class Route(db.Model):
     students = relationship("Student", back_populates="route")
     stops = relationship("Stop", back_populates="route", cascade="all, delete-orphan")
     bus = relationship("Bus", back_populates="route", uselist=False)
+    logs = relationship("Log", back_populates="route", cascade="all, delete-orphan")
 
     @hybrid_property
     def student_count(self):
@@ -243,6 +246,8 @@ class Bus(db.Model):
     route = relationship("Route", back_populates="bus")
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
     user = relationship("User", back_populates="bus")
+    log_id = db.Column(db.Integer, ForeignKey('log.id'))
+    log = relationship("Log", back_populates="bus")
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -250,6 +255,29 @@ class Bus(db.Model):
         main['user']['email'] = self.user.login.email 
         main['route'] = {c.key: getattr(self.route, c.key) for c in inspect(self.route).mapper.column_attrs}
         main['start_time'] = self.start_time.isoformat()
+        return main
+
+class Log(db.Model):
+    __tablename__ = 'log'
+
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.Integer)
+    start_time = db.Column(db.DateTime())
+    duration = db.Column(db.Integer)
+    direction = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, ForeignKey('users.id'))
+    user = relationship("User", back_populates="logs")
+    school_id = db.Column(db.Integer, ForeignKey('schools.id'))
+    school = relationship("School", back_populates="logs")
+    route_id = db.Column(db.Integer, ForeignKey('routes.id'))
+    route = relationship("Route", back_populates="logs")
+    bus = relationship("Bus", back_populates="log")
+
+    def as_dict(self):
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        main['user'] = self.user.as_dict()
+        main['school'] = self.school.as_dict()
+        main['route'] = self.route.as_dict()
         return main
 
 
@@ -292,4 +320,17 @@ class RouteFilter(Filter):
 
     class Meta:
         model = Route
+        page_size = 10
+    
+class LogFilter(Filter):
+    number = Field(lookup_operator = EqualsOperator)
+    school_id = Field(lookup_operator = EqualsOperator)
+    route_id = Field(lookup_operator = EqualsOperator)
+    user_id = Field(lookup_operator = EqualsOperator)
+    start_time = DateTimeField()
+    direction = Field()
+    duration = Field()
+
+    class Meta:
+        model = Log
         page_size = 10
