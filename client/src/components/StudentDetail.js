@@ -24,9 +24,7 @@ export default function StudentDetail(props) {
 
   const [route, setRoute] = React.useState("No Route");
   const [inRange, setInRange] = React.useState("No");
-  const [bus, setBus] = React.useState("");
-  const [inTransit, setInTransit] = React.useState("");
-  const [busDriver, setBusDriver] = React.useState("");
+
 
   const [role, setRole] = React.useState(0);
 
@@ -101,7 +99,6 @@ export default function StudentDetail(props) {
         console.log(result.data.student); 
         if(result.data.student.route_id != null){
           setRoute(result.data.student.route.name);
-          setBus(result.data.student.route.bus);
 
         }
         else {
@@ -200,29 +197,10 @@ export default function StudentDetail(props) {
             </Typography> 
             </>
             }
-          {
-          route != "No Route" &&
-          <Typography variant="h5" align="center">
-            Route In Transit: {/* */}
-          </Typography>
-          }  
+
         </Stack>
 
                 
-        <Stack direction="row" spacing={15} justifyContent="center">
-
-          {
-          route != "No Route" &&
-          <Typography variant="h5" align="center">
-            Bus: {bus}
-          </Typography>
-          }
-          { route != "No Route" &&
-          <Typography variant = "h5" align = "center">
-            Bus Driver: {/* */}
-          </Typography>
-          }   
-        </Stack>
 
         <Divider id="divider" variant="fullWidth" style={{width:'100%'}}/>
 
