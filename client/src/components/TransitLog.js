@@ -14,7 +14,7 @@ import { useTable, useSortBy, useFilters, usePagination, ReactTable } from 'reac
 import UnfoldMoreOutlinedIcon from '@mui/icons-material/UnfoldMoreOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
-
+import Autocomplete from '@mui/material/Autocomplete';
 import MauTable from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
@@ -22,6 +22,7 @@ import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import TablePagination from '@mui/material/TablePagination';
 import { Helmet } from 'react-helmet';
+import { Duration } from 'luxon';
 
 function NoLogsOverlay(){
     return(
@@ -36,7 +37,7 @@ function NoLogsOverlay(){
 
 function Table({columns,data, setSortModel}){
 
-    const mappingss = {"name.name": 'name', "school.name": "school", "bus": "bus", "route": "route", "direction": "direction", "start_time": "start_time", "duration": "duration"}; 
+    const mappingss = {"user": 'user_id', "school": "school_id", "number": "number", "route": "route_id", "direction": "direction", "start_time": "start_time", "duration": "duration"}; 
   
     const{
       getTableProps,
@@ -111,12 +112,12 @@ export default function TransitLog(props){
       () => [
         {
           Header: "Driver",
-          accessor: "name.name",
-          Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/users/" + row.row.original.name.id}>{row.row.original.name.name}</Link></>)
+          accessor: "user",
+          Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/users/" + row.row.original.user.id}>{row.row.original.user.full_name}</Link></>)
         },
         {
           Header: "Bus #",
-          accessor: "bus", 
+          accessor: "number", 
         },
         {
           Header: "School",
@@ -127,43 +128,52 @@ export default function TransitLog(props){
         {
           Header: "Route",
           accessor: "route",
-          Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/routes/" + row.row.original.name.id}>{row.row.original.name.name}</Link></>)
+          Cell: (row) => (<>{console.log(row)}<Link component={RouterLink} to={"/routes/" + row.row.original.route.id}>{row.row.original.route.name}</Link></>)
           , 
         },
         {
-          Header: "To/From School",
+          Header: "Direction",
           accessor: "direction",
-          //Cell: (row) => (<>{ row.row.original.in_transit ? <CheckIcon/>:<CloseIcon/> }</>), //show checkbox,
+          Cell: (row) => (<>{ row.row.original.direction == 0? "To School" : "From School" }</>), //show checkbox,
         },
         {
-          Header: "Log Start",
+          Header: "Start Time",
           accessor: "start_time", 
         },,
         {
-          Header: "Log Duration",
+          Header: "Duration",
           accessor: "duration", 
+          Cell: (row) => (<>{ row.row.original.duration == null? "Ongoing" : Duration.fromMillis(row.row.original.duration * 1000).toFormat("h:mm:ss") }</>)
         },
   
       ]
     )
   
 
-    const [logRows, setLogRows] = React.useState([]); 
-
     const [pageSize, setPageSize] = React.useState(10);
     const [totalRows, setTotalRows] = React.useState(0);
     const [page, setPage] = React.useState(0);
     const [sortModel, setSortModel] = React.useState([]);
     const [filterStr, setFilterStr] = React.useState("");
+    const [routes, setRoutes] = React.useState([]);
+    const [schools, setSchools] = React.useState([]);
+    const [users, setUsers] = React.useState([]);
+    const [filterId, setFilterId] = React.useState({id: "", label: ""});
+    const [filterType, setFilterType] = React.useState(null);
+    const filterValues = ['Driver', 'Bus number', 'School', 'Route'];
+  
+
+
     const [showAll, setShowAll] = React.useState(false);
     const [loading , setLoading] = React.useState(true);
   
     let navigate = useNavigate();
 
     //'name'- driver name
-    const mappings = {'name':'name', 'bus': 'bus', 'school': 'school_id', 'route': 'route', 'direction': 'direction', 'start_time': 'start_time', 'duration': 'duration'}
 
     React.useEffect( () => {
+      let active = true;
+    
         const fetchData = async() => {
             setLoading(true);
             let params = {}
@@ -171,35 +181,39 @@ export default function TransitLog(props){
       
             console.log(sortModel);
             if(sortModel.length > 0) {
-              params.sort = mappings[sortModel[0].field];
+              params.sort = sortModel[0].field;
               params.dir = sortModel[0].sort;
             }
-            params.name = filterStr;
-      
+            if(filterType == "Bus number"){
+              params.number = parseInt(filterStr);
+            }
+            if(filterType == 'School') {
+              params.school_id = filterId.id;
+            }
+            if(filterType == 'Route') {
+              params.route_id = filterId.id;
+            }
+            if(filterType == 'Driver') {
+              params.user_id = filterId.id;
+            }
 
             const result = await axios.get(
-                process.env.REACT_APP_BASE_URL+`/route/${id}`,{
+                process.env.REACT_APP_BASE_URL+`/bus`,{
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     },
                     params: params
                 }
             );
-            if(result.data.sucess){
-                console.log(result.data.route);
-
-                let newRows = result.data.route.map((value) => {
-                    return {...value}
-                })
+            if(result.data.success){
                 if(active){
-                    //setData()
-                    //setLogRows()
+                    setData(result.data.logs)
                     setTotalRows(result.data.records);
                 }
             }
             else{
                 // console.log(result.data)
-                props.setSnackbarMsg(`Routes could not be loaded - route`);
+                props.setSnackbarMsg(`Logs could not be loaded - route`);
                 props.setShowSnackbar(true);
                 props.setSnackbarSeverity("error");
                 navigate("/routes");
@@ -210,18 +224,129 @@ export default function TransitLog(props){
         return () => {
           active = false;
         };
-      }, [page, sortModel, filterStr, showAll])
+      }, [page, sortModel, filterStr, filterType, filterId, showAll])
+
+
+      React.useEffect(()=> {
+        const fetchData = async() => {
+          const result = await axios.get(
+            process.env.REACT_APP_BASE_URL+'/user', {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+              },
+              params: {sort: "full_name", dir: "asc", role: 3}
+            }
+          );
+          if (result.data.success){
+            let arr = result.data.users.map((value) => {
+              return {id: value.id, label: value.full_name}
+            });
+            setUsers(arr);
+          }
+          else{
+            props.setSnackbarMsg(`Users could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/students");
+          }
+        };
+        fetchData();
+      }, []);
+
+      React.useEffect(()=> {
+        const fetchData = async() => {
+          const result = await axios.get(
+            process.env.REACT_APP_BASE_URL+'/school', {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+              },
+              params: {sort: "name", dir: "asc"}
+            }
+          );
+          if (result.data.success){
+            let arr = result.data.schools.map((value) => {
+              return {id: value.id, label: value.name}
+            });
+            setSchools(arr);
+          }
+          else{
+            props.setSnackbarMsg(`School could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/schools");
+          }
+        };
+        fetchData();
+      }, []);
+
+      React.useEffect(()=> {
+        const fetchData = async() => {
+          const result = await axios.get(
+            process.env.REACT_APP_BASE_URL+'/route', {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`
+              },
+              params: {sort: "name", dir: "asc"}
+            }
+          );
+          if (result.data.success){
+            let arr = result.data.routes.map((value) => {
+              return {id: value.id, label: value.name}
+            });
+            setRoutes(arr);
+          }
+          else{
+            props.setSnackbarMsg(`Routes could not be loaded`);
+            props.setShowSnackbar(true);
+            props.setSnackbarSeverity("error");
+            navigate("/students");
+          }
+        };
+        fetchData();
+      }, []);
 
     return (
         <>
         
         <Helmet>
             <title>
-                Route Log
+                Transit Log
             </title>
         </Helmet>
         <Grid container>
-            <Grid item md={12} lg={12}>
+        <Grid item md={3} lg={3}>
+        <Autocomplete
+          options={filterValues}
+          value={filterType}
+          autoSelect
+          onChange={(e, new_value) => {
+            setFilterType(new_value);
+            setFilterStr("");
+            setFilterId({id: "", label: ""});
+          }}
+          renderInput={(params) => (
+            <TextField {...params} label="Filter By..." />
+          )}
+        />
+        </Grid>
+          {
+            (filterType == 'Driver' || filterType == 'School' || filterType == 'Route') &&
+            <Grid item md={9} lg={9}>
+              <Autocomplete
+                options={filterType == 'Driver' ? users : filterType == 'School' ? schools : routes}
+                value={filterId}
+                autoSelect
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                onChange={(e, new_value) => setFilterId(new_value)}
+                renderInput={(params) => (
+                  <TextField {...params} label="Search" />
+              )}
+        />
+            </Grid>
+          }
+          {
+            filterType == "Bus number" &&
+            <Grid item md={9} lg={9}>
             <TextField
             label="Search"
             name="Search"
@@ -235,6 +360,7 @@ export default function TransitLog(props){
             onChange={(e)=>setFilterStr(e.target.value)}
             />
             </Grid>
+          }
         </Grid>
         <div style={{ height: 400, width: '100%' }}> 
 
