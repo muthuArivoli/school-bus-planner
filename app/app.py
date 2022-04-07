@@ -1256,11 +1256,11 @@ def get_log():
     login = Login.query.filter_by(email = get_jwt_identity()).first()
     curr_user = login.user
 
-    content = request.json
-    school_id = content.get('school_id', None)
-    route_id = content.get('route_id', None)
-    user_id = content.get('user_id', None)
-    number = content.get('number', None)
+    args = request.args
+    school_id = args.get('school_id', None, type=int)
+    route_id = args.get('route_id', None, type=int)
+    user_id = args.get('user_id', None, type=int)
+    number = args.get('number', None, type=int)
     page = args.get('page', None,type=int)
     sort = args.get('sort', None)
     direction = args.get('dir', 'asc')
