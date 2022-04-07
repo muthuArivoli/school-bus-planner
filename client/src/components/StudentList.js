@@ -269,6 +269,7 @@ export default function DataTable(props) {
         params.dir = sortModel[0].sort;
       }
       params.name = filterStr;
+      params.email = filterStr;
       params.id = parseInt(filterStr);
 
       const result = await axios.get(
