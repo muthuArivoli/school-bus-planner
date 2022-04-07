@@ -224,7 +224,7 @@ export default function App () {
                 <StudentCreate/>
               </AdminDashboard>
             </PrivateRoute>
-          } /> 
+          } />  
           <Route exact path="/students/:id" element={
             <PrivateRoute>
               <AdminDashboard titleText="Student Detail">

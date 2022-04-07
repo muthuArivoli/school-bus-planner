@@ -127,6 +127,8 @@ class Route(db.Model):
                 label("student_count")
                 )
 
+            
+
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
         main['students'] = [student.as_dict() for student in self.students]
@@ -164,6 +166,16 @@ class Student(db.Model):
     __table_args__ = (
         CheckConstraint(student_id >= 0, name='check_id_positive'),
         {})
+  
+    @hybrid_property
+    def email(self):
+        return self.login.email
+    
+    @email.expression
+    def email(cls):
+        return select(Login.email).\
+                where(Login.id==cls.login_id).\
+                label('email')
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -300,6 +312,7 @@ class StudentFilter(Filter):
     student_id = Field(lookup_operator = EqualsOperator)
     school_id = Field(lookup_operator = EqualsOperator)
     name = StringField(lookup_operator = CaseContainsOperator)
+    email = StringField(lookup_operator=CaseContainsOperator)
 
     class Meta:
         model = Student
