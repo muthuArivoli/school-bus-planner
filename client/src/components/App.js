@@ -29,6 +29,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import BusRun from './BusRun';
 import TransitLog from './TransitLog';
+import TransitStatusMap from './TransitStatusMap';
 
 function LoginRoute(props) {
   const [loading, setLoading] = React.useState(true);
@@ -273,6 +274,14 @@ export default function App () {
             <PrivateRoute>
               <AdminDashboard titleText="Transit Log">
                 <TransitLog/>
+              </AdminDashboard>
+            </PrivateRoute>
+          }
+          />
+          <Route exact path="/status" element={
+            <PrivateRoute>
+              <AdminDashboard titleText="Transit Status Map">
+                <TransitStatusMap/>
               </AdminDashboard>
             </PrivateRoute>
           }
