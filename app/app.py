@@ -1156,6 +1156,7 @@ def routes(route_uid = None):
 
 @app.route('/bus/<bus_uid>', methods = ['OPTIONS'])
 @app.route('/bus', methods = ['OPTIONS'])
+@app.route('/log', methods = ['OPTIONS'])
 @cross_origin()
 def bus_options(route_uid=None):
     return {'success':True}
@@ -1249,7 +1250,7 @@ def bus_post(bus_uid=None):
 
     return {'success': False}
 
-@app.route('/bus', methods = ['GET'])
+@app.route('/log', methods = ['GET'])
 @cross_origin()
 @admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
 def get_log():
@@ -1288,6 +1289,27 @@ def get_log():
 
     all_logs = [log.as_dict() for log in logs]
     return {'success':True, "logs": all_logs, "records": record_num}
+
+@app.route('/bus', methods = ['GET'])
+@cross_origin()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
+def get_bus():
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
+
+    buses = Bus.query.all()
+
+    if curr_user.role == RoleEnum.SCHOOL_STAFF:
+        ids = [mschool.id for mschool in curr_user.managed_schools]
+        bus_list = []
+        for bus in buses:
+            if bus.route.school.id in ids:
+                bus_list.append(bus.to_dict())
+        
+        return {'success': True, 'buses': bus_list}
+    
+    bus_list = [bus.to_dict() for bus in buses]
+    return {'success': True, 'buses': bus_list}
     
 
 @app.route('/email/route/<uid>', methods = ['OPTIONS'])
@@ -2046,12 +2068,74 @@ def remove_buses():
             db.session.delete(bus)
             db.session.commit()
 
+    try: 
+        r = requests.get(
+        'http://tranzit.colab.duke.edu:8000/get',
+        params={'bus': 5000},
+        timeout=5
+        )
+    except:
+        for bus in buses:
+            bus.latitude = None
+            bus.longitude = None
+        db.session.commit()
+        return
+
+
+    for bus in buses:
+        try:
+            r = requests.get(
+            'http://tranzit.colab.duke.edu:8000/get',
+            params={'bus': bus.number},
+            timeout=5
+            )
+            resp = r.json()
+            logging.info(resp)
+            if resp == 'unknown bus':
+                bus.latitude = None
+                bus.longitude = None
+                logging.info("unknown bus")
+                continue
+            if type(resp) is not dict:
+                bus.latitude = None
+                bus.longitude = None
+                logging.info("not dict")
+                continue
+            if resp.get('bus', None) != str(bus.number):
+                bus.latitude = None
+                bus.longitude = None
+                logging.info("not number")
+                continue
+            lat = resp.get('lat', None)
+            lng = resp.get('lng', None)
+            if type(lat) is not float or type(lng) is not float:
+                bus.latitude = None
+                bus.longitude = None
+                logging.info("not float")
+                continue
+            if lat < -90 or lat > 90 or lng < -180 or lng > 180:
+                bus.latitude = None
+                bus.longitude = None
+                logging.info("invalid values")
+                continue
+            logging.info(lat)
+            logging.info(lng)
+            bus.latitude = lat
+            bus.longitude = lng
+        except Exception as e:
+            logging.error(e)
+            bus.latitude = None
+            bus.longitude = None
+    db.session.commit()
+
 
 app.register_blueprint(api, url_prefix='/api')
 
 scheduler = BackgroundScheduler(daemon=True)
-scheduler.add_job(remove_buses, trigger='interval', seconds=180)
+scheduler.add_job(remove_buses, trigger='interval', seconds=10)
 scheduler.start()
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
