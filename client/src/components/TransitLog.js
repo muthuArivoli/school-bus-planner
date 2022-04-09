@@ -198,7 +198,7 @@ export default function TransitLog(props){
             }
 
             const result = await axios.get(
-                process.env.REACT_APP_BASE_URL+`/bus`,{
+                process.env.REACT_APP_BASE_URL+`/log`,{
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     },

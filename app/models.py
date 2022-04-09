@@ -260,6 +260,8 @@ class Bus(db.Model):
     user = relationship("User", back_populates="bus")
     log_id = db.Column(db.Integer, ForeignKey('log.id'))
     log = relationship("Log", back_populates="bus")
+    longitude = db.Column(db.Float())
+    latitude = db.Column(db.Float()) 
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
