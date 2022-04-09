@@ -33,6 +33,7 @@ import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import DepartureBoardIcon from '@mui/icons-material/DepartureBoard';
 import BookIcon from '@mui/icons-material/Book';
+import MapIcon from '@mui/icons-material/Map';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -367,6 +368,15 @@ export default function AdminDashboard(props){
               < DepartureBoardIcon/>
             </ListItemIcon>
             <ListItemText primary="Bus Run" />
+          </ListItemButton>
+          }
+          {
+          (role == 1 || role == 2 || role == 3) &&
+          <ListItemButton component={RouterLink} to="/status">
+            <ListItemIcon>
+              <MapIcon/>
+            </ListItemIcon>
+            <ListItemText primary="Transit Status Map" />
           </ListItemButton>
           }
           {

@@ -3,11 +3,12 @@ import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Stack from '@mui/material/Stack';
 import { GridOverlay, DataGrid } from '@mui/x-data-grid';
 import Typography from '@mui/material/Typography';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import { Helmet } from 'react-helmet';
+import Link from '@mui/material/Link';
+import axios from 'axios';
+import {Link as RouterLink, useNavigate} from 'react-router-dom';
 let api_key = "AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o";
 
 
@@ -30,103 +31,92 @@ const mapOptions = {
 };
 
 const busColumns = [
-  { field: 'id', hide: true, width: 30},
-  { field: 'number', headerName: "Bus Number", width: 150},
-  { field: 'driver', headerName: "Driver", flex: 1},
-  { field: 'route', headerName: "Route", flex: 1},
+  { field: 'number', headerName: "Bus Number", width: 150, sortable: false, filterable: false},
+  { field: 'user', headerName: "Driver", flex: 1, sortable: false, filterable: false,
+    renderCell: (params) => (
+    <Link component={RouterLink} to={"/users/" + params.value.id}>
+      {params.value.full_name}
+    </Link>
+  )},
+  { field: 'route', headerName: "Route", flex: 1, sortable: false, filterable: false,    
+    renderCell: (params) => (
+    <Link component={RouterLink} to={"/routes/" + params.value.id}>
+      {params.value.name}
+    </Link>
+  )},
 ];
 
-function NoStudentsOverlay() {
+function NoBusesOverlay() {
   return (
     <GridOverlay>
-      <Box sx={{ mt: 1 }}>No Students in Current Route</Box>
+      <Box sx={{ mt: 1 }}>No Buses in Transit</Box>
     </GridOverlay>
   );
 };
 
-// Temporary data: remove this once backend implemented
-let init_busses = [
-  {id: 1, number: 1, start_time: null, direction: 0, route_id: 1, route: "r1", user_id: 1, user: "A", log_id: 1, log: null, longitude: 35.9993, latitude: -78.9337},
-  {id: 2, number: 2, start_time: null, direction: 1, route_id: 1, route: "r2", user_id: 1, user: "B", log_id: 2, log: null, longitude: 36.006, latitude: -78.91807},
-  {id: 3, number: 3, start_time: null, direction: 0, route_id: 1, route: "r3", user_id: 1, user: "C", log_id: 3, log: null, longitude: 36.004537, latitude: -78.9367},
-  {id: 4, number: 4, start_time: null, direction: 1, route_id: 1, route: "r4", user_id: 1, user: "D", log_id: 4, log: null, longitude: 35.9914, latitude: -78.92277},
-];
+
 
 export default function RoutePlanner(props) {
   const [busses, setBusses] = React.useState([]);
-  const [busRows, setBusRows] = React.useState([]);
-
-  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
-  const [snackbarMsg, setSnackbarMsg] = React.useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = React.useState("error");
 
   const [map, setMap] = React.useState(null);
+  const [first, setFirst] = React.useState(true);
 
-  // let { id } = useParams();
-  // let navigate = useNavigate();
-
-  React.useEffect(()=>{
-    setBusses(init_busses);
-    let init_bus_rows = init_busses.map((v) => {
-      return {"id": v.id, "number": v.number, "driver": v.user, "route": v.route};
-    });
-    setBusRows(init_bus_rows);
-  }, []);
+  let navigate = useNavigate();
 
   React.useEffect(() => {
-    const interval = setInterval(() => {
-      // console.log('5 seconds');
+    const interval = setInterval(async () => {
+      
+      let result = await axios.get(
+        process.env.REACT_APP_BASE_URL+`/bus`, {
+          headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      if(result.data.success) {
+        console.log(result.data.buses);
+        if(interval){
+          console.log("interval");
+            let new_buses = result.data.buses.map((value)=>{
+              return {...value, location: {lat: value.latitude, lng: value.longitude}}
+            });
+            setBusses(new_buses);
+        }
+      }
+      else{
+          props.setSnackbarMsg(`Buses could not be loaded`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("error");
+          navigate("/routes");
+      }
 
-      // Insert actual backend call here
-
-      //Temporary (updates busses): (remove once backend is implemented)
-      updateBusses();
-
-    }, 5000);
+    }, 2000);
     return () => clearInterval(interval);
-  });
+    });
 
   React.useEffect(()=>{
-    if(map){
+    if(map && busses.length != 0){
       var bounds = new window.google.maps.LatLngBounds();
       for (var i = 0; i < busses.length; i++) {
-        bounds.extend({ lat: busses[i].longitude, lng: busses[i].latitude });
+        if(busses[i].latitude != null && busses[i].longitude != null){
+          bounds.extend(busses[i].location);
+        }
       }
-      map.fitBounds(bounds);
+      if(first){
+        map.fitBounds(bounds);
+        if(map.getZoom() > 15){
+          map.setZoom(15);
+        }
+        setFirst(false);
+      }
     }
   }, [busses, map]);
-
-  // function on snackbar close
-  const handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setSnackbarOpen(false);
-  };
 
   // // function on map load-in
   const onLoad = React.useCallback(function callback(map) {
     setMap(map);
   }, []);
-
-  //Temporary (mimics busses updating): remove when implmeneted backend
-  const updateBusses = () => {
-    let temp_busses = JSON.parse(JSON.stringify(busses));
-  
-    for (var i=0;i<temp_busses.length;i++) {
-      let new_lat = temp_busses[i]["latitude"] + 0.002;
-      let new_lng = temp_busses[i]["longitude"] + 0.002;
-      
-      temp_busses[i]["latitude"] = new_lat;
-      temp_busses[i]["longitude"] = new_lng;
-    }
-    setBusses(temp_busses);
-
-    let new_bus_rows = temp_busses.map((v) => {
-      return {"id": v.id, "number": v.number, "driver": v.user, "route": v.route};
-    });
-    setBusRows(new_bus_rows);
-  };
 
   return (
     <>
@@ -137,7 +127,7 @@ export default function RoutePlanner(props) {
     </Helmet>
     <Stack id="container-stack" spacing={5} justifyContent="center" alignItems="center">
       <Typography variant="h2" align="center" sx={titleStyle(36, 1)}>
-        Temp
+        Transit Status Map
       </Typography>
 
       <Divider id="divider" variant="fullWidth" style={{width:'100%'}}/>
@@ -148,26 +138,25 @@ export default function RoutePlanner(props) {
           <LoadScript googleMapsApiKey={api_key}>
             <GoogleMap mapContainerStyle={containerStyle} onLoad={onLoad} options={mapOptions}>
               {busses.map((bus, index) => (
-                <Marker key={index} title={bus.number+""} position={{ lat: bus.longitude, lng: bus.latitude }} 
+                bus.longitude != null && bus.latitude!=null &&
+                <Marker key={index} title={`${bus.number}`} position={bus.location} 
                 icon={"http://maps.google.com/mapfiles/kml/shapes/bus.png"} /> ))}
             </GoogleMap>
           </LoadScript>
-          <Typography variant="subtitle2" align="left" sx={{ fontSize: 12, mt: 1 }}>Click on an student to add it to the route! Click on that student again to remove it.</Typography>
-          <Typography variant="subtitle2" align="left" sx={{ fontSize: 12 }}>Double click anywhere to add a stop! Click on that stop again to remove it.</Typography>
         </Stack>
 
         <Stack id="student-table-stack" spacing={0} justifyContent="center">
               <Typography variant="h5" align="left" sx={titleStyle(28, 1)}>
-                Current Students in Route:
+                Current Buses in Transit:
               </Typography>
               <div style={{ height: 350, width: 800 }}>
                 <div style={{ display: 'flex', height: '100%' }}>
                   <div style={{ flexGrow: 1 }}>
                     <DataGrid
                       components={{
-                        NoRowsOverlay: NoStudentsOverlay,
+                        NoRowsOverlay: NoBusesOverlay,
                       }}
-                      rows={busRows}
+                      rows={busses}
                       columns={busColumns}
                       getRowId={(row) => row.id}
                       autoPageSize
@@ -179,12 +168,6 @@ export default function RoutePlanner(props) {
         </Stack>
 
       </Stack>
-
-      <Snackbar open={snackbarOpen} onClose={handleClose} anchorOrigin={{vertical: 'bottom', horizontal: 'left'}} sx={{ width: 600 }}>
-        <Alert onClose={handleClose} severity={snackbarSeverity}>
-          {snackbarMsg}
-        </Alert>
-      </Snackbar>
     </Stack>
     </>
   )

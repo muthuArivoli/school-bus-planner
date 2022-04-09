@@ -1304,11 +1304,11 @@ def get_bus():
         bus_list = []
         for bus in buses:
             if bus.route.school.id in ids:
-                bus_list.append(bus.to_dict())
+                bus_list.append(bus.as_dict())
         
         return {'success': True, 'buses': bus_list}
     
-    bus_list = [bus.to_dict() for bus in buses]
+    bus_list = [bus.as_dict() for bus in buses]
     return {'success': True, 'buses': bus_list}
     
 
