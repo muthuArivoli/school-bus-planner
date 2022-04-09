@@ -35,7 +35,6 @@ const studentColumns = [
   { field: 'studentid', headerName: "Student ID", type: 'number', editable: true, width: 150},
   { field: 'school', headerName: "School Name", editable: true, flex: 1},
   { field: 'studentemail', headerName: "Student Email", editable: true, flex: 1.5},
-  { field: 'phone', headerName: "Phone #", editable: true, width: 150},
 ];
 
 export default function BulkImport(props) {
@@ -201,7 +200,7 @@ export default function BulkImport(props) {
     let errors = {};
 
     for (var i=0; i<student_rows.length; i++) {      
-      let newRow = {id: i, name: student_rows[i]['row'][0], parentemail: student_rows[i]['row'][1], studentid: student_rows[i]['row'][2], school: student_rows[i]['row'][3], studentemail: student_rows[i]['row'][4], phone: student_rows[i]['row'][5]};
+      let newRow = {id: i, name: student_rows[i]['row'][0], parentemail: student_rows[i]['row'][1], studentid: student_rows[i]['row'][2], school: student_rows[i]['row'][3], studentemail: student_rows[i]['row'][4]};
       rows.push(newRow);
       errors[i] = student_rows[i]['errors'];
     }
@@ -413,13 +412,6 @@ export default function BulkImport(props) {
       const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
       const newRows = [...state];
       newRows[rowIndex]["studentemail"] = row.value;
-      setStudentRows(newRows);
-    }
-  
-    if (row.field === "phone") {
-      const rowIndex = state.findIndex(row_to_edit => row_to_edit.id === row.id);
-      const newRows = [...state];
-      newRows[rowIndex]["phone"] = row.value;
       setStudentRows(newRows);
     }
   };

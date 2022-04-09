@@ -1597,7 +1597,6 @@ def validate_users(csvreader_user):
                 if(row[0]!='email' or row[1]!='name' or row[2] != 'address' or row[3]!='phone_number'):
                     return [], [], True
                 user_rows.append(row)
-                user_resp.append({'row': row, 'errors': errors})
                 usr_row_ct +=1
                 continue
             
@@ -1719,7 +1718,7 @@ def validate_students(csvreader_student, user_rows):
                 if(row[0]!='name' or row[1]!='parent_email' or row[2] != 'student_id' or row[3]!='school_name' or row[4]!='student_email' or row[5]!='phone_number'):
                     return [], [], True
                 student_rows.append(row)
-                stud_resp.append({'row': row, 'errors': errors})
+                # stud_resp.append({'row': row, 'errors': errors})
                 stud_row_ct +=1
                 continue
             
@@ -1861,22 +1860,23 @@ def get_duplicates(user_rows, stud_rows, user_resp, stud_resp):
         errors = student['errors']
         student = student['row']
         email = student[4]
-        if email.strip().lower() in emails:
-            critical = True
-            error_msg = ""
-            for ind in emails[email.strip().lower()]:
-                urw = stud_rows[ind]
-                error_msg += f"Duplicate email record found, duplicate student parent is {urw[1]}, school is {urw[3]}, id is {urw[2]} | "
-                if 'dup_email' not in stud_resp[ind]['errors']:
-                    stud_resp[ind]['errors']['dup_email'] = ''
-                stud_resp[ind]['errors']['dup_email'] += f"Duplicate email record found, duplicate student parent's email is {student[1]}, school is {student[3]}, id is {student[2]} | "
-            if 'dup_email' not in errors:
-                errors['dup_email'] = ''
-            errors['dup_email'] += error_msg
-        else:
-            emails[email.strip().lower()] = []
+        if email != '':
+            if email.strip().lower() in emails:
+                critical = True
+                error_msg = ""
+                for ind in emails[email.strip().lower()]:
+                    urw = stud_rows[ind]
+                    error_msg += f"Duplicate email record found, duplicate student parent is {urw[1]}, school is {urw[3]}, id is {urw[2]} | "
+                    if 'dup_email' not in stud_resp[ind]['errors']:
+                        stud_resp[ind]['errors']['dup_email'] = ''
+                    stud_resp[ind]['errors']['dup_email'] += f"Duplicate email record found, duplicate student parent's email is {student[1]}, school is {student[3]}, id is {student[2]} | "
+                if 'dup_email' not in errors:
+                    errors['dup_email'] = ''
+                errors['dup_email'] += error_msg
+            else:
+                emails[email.strip().lower()] = []
         
-        emails[email.strip().lower()].append(stud_row_ct)
+            emails[email.strip().lower()].append(stud_row_ct)
         stud_row_ct +=1
     
     for user in user_resp:
