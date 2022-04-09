@@ -52,6 +52,10 @@ export default function RouteDetail(props) {
   const [stops, setStops] = React.useState([]);
   const [stopRows, setStopRows] = React.useState([]);
 
+  const [bus, setBus] = React.useState(null);
+  const [busLocation, setBusLocation] = React.useState(null);
+  const [first, setFirst] = React.useState(true);
+
   let navigate = useNavigate();
 
   const [role, setRole] = React.useState(0);
@@ -145,6 +149,9 @@ export default function RouteDetail(props) {
       for (var i = 0; i < students.length; i++) {
         bounds.extend(students[i].loc);
       }
+      if(busLocation != null){
+        bounds.extend(busLocation);
+      }
       bounds.extend(schoolLocation);
       map.fitBounds(bounds);
     }
@@ -164,6 +171,7 @@ export default function RouteDetail(props) {
         }
       );
       if (result.data.success){
+        if (first)
         setData(result.data.route);
 
         let newStops = result.data.route.stops.map((value)=>{
@@ -171,6 +179,13 @@ export default function RouteDetail(props) {
         })
         setStops(newStops);
 
+        setBus(result.data.route.bus);
+        if (result.data.route.bus != null && result.data.route.bus.latitude != null && result.data.route.bus.longitude != null){
+          setBusLocation({lat: result.data.route.bus.latitude, lng: result.data.route.bus.longitude})
+        }
+        else{
+          setBusLocation(null);
+        }
         setSchool(result.data.route.school.name);
         setSchoolLocation({lat: result.data.route.school.latitude, lng: result.data.route.school.longitude})
         let newStopRows = [{name: result.data.route.school.name, pickup_time: tConvert(result.data.route.school.arrival_time), dropoff_time: tConvert(result.data.route.school.departure_time), id: -1}, ...newStops]
@@ -195,7 +210,8 @@ export default function RouteDetail(props) {
       }
 
     };
-    fetchData();
+    const interval = setInterval(()=>fetchData(), 2000);
+    return ()=>clearInterval(interval);
   }, []);
 
   const handleDownload = () => {
@@ -339,9 +355,19 @@ export default function RouteDetail(props) {
             </Typography>
           </Stack>
 
+          <Stack direction = "row" spacing = {4} justifyContent="center">
           <Typography variant="h5" align="center">
               Route Complete: {data.complete === true ? "Yes" : "No"}  
           </Typography>
+
+          <Typography variant="h5" align="center">
+            Route In Transit: {data.in_transit === true ? "Yes" : "No"}
+          </Typography>
+
+          <Typography variant = "h5" align="center">
+            Bus: {bus != null ? bus.number: "None"}
+          </Typography>
+          </Stack>
 
           <Typography variant="h5" align="center">
               Description:{(data.description) ? '' : ' None'} 
@@ -361,6 +387,11 @@ export default function RouteDetail(props) {
                     <Marker key={index} title={student.name} position={student.loc} icon="http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"/> ))}
                 {stops.map((stop, index)=> (
                     <Marker key={index} title={stop.name} position={stop.loc} icon="http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"/> ))}
+                {
+                  bus != null &&
+                  <Marker title={`Bus`} position={busLocation} 
+                  icon={"http://maps.google.com/mapfiles/kml/shapes/bus.png"} />
+                }
               </GoogleMap>
             </LoadScript>
             <Stack direction="row" spacing={2} alignItems="center">
