@@ -30,6 +30,7 @@ const mapOptions = {
   const [user, setUser] = React.useState({});
   const [route, setRoute] = React.useState({name: "No Route", description: ""});
   const [stopRows, setStopRows] = React.useState([]);
+  const [bus, setBus] = React.useState(null);
 
   function tConvert(time) {
     let date_time = DateTime.fromISO(time);
@@ -76,6 +77,7 @@ const mapOptions = {
               newStopRows = [...newStopRows, {id: cur_stop.id, name: cur_stop.name, pickup: tConvert(cur_stop.pickup_time), dropoff: tConvert(cur_stop.dropoff_time), location: {lat: cur_stop.latitude, lng: cur_stop.longitude}}]
             }
             setStopRows(newStopRows);
+            setBus(result.data.student.route.bus)
           }
         }
         else {
@@ -85,7 +87,9 @@ const mapOptions = {
         navigate("/")
       }
     };
-    fetchData();
+
+    const interval = setInterval(()=>fetchData(), 2000);
+    return ()=>clearInterval(interval);
   }, []);
 
   return (
@@ -107,6 +111,7 @@ const mapOptions = {
             route.name != "No Route" &&
         <Typography variant="h5" align="center">Route Description: {route.description}</Typography>
           }
+
 
           <Stack spacing={0} justifyContent="center">
             <Typography variant="h5" align="center">
@@ -130,11 +135,15 @@ const mapOptions = {
                 </div>
               </div>
               <LoadScript googleMapsApiKey={api_key}>
-                <GoogleMap mapContainerStyle={containerStyle} options={mapOptions} center={{lat: user.latitude, lng: user.longitude }} zoom={15}>
+                <GoogleMap mapContainerStyle={containerStyle} options={mapOptions} center={{lat: user.latitude, lng: user.longitude }} zoom={11}>
                   <Marker key={0} title={user.uaddress} position={{ lat: user.latitude, lng: user.longitude }} icon={{url: "http://maps.google.com/mapfiles/kml/paddle/blu-circle.png" }}/>
                   {stopRows.map((stop, index) => (
                     <Marker key={index} title={stop.name} position={stop.location} 
                     icon={{url: "http://maps.google.com/mapfiles/kml/paddle/red-square-lv.png"}}/>))} 
+                  {bus != null &&
+                    <Marker title={`Bus`} position={{lat: bus.latitude, lng: bus.longitude}} 
+                                    icon={"http://maps.google.com/mapfiles/kml/shapes/bus.png"} />
+                  }
                 </GoogleMap>
               </LoadScript>
             </Stack>
