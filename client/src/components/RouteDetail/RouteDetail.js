@@ -475,6 +475,14 @@ export default function RouteDetail(props) {
               Email
           </Button>
           }
+          <Button component={RouterLink}
+              to={`/logs?route=${id}`}
+              color="primary"
+              variant="outlined"
+              size="small"
+              style={{ }}>
+              Transit Logs
+          </Button>
         </Stack>
       </Stack>
     </Grid>

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { DataGrid, GridOverlay } from '@mui/x-data-grid';
-import {Link as RouterLink, useNavigate} from 'react-router-dom';
+import {Link as RouterLink, useNavigate, useSearchParams} from 'react-router-dom';
 import axios from 'axios';
 import SearchIcon from '@mui/icons-material/Search';
 import TextField from '@mui/material/TextField';
@@ -166,8 +166,37 @@ export default function TransitLog(props){
 
     const [showAll, setShowAll] = React.useState(false);
     const [loading , setLoading] = React.useState(true);
+
+    let [query, setQuery] = useSearchParams();
+
   
     let navigate = useNavigate();
+
+    React.useEffect(()=>{
+      const fetchData = async() => {
+      if(query.get("route") != null && query.get("route").match('^[0-9]+$')){ 
+        const result = await axios.get(
+          process.env.REACT_APP_BASE_URL+'/route/' + query.get("route"), {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        );
+        if (result.data.success){
+          console.log(result.data.route);
+          setFilterType("Route");
+          setFilterId({id: result.data.route.id, label: result.data.route.name});
+        }
+        else{
+          props.setSnackbarMsg(`Route could not be loaded`);
+          props.setShowSnackbar(true);
+          props.setSnackbarSeverity("error");
+          navigate("/");
+        }
+      }
+      }
+      fetchData();
+    },[])
 
     //'name'- driver name
 
