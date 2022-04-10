@@ -10,6 +10,7 @@ import axios from 'axios';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import { Helmet } from 'react-helmet';
+import Link from '@mui/material/Link';
 
 export default function UserDetail(props) {
 
@@ -138,6 +139,30 @@ export default function UserDetail(props) {
             Phone Number: {data.phone}
           </Typography>
           </Stack>
+        
+        <Stack direction="row" spacing={25} justifyContent="center">
+          {
+            data.role == 3 &&
+            <Typography variant="h5" align="center">
+            In Transit: {data.bus == null ? "No" : "Yes"}
+          </Typography>
+          }
+          {
+            data.role == 3 && data.bus != null &&
+            <Typography variant="h5" align="center">
+            Bus Number: {data.bus.number}
+            </Typography>
+          }
+          {
+            data.role == 3 && data.bus != null &&
+            <Typography variant="h5" align="center">
+            {"Route: "}
+            <Link component={RouterLink} to={"/routes/" + data.bus.route_id}>
+                {data.bus.route.name}
+              </Link>
+            </Typography>
+          }
+        </Stack>
 
         {
           data.role == 0 &&
