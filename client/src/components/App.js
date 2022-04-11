@@ -27,6 +27,9 @@ import BulkImport from './BulkImport';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
+import BusRun from './BusRun';
+import TransitLog from './TransitLog';
+import TransitStatusMap from './TransitStatusMap';
 
 function LoginRoute(props) {
   const [loading, setLoading] = React.useState(true);
@@ -137,6 +140,13 @@ export default function App () {
             </PrivateRoute>
           }
           />
+          <Route exact path="/bus" element={
+            <PrivateRoute roles={[3]}>
+              <AdminDashboard titleText="Bus Run">
+                <BusRun/>
+              </AdminDashboard>
+            </PrivateRoute>
+          } />
           <Route exact path="/schools" element={
             <PrivateRoute>
               <AdminDashboard titleText="School List">
@@ -216,7 +226,7 @@ export default function App () {
                 <StudentCreate/>
               </AdminDashboard>
             </PrivateRoute>
-          } /> 
+          } />  
           <Route exact path="/students/:id" element={
             <PrivateRoute>
               <AdminDashboard titleText="Student Detail">
@@ -260,6 +270,22 @@ export default function App () {
               </AdminDashboard>
             </PrivateRoute>
           } />
+          <Route exact path="/logs" element={
+            <PrivateRoute>
+              <AdminDashboard titleText="Transit Log">
+                <TransitLog/>
+              </AdminDashboard>
+            </PrivateRoute>
+          }
+          />
+          <Route exact path="/status" element={
+            <PrivateRoute>
+              <AdminDashboard titleText="Transit Status Map">
+                <TransitStatusMap/>
+              </AdminDashboard>
+            </PrivateRoute>
+          }
+          />
           <Route exact path="/login" element={
             <LoginRoute>
               <Login/>

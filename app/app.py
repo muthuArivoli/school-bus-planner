@@ -22,6 +22,7 @@ from io import TextIOWrapper
 from werkzeug.utils import secure_filename
 import csv
 import re
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 app = Flask(__name__)
@@ -36,7 +37,7 @@ cors = CORS(app)
 api = Blueprint('api', __name__)
 gmaps_key = googlemaps.Client(key="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o")
 
-from models import User, Student, School, Route, Stop, Login, UserFilter, StudentFilter, SchoolFilter, RouteFilter, TokenBlocklist, RoleEnum
+from models import User, Student, School, Route, Stop, Login, Bus, Log, UserFilter, StudentFilter, SchoolFilter, RouteFilter, LogFilter, TokenBlocklist, RoleEnum
 
 db.create_all()
 
@@ -575,6 +576,7 @@ def students_get(student_uid=None):
     args = request.args
     name_search = args.get('name', '')
     id_search = args.get('id', None, type=int)
+    email_search = args.get('email', '')
     page = args.get('page', None, type=int)
     sort = args.get('sort', None)
     direction = args.get('dir', None)
@@ -591,11 +593,11 @@ def students_get(student_uid=None):
     if sort and direction == 'desc':
         sort = '-'+sort
     if page:
-        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
+        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'email': email_search, 'order_by': sort, 'page': page}, query=base_query, operator=OrOperator).paginate()
         students = student_filt.get_objects()
         record_num = student_filt.count
     else:
-        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'order_by': sort}, query=base_query, operator=OrOperator)
+        student_filt = StudentFilter(data={'name': name_search, 'student_id': id_search, 'email': email_search, 'order_by': sort}, query=base_query, operator=OrOperator)
         students = student_filt.apply()
         record_num = students.count()
 
@@ -1151,6 +1153,164 @@ def routes(route_uid = None):
             return {'success': False, "msg": "Erorr Committing Stops"}
         return {'success': True}
     return {'success': False}
+
+@app.route('/bus/<bus_uid>', methods = ['OPTIONS'])
+@app.route('/bus', methods = ['OPTIONS'])
+@app.route('/log', methods = ['OPTIONS'])
+@cross_origin()
+def bus_options(route_uid=None):
+    return {'success':True}
+
+@app.route('/bus', methods = ['POST'])
+@app.route('/bus/<bus_uid>', methods = ['DELETE'])
+@cross_origin()
+@admin_required(roles=[RoleEnum.DRIVER])
+def bus_post(bus_uid=None):
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
+    if request.method == 'DELETE':
+        bus = Bus.query.filter_by(id=bus_uid).first()
+        if bus is None:
+            return {'success': False, 'msg': 'Invalid Bus Id'}
+        try:
+            duration = datetime.now() - bus.start_time
+            bus.log.duration = int(duration.total_seconds())
+            db.session.delete(bus)
+            db.session.commit()
+        except SQLAlchemyError:
+            return {'success': False, "msg": "Database Error"}
+        return {'success': True}
+
+    if request.method == 'POST':
+        content = request.json
+        number = content.get('number', None)
+        route_id = content.get('route_id', None)
+        direction = content.get('direction', None)
+        ignore_error = content.get('ignore_error', False)
+
+        if number is None or route_id is None or direction is None:
+            return {'success': False, "msg": "Invalid Query Syntax"}
+        
+        if type(number) is not int or type(route_id) is not int or type(direction) is not int:
+            return {'success': False, "msg": "Invalid Query Syntax"}
+
+        route = Route.query.filter_by(id=route_id).first()
+        if route is None:
+            return {'success': False, "msg": "Invalid Route"}
+
+
+        if route.bus is not None:
+            if ignore_error:
+                duration = datetime.now() - route.bus.start_time
+                route.bus.log.duration = int(duration.total_seconds())
+                db.session.delete(route.bus)
+                db.session.flush()
+                db.session.refresh(route)
+            else:    
+                return {'success': False, "msg": "Route already has other bus", "error": True}
+        
+        if curr_user.bus is not None:
+            if ignore_error:
+                duration = datetime.now() - curr_user.bus.start_time
+                curr_user.bus.log.duration = int(duration.total_seconds())
+                db.session.delete(curr_user.bus)
+                db.session.flush()
+                db.session.refresh(curr_user)
+            else:    
+                return {'success': False, "msg": "Driver already has other bus", "error": True}
+        
+        bus = Bus.query.filter_by(number=number).first()
+        if bus is not None:
+            if ignore_error:
+                duration = datetime.now() - bus.start_time
+                bus.log.duration = int(duration.total_seconds())
+                db.session.delete(bus)
+                db.session.flush()
+            else:    
+                return {'success': False, "msg": "Bus already has other run", "error": True}
+        
+        start_time = datetime.now()
+        new_log = Log(number=number, start_time=start_time, direction=direction, user_id=curr_user.id, route_id=route_id, school_id=route.school_id)
+        try:
+            db.session.add(new_log)
+            db.session.flush()
+            db.session.refresh(new_log)
+        except SQLAlchemyError:
+            return {"success": False, "msg": "Database Error"}
+        new_bus = Bus(number = number, start_time=start_time, route_id = route_id, user_id=curr_user.id, direction=direction, log_id = new_log.id)
+
+        try:
+            db.session.add(new_bus)
+            db.session.flush()
+            db.session.refresh(new_bus)
+            db.session.commit()
+        except SQLAlchemyError:
+            return {"success": False, "msg": "Database Error"}
+        return {'success': True, 'id': new_bus.id}
+
+    return {'success': False}
+
+@app.route('/log', methods = ['GET'])
+@cross_origin()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
+def get_log():
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
+
+    args = request.args
+    school_id = args.get('school_id', None, type=int)
+    route_id = args.get('route_id', None, type=int)
+    user_id = args.get('user_id', None, type=int)
+    number = args.get('number', None, type=int)
+    page = args.get('page', None,type=int)
+    sort = args.get('sort', None)
+    direction = args.get('dir', 'asc')
+
+    base_query = Log.query
+    record_num = None
+
+    if curr_user.role == RoleEnum.SCHOOL_STAFF:
+        ids = set()
+        for school in curr_user.managed_schools:
+            for log in school.logs:
+                ids.add(log.id)
+        base_query = Log.query.filter(Log.id.in_(ids))
+
+    if sort and direction == 'desc':
+        sort = '-'+sort
+    if page:
+        log_filt = LogFilter(data={'school_id': school_id, 'route_id': route_id, 'user_id': user_id, 'number': number, 'order_by': sort, 'page': page}, query=base_query).paginate()
+        logs = log_filt.get_objects()
+        record_num = log_filt.count
+    else:
+        log_filt = LogFilter(data={'school_id': school_id, 'route_id': route_id, 'user_id': user_id, 'number': number, 'order_by': sort}, query=base_query)
+        logs = log_filt.apply()
+        record_num = logs.count()
+
+    all_logs = [log.as_dict() for log in logs]
+    return {'success':True, "logs": all_logs, "records": record_num}
+
+@app.route('/bus', methods = ['GET'])
+@cross_origin()
+@admin_required(roles=[RoleEnum.ADMIN, RoleEnum.SCHOOL_STAFF, RoleEnum.DRIVER])
+def get_bus():
+    login = Login.query.filter_by(email = get_jwt_identity()).first()
+    curr_user = login.user
+
+    buses = Bus.query.all()
+
+    if curr_user.role == RoleEnum.SCHOOL_STAFF:
+        ids = [mschool.id for mschool in curr_user.managed_schools]
+        bus_list = []
+        for bus in buses:
+            if bus.route.school.id in ids:
+                bus_list.append(bus.as_dict())
+        
+        return {'success': True, 'buses': bus_list}
+    
+    bus_list = [bus.as_dict() for bus in buses]
+    return {'success': True, 'buses': bus_list}
+    
 
 @app.route('/email/route/<uid>', methods = ['OPTIONS'])
 @app.route('/email/school/<uid>', methods = ['OPTIONS'])
@@ -2015,9 +2175,84 @@ def geocode_address(addr):
     return lat, lng
 
     
+def remove_buses():
+    buses = Bus.query.all()
+    for bus in buses:
+        if bus.start_time + timedelta(minutes=180) < datetime.now():
+            logging.info(f"Kill bus {bus.number} {datetime.now()}")
+            duration = datetime.now() - bus.start_time
+            bus.log.duration = int(duration.total_seconds())
+            db.session.delete(bus)
+            db.session.commit()
+
+    try: 
+        r = requests.get(
+        'http://tranzit.colab.duke.edu:8000/get',
+        params={'bus': 5000},
+        timeout=5
+        )
+    except:
+        for bus in buses:
+            bus.latitude = None
+            bus.longitude = None
+        db.session.commit()
+        return
+
+
+    for bus in buses:
+        try:
+            r = requests.get(
+            'http://tranzit.colab.duke.edu:8000/get',
+            params={'bus': bus.number},
+            timeout=5
+            )
+            resp = r.json()
+            logging.info(resp)
+            if resp == 'unknown bus':
+                bus.latitude = None
+                bus.longitude = None
+                logging.info("unknown bus")
+                continue
+            if type(resp) is not dict:
+                bus.latitude = None
+                bus.longitude = None
+                logging.info("not dict")
+                continue
+            if resp.get('bus', None) != str(bus.number):
+                bus.latitude = None
+                bus.longitude = None
+                logging.info("not number")
+                continue
+            lat = resp.get('lat', None)
+            lng = resp.get('lng', None)
+            if type(lat) is not float or type(lng) is not float:
+                bus.latitude = None
+                bus.longitude = None
+                logging.info("not float")
+                continue
+            if lat < -90 or lat > 90 or lng < -180 or lng > 180:
+                bus.latitude = None
+                bus.longitude = None
+                logging.info("invalid values")
+                continue
+            logging.info(lat)
+            logging.info(lng)
+            bus.latitude = lat
+            bus.longitude = lng
+        except Exception as e:
+            logging.error(e)
+            bus.latitude = None
+            bus.longitude = None
+    db.session.commit()
 
 
 app.register_blueprint(api, url_prefix='/api')
+
+scheduler = BackgroundScheduler(daemon=True)
+scheduler.add_job(remove_buses, trigger='interval', seconds=10)
+scheduler.start()
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

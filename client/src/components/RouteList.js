@@ -24,53 +24,6 @@ import TablePagination from '@mui/material/TablePagination';
 
 import { Helmet } from 'react-helmet';
 
-const columns = [
-  { field: 'name', headerName: 'Route Name', width: 350, filterable: false,
-  renderCell: (params) => (
-    <>
-    <Link component={RouterLink} to={"/routes/" + params.value.id}>
-      {params.value.name}
-    </Link>
-    </>
-  )
-  },
-  {
-    field: 'school',
-    headerName: 'School',
-    width: 350,
-    filterable: false,
-    renderCell: (params) => (
-      <>
-      <Link component={RouterLink} to={"/schools/" + params.value.id}>
-        {params.value.name}
-      </Link>
-      </>
-    )
-  },
-  {
-    field: 'students',
-    headerName: 'Number of Students',
-    width: 200,
-    filterable: false
-  },
-  {
-    field: 'complete',
-    headerName: 'Is Route Complete?',
-    width: 150,
-    filterable: false,
-    sortable: false,
-    renderCell: (params) => (
-      <>
-      {
-        params.value ? 
-        <CheckIcon/> : 
-        <CloseIcon/>
-      }
-      </>
-    )
-  }
-];
-
 function NoRoutesOverlay() {
   return (
     <GridOverlay>
@@ -173,6 +126,23 @@ export default function DataTable(props) {
         Header: "Is Route Complete?",
         accessor: "complete",
         Cell: (row) => (<>{ row.row.original.complete ? <CheckIcon/>:<CloseIcon/> }</>), //show checkbox,
+        disableSortBy: true
+      },
+      {
+        Header: "In Transit?",
+        accessor: "in_transit",
+        Cell: (row) => (<>{ row.row.original.in_transit ? <CheckIcon/>:<CloseIcon/> }</>), //show checkbox,
+        disableSortBy: true
+      },
+      ,
+      {
+        Header: "Bus Number",
+        accessor: "bus.number",
+        disableSortBy: true
+      },
+      {
+        Header: "Driver",
+        accessor: "bus.user.full_name",
         disableSortBy: true
       }
 

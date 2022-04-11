@@ -8,7 +8,7 @@ from sqlalchemy.sql.operators import contains_op
 
 import enum
 
-from sqlalchemy_filters import Filter, StringField, Field, TimestampField
+from sqlalchemy_filters import Filter, StringField, Field, TimestampField, DateTimeField
 from sqlalchemy_filters.operators import ContainsOperator, EqualsOperator, BaseOperator, register_operator
 from sqlalchemy import func
 from sqlalchemy_filters.fields import MethodField
@@ -47,6 +47,8 @@ class User(db.Model):
     phone = db.Column(db.String())
     login_id = db.Column(db.Integer, ForeignKey('login_credentials.id'))
     login = relationship("Login", uselist=False, cascade="all, delete-orphan", back_populates="user",  single_parent=True)
+    bus = relationship("Bus", back_populates="user", uselist=False, cascade="all")
+    logs = relationship("Log", back_populates="user", cascade="all, delete-orphan")
 
     @hybrid_property
     def email(self):
@@ -65,6 +67,8 @@ class User(db.Model):
             main['managed_schools'] = [school.as_dict() for school in self.managed_schools]
         if self.login_id is not None:
             main['email'] = self.login.as_dict()['email']
+        if self.role == RoleEnum.DRIVER:
+            main['bus'] = self.bus.as_dict() if self.bus is not None else None
         return main
 
     def __repr__(self):
@@ -85,6 +89,7 @@ class School(db.Model):
     latitude = db.Column(db.Float())
     arrival_time = db.Column(db.Time())
     departure_time = db.Column(db.Time())
+    logs = relationship("Log", back_populates="school", cascade="all, delete-orphan")
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -108,6 +113,8 @@ class Route(db.Model):
     description = db.Column(db.String())
     students = relationship("Student", back_populates="route")
     stops = relationship("Stop", back_populates="route", cascade="all, delete-orphan")
+    bus = relationship("Bus", back_populates="route", uselist=False)
+    logs = relationship("Log", back_populates="route", cascade="all, delete-orphan")
 
     @hybrid_property
     def student_count(self):
@@ -120,9 +127,13 @@ class Route(db.Model):
                 label("student_count")
                 )
 
+            
+
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
         main['students'] = [student.as_dict() for student in self.students]
+        main['in_transit'] = (self.bus is not None)
+        main['bus'] = self.bus.as_dict() if self.bus is not None else None
         main['stops'] = [stop.as_dict() for stop in self.stops]
         main['school'] = {c.key: getattr(self.school, c.key) for c in inspect(self.school).mapper.column_attrs}
         main['school']['arrival_time'] = self.school.arrival_time.isoformat()
@@ -155,6 +166,16 @@ class Student(db.Model):
     __table_args__ = (
         CheckConstraint(student_id >= 0, name='check_id_positive'),
         {})
+  
+    @hybrid_property
+    def email(self):
+        return self.login.email
+    
+    @email.expression
+    def email(cls):
+        return select(Login.email).\
+                where(Login.id==cls.login_id).\
+                label('email')
 
     def as_dict(self):
         main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -165,6 +186,7 @@ class Student(db.Model):
         main['in_range'] = False
         if self.route is not None:
             main['route'] = {c.key: getattr(self.route, c.key) for c in inspect(self.route).mapper.column_attrs}
+            main['route']['bus'] = self.route.bus.as_dict() if self.route.bus is not None else None
             for stop in self.route.stops:
                 if get_distance(stop.latitude, stop.longitude, self.user.latitude, self.user.longitude) < 0.3:
                     main['in_range'] = True
@@ -225,6 +247,54 @@ class Stop(db.Model):
         return "<Stop(name='{}', route_id={}, latitude={}, longitude={}, index={}, pickup_time={}, dropoff_time={})>"\
             .format(self.name, self.route_id, self.latitude, self.longitude, self.index, self.pickup_time, self.dropoff_time)
 
+class Bus(db.Model):
+    __tablename__ = 'buses'
+
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.Integer, unique=True)
+    start_time = db.Column(db.DateTime())
+    direction = db.Column(db.Integer)
+    route_id = db.Column(db.Integer, ForeignKey('routes.id'))
+    route = relationship("Route", back_populates="bus")
+    user_id = db.Column(db.Integer, ForeignKey('users.id'))
+    user = relationship("User", back_populates="bus")
+    log_id = db.Column(db.Integer, ForeignKey('log.id'))
+    log = relationship("Log", back_populates="bus")
+    longitude = db.Column(db.Float())
+    latitude = db.Column(db.Float()) 
+
+    def as_dict(self):
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        main['user'] = {c.key: getattr(self.user, c.key) for c in inspect(self.user).mapper.column_attrs}
+        main['user']['email'] = self.user.login.email 
+        main['route'] = {c.key: getattr(self.route, c.key) for c in inspect(self.route).mapper.column_attrs}
+        main['start_time'] = self.start_time.isoformat()
+        return main
+
+class Log(db.Model):
+    __tablename__ = 'log'
+
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.Integer)
+    start_time = db.Column(db.DateTime())
+    duration = db.Column(db.Integer)
+    direction = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, ForeignKey('users.id'))
+    user = relationship("User", back_populates="logs")
+    school_id = db.Column(db.Integer, ForeignKey('schools.id'))
+    school = relationship("School", back_populates="logs")
+    route_id = db.Column(db.Integer, ForeignKey('routes.id'))
+    route = relationship("Route", back_populates="logs")
+    bus = relationship("Bus", back_populates="log")
+
+    def as_dict(self):
+        main = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        main['user'] = self.user.as_dict()
+        main['school'] = self.school.as_dict()
+        main['route'] = self.route.as_dict()
+        return main
+
+
 @register_operator(sql_operator=contains_op)
 class CaseContainsOperator(BaseOperator):
     def to_sql(self):
@@ -244,6 +314,7 @@ class StudentFilter(Filter):
     student_id = Field(lookup_operator = EqualsOperator)
     school_id = Field(lookup_operator = EqualsOperator)
     name = StringField(lookup_operator = CaseContainsOperator)
+    email = StringField(lookup_operator=CaseContainsOperator)
 
     class Meta:
         model = Student
@@ -264,4 +335,17 @@ class RouteFilter(Filter):
 
     class Meta:
         model = Route
+        page_size = 10
+    
+class LogFilter(Filter):
+    number = Field(lookup_operator = EqualsOperator)
+    school_id = Field(lookup_operator = EqualsOperator)
+    route_id = Field(lookup_operator = EqualsOperator)
+    user_id = Field(lookup_operator = EqualsOperator)
+    start_time = DateTimeField()
+    direction = Field()
+    duration = Field()
+
+    class Meta:
+        model = Log
         page_size = 10
