@@ -11,6 +11,12 @@ import axios from 'axios';
 import Link from '@mui/material/Link';
 import Divider from '@mui/material/Divider';
 import { Helmet } from 'react-helmet';
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+
+const containerStyle = {
+  height: "400px",
+  width: "500px"
+};
 
 export default function StudentDetail(props) {
 
@@ -24,6 +30,8 @@ export default function StudentDetail(props) {
 
   const [route, setRoute] = React.useState("No Route");
   const [inRange, setInRange] = React.useState("No");
+
+  const [bus, setBus] = React.useState(null);
 
 
   const [role, setRole] = React.useState(0);
@@ -99,10 +107,16 @@ export default function StudentDetail(props) {
         console.log(result.data.student); 
         if(result.data.student.route_id != null){
           setRoute(result.data.student.route.name);
-
+          if(result.data.student.route.bus != null){
+            setBus(result.data.student.route.bus)
+          }
+          else{
+            setBus(null);
+          }
         }
         else {
           setRoute("No Route");
+          setBus(null);
         }
 
         if (result.data.student.in_range == true){
@@ -127,7 +141,8 @@ export default function StudentDetail(props) {
 
     };
 
-    fetchData();
+    const interval = setInterval(()=>fetchData(), 2000);
+    return ()=>clearInterval(interval);
   }, []);
   
   return (
@@ -194,14 +209,47 @@ export default function StudentDetail(props) {
             </Typography>
             <Typography variant="h5" align="center">
               In Route Range: {inRange}
-            </Typography> 
+            </Typography>
             </>
             }
 
         </Stack>
 
-                
+        {
+        route != "No Route" &&
+        <Stack direction="row" spacing={15} justifyContent="center">
+            <Typography variant="h5" align="center">
+              Bus in Transit: {bus == null ? "No" : "Yes"}
+            </Typography>
 
+            {
+              bus != null &&
+              <>
+            <Typography variant="h5" align="center">
+              Bus Number: {bus.number}
+            </Typography>
+            <Typography variant="h5" align="center">
+              Bus Driver: {bus.user.full_name}
+            </Typography>
+
+              </>
+            }
+
+        </Stack>
+        }
+                
+        <LoadScript googleMapsApiKey="AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o">
+          {
+            bus != null &&
+          <GoogleMap mapContainerStyle={containerStyle} zoom={11} center={{lat: bus.latitude || 0, lng: bus.longitude || 0}}>
+            {
+              bus != null && bus.latitude != null && bus.longitude != null &&
+              <Marker title={`Bus`} position={{lat: bus.latitude, lng: bus.longitude}} 
+              icon={"http://maps.google.com/mapfiles/kml/shapes/bus.png"} />
+            }
+          </GoogleMap>
+          }
+        </LoadScript>
         <Divider id="divider" variant="fullWidth" style={{width:'100%'}}/>
 
         <Stack spacing={2} justifyContent="center">
@@ -231,7 +279,6 @@ export default function StudentDetail(props) {
               </Typography>
             </Stack>
           </Stack>
-        
 
         <Stack direction="row" spacing={3} justifyContent="center">
           {
