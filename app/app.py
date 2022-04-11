@@ -149,7 +149,7 @@ def get_current_user_student(student_id=None):
     if student.route is not None:
         stops = student.route.stops
         for stop in stops:
-            if get_distance(stop.latitude, stop.longitude, user.latitude, user.longitude) < 0.3:
+            if get_distance(stop.latitude, stop.longitude, student.user.latitude, student.user.longitude) < 0.3:
                 in_range_stops.append(stop.as_dict())
     return {'success': True, 'student': student.as_dict(), 'in_range_stops': in_range_stops}
 
