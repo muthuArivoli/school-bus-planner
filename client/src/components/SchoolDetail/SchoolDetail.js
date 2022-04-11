@@ -197,6 +197,14 @@ export default function SchoolDetail(props) {
               Email
           </Button>
           }
+          <Button component={RouterLink}
+              to={`/status?school=${id}`}
+              color="primary"
+              variant="outlined"
+              size="small"
+              style={{ }}>
+              Transit Status Map
+          </Button>
         </Stack>
       </Stack>
     </Grid>

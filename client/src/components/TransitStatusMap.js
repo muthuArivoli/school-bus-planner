@@ -8,7 +8,7 @@ import Divider from '@mui/material/Divider';
 import { Helmet } from 'react-helmet';
 import Link from '@mui/material/Link';
 import axios from 'axios';
-import {Link as RouterLink, useNavigate} from 'react-router-dom';
+import {Link as RouterLink, useNavigate, useSearchParams} from 'react-router-dom';
 let api_key = "AIzaSyB0b7GWpLob05JP7aVeAt9iMjY0FjDv0_o";
 
 
@@ -62,6 +62,7 @@ export default function RoutePlanner(props) {
   const [map, setMap] = React.useState(null);
   const [first, setFirst] = React.useState(true);
 
+  let [query, setQuery] = useSearchParams();
   let navigate = useNavigate();
 
   React.useEffect(() => {
@@ -81,6 +82,12 @@ export default function RoutePlanner(props) {
             let new_buses = result.data.buses.map((value)=>{
               return {...value, location: {lat: value.latitude, lng: value.longitude}}
             });
+
+            if(query.get("school") != null && query.get("school").match('^[0-9]+$')){
+              let schoolid = parseInt(query.get("school"));
+              new_buses = new_buses.filter(value => value.route.school_id == schoolid);
+            }
+            
             setBusses(new_buses);
         }
       }
