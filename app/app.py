@@ -1723,20 +1723,22 @@ def bulkImport():
                     new_login.pswd=encrypted_pswd.decode('utf-8')
                 new_student.login_id = new_login.id
 
+                if '@example.com' not in student[4]:
+                    access_token = create_access_token(identity=student[4])
+                    link = f"{DOMAIN}/resetpassword?token={access_token}"
+        
+                    r = requests.post(
+                    f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
+                    auth=("api", API_KEY),
+                    data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
+                        "to": student[4],
+                        "subject": "Account Creation for Hypothetical Transportation",
+                        "html": f"Please use the following link to set the password for your new account: \n <a href={link}>{link}</a>"})
+
             if student[2] != "":
                 new_student.student_id = int(student[2])
             
-            if '@example.com' not in student[4]:
-                access_token = create_access_token(identity=student[4])
-                link = f"{DOMAIN}/resetpassword?token={access_token}"
-    
-                r = requests.post(
-                f"https://api.mailgun.net/v3/{YOUR_DOMAIN_NAME}/messages",
-                auth=("api", API_KEY),
-                data={"from": f"Noreply <noreply@{YOUR_DOMAIN_NAME}>",
-                    "to": student[4],
-                    "subject": "Account Creation for Hypothetical Transportation",
-                    "html": f"Please use the following link to set the password for your new account: \n <a href={link}>{link}</a>"})
+
             
             db.session.add(new_student) 
         db.session.commit()
