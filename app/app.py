@@ -1572,14 +1572,18 @@ def validateFiles():
             csvreader_user = get_csv(file)
             user_rows, user_resp, critical = validate_users(csvreader_user)
             logging.info(user_resp)
-            response['users'] = user_resp[1:]
+            user_rows = user_rows[1:]
+            user_resp = user_resp[1:]
+            response['users'] = user_resp
         if filename == 'students.csv':
             csvreader_student = get_csv(file)
             stud_rows, stud_resp, critical = validate_students(csvreader_student, user_rows)
-            response['students'] = stud_resp[1:]
+            stud_rows = stud_rows[1:]
+            stud_resp = stud_resp[1:]
+            response['students'] = stud_resp
         
     
-    critical, student_resp, user_resp = get_duplicates(user_rows, stud_rows, user_resp, stud_resp)
+    critical, stud_resp, user_resp = get_duplicates(user_rows, stud_rows, user_resp, stud_resp)
     response['users'] = user_resp
     response['students'] = stud_resp
 
@@ -1598,6 +1602,9 @@ def validate():
     content = request.json
     no_errors = True
     users = []
+    students = []
+    student_resp = {}
+    user_resp = {}
     if 'users' in content:
         users = content.get('users')
         users, user_resp, critical = validate_users(users)
@@ -1643,7 +1650,9 @@ def bulkImport():
     content = request.json
     no_errors = True
     users = []
-
+    students = []
+    student_resp = {}
+    user_resp = {}
     if 'users' in content:
         users = content.get('users')
         users, user_resp, critical = validate_users(users)
@@ -1656,6 +1665,10 @@ def bulkImport():
         if critical:
             no_errors = False
     
+    critical, student_resp, user_resp = get_duplicates(users, students, user_resp, student_resp)
+    if critical:
+        no_errors = False
+
     if no_errors is False:
         response['users'] = user_resp
         response['students'] = student_resp
@@ -1667,14 +1680,14 @@ def bulkImport():
         #LOOP THROUGH ALL VALUES AND ADD OBJECTS TO DB
         for user in users:
             # lat, lng = geocode_address(user[2])
-            if '@example.com' in user[0]:
-                password = "ParentPassword2@22"
-                encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             new_login = Login(email=user[0])
             db.session.add(new_login)
             db.session.flush()
             db.session.refresh(new_login)
-            new_login.pswd=encrypted_pswd.decode('utf-8')
+            if '@example.com' in user[0]:
+                password = "ParentPassword2@22"
+                encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+                new_login.pswd=encrypted_pswd.decode('utf-8')
             new_user = User(full_name=user[1], uaddress = user[2], role=RoleEnum.UNPRIVILEGED, latitude=user[4], longitude=user[5], phone=user[3],login_id=new_login.id)
             db.session.add(new_user)
             db.session.flush()
@@ -1700,14 +1713,14 @@ def bulkImport():
             new_student = Student(name=student[0], school_id=associated_school.id, user_id=associated_parent.id)
 
             if student[4] != "":
-                if '@example.com' in student[4]:
-                    password = "StudentPassword2@22"
-                    encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
                 new_login = Login(email=student[4])
                 db.session.add(new_login)
                 db.session.flush()
                 db.session.refresh(new_login)
-                new_login.pswd=encrypted_pswd.decode('utf-8')
+                if '@example.com' in student[4]:
+                    password = "StudentPassword2@22"
+                    encrypted_pswd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+                    new_login.pswd=encrypted_pswd.decode('utf-8')
                 new_student.login_id = new_login.id
 
             if student[2] != "":
@@ -1757,6 +1770,7 @@ def validate_users(csvreader_user):
                 if(row[0]!='email' or row[1]!='name' or row[2] != 'address' or row[3]!='phone_number'):
                     return [], [], True
                 user_rows.append(row)
+                user_resp.append({'row': row, 'errors': errors})
                 usr_row_ct +=1
                 continue
             
@@ -1826,23 +1840,6 @@ def validate_users(csvreader_user):
         if(not re.fullmatch(regex,email)):
             errors['email'] = 'Invalid email format'
             critical = True
-
-        if email.strip().lower() in emails:
-            error_msg = ""
-            for ind in emails[email.strip().lower()]:
-                urw = user_rows[ind]
-                error_msg += f"Duplicate email record found, duplicate user name is {urw[1]}, address is {urw[2]}, phone is {urw[3]} | "
-                if 'dup_email' not in user_resp[ind]['errors']:
-                    user_resp[ind]['errors']['dup_email'] = ''
-                user_resp[ind]['errors']['dup_email'] += f"Duplicate email record found, duplicate user name is {name}, address is {addr}, phone is {phone_number} | "
-            if 'dup_email' not in errors:
-                errors['dup_email'] = ''
-            errors['dup_email'] += error_msg
-            critical = True
-        else:
-            emails[email.strip().lower()] = []
-        
-        emails[email.strip().lower()].append(usr_row_ct)
         
         if addr != "":
             lat = None
@@ -1878,7 +1875,7 @@ def validate_students(csvreader_student, user_rows):
                 if(row[0]!='name' or row[1]!='parent_email' or row[2] != 'student_id' or row[3]!='school_name' or row[4]!='student_email' or row[5]!='phone_number'):
                     return [], [], True
                 student_rows.append(row)
-                # stud_resp.append({'row': row, 'errors': errors})
+                stud_resp.append({'row': row, 'errors': errors})
                 stud_row_ct +=1
                 continue
             
@@ -1889,7 +1886,7 @@ def validate_students(csvreader_student, user_rows):
             name, parent_email, student_id, school_name, student_email, phone_number = row
         
         if type(row) is dict:
-            if len(row) != 7:
+            if len(row) != 6:
                 errors['format'] = "Missing values"
             student_email = row.get("studentemail", "")
             name = row.get('name', "")
@@ -1998,7 +1995,7 @@ def validate_students(csvreader_student, user_rows):
             login = Login.query.filter(func.lower(Login.email) == func.lower(student_email)).first()
             if login:
                 if login.user:
-                    errors['dup_email'] = f"Duplicate email record found, duplicate user name is {login.user.name}, address is {login.user.address}, phone is {login.user.phone}| "
+                    errors['dup_email'] = f"Duplicate email record found, duplicate user name is {login.user.full_name}, address is {login.user.uaddress}, phone is {login.user.phone}| "
                     critical = True
                 if login.student:
                     errors['dup_email'] = f"Duplicate existing email record found, duplicate student parent is {login.student.user.full_name}, school is {login.student.school.name}, id is {login.student.student_id} | "
@@ -2011,20 +2008,21 @@ def validate_students(csvreader_student, user_rows):
     return student_rows, stud_resp, critical
 
 def get_duplicates(user_rows, stud_rows, user_resp, stud_resp):
-    emails = {}
+    stud_emails = {}
     stud_row_ct = 0
     usr_row_ct = 0
     critical = False
+    emails = {}
 
     for student in stud_resp:
         errors = student['errors']
         student = student['row']
         email = student[4]
         if email != '':
-            if email.strip().lower() in emails:
+            if email.strip().lower() in stud_emails:
                 critical = True
                 error_msg = ""
-                for ind in emails[email.strip().lower()]:
+                for ind in stud_emails[email.strip().lower()]:
                     urw = stud_rows[ind]
                     error_msg += f"Duplicate email record found, duplicate student parent is {urw[1]}, school is {urw[3]}, id is {urw[2]} | "
                     if 'dup_email' not in stud_resp[ind]['errors']:
@@ -2034,9 +2032,9 @@ def get_duplicates(user_rows, stud_rows, user_resp, stud_resp):
                     errors['dup_email'] = ''
                 errors['dup_email'] += error_msg
             else:
-                emails[email.strip().lower()] = []
+                stud_emails[email.strip().lower()] = []
         
-            emails[email.strip().lower()].append(stud_row_ct)
+            stud_emails[email.strip().lower()].append(stud_row_ct)
         stud_row_ct +=1
     
     for user in user_resp:
@@ -2047,23 +2045,29 @@ def get_duplicates(user_rows, stud_rows, user_resp, stud_resp):
             critical = True
             error_msg = ""
             for ind in emails[email.strip().lower()]:
-                if ind>len(stud_rows):
-                    urw = user_rows[ind - len(stud_rows)]
-                    error_msg += f"Duplicate record found, duplicate email is {urw[0]}, name is {urw[1]}, address is {urw[2]} | "
-                    if 'dup_email' not in user_resp[ind-len(stud_rows)]['errors']:
-                        user_resp[ind-len(stud_rows)]['errors']['dup_email'] = ''
-                    user_resp[ind-len(stud_rows)]['errors']['dup_email'] += f"Duplicate record found, duplicate email is {user[0]}, name is {user[1]}, address is {user[2]} | "
-                else:
-                    urw = stud_rows[ind]
-                    error_msg += f"Duplicate record found, duplicate student parent is {urw[1]}, school is {urw[3]}, id is {urw[2]} | "
-                    if 'dup_email' not in stud_resp[ind]['errors']:
-                        stud_resp[ind]['errors']['dup_email'] = ''
-                    stud_resp[ind]['errors']['dup_email'] += f"Duplicate record found, duplicate email is {user[0]}, name is {user[1]}, address is {user[2]} | "
+                urw = user_rows[ind]
+                error_msg += f"Duplicate record found, duplicate email is {urw[0]}, name is {urw[1]}, address is {urw[2]} | "
+                if 'dup_email' not in user_resp[ind-len(stud_rows)]['errors']:
+                    user_resp[ind]['errors']['dup_email'] = ''
+                user_resp[ind]['errors']['dup_email'] += f"Duplicate record found, duplicate email is {user[0]}, name is {user[1]}, address is {user[2]} | "
             if 'dup_email' not in errors:
                 errors['dup_email'] = ''
             errors['dup_email'] += error_msg
         else:
             emails[email.strip().lower()] = []
+        if email.strip().lower() in stud_emails:
+            critical = True
+            error_msg = ""
+            for ind in stud_emails[email.strip().lower()]:
+                urw = stud_rows[ind]
+                error_msg += f"Duplicate record found, duplicate student parent is {urw[1]}, school is {urw[3]}, id is {urw[2]} | "
+                if 'dup_email' not in stud_resp[ind]['errors']:
+                    stud_resp[ind]['errors']['dup_email'] = ''
+                stud_resp[ind]['errors']['dup_email'] += f"Duplicate record found, duplicate email is {user[0]}, name is {user[1]}, address is {user[2]} | "
+            if 'dup_email' not in errors:
+                errors['dup_email'] = ''
+            errors['dup_email'] += error_msg
+
         
         emails[email.strip().lower()].append(usr_row_ct)
         usr_row_ct +=1
