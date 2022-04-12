@@ -299,7 +299,7 @@ class Log(db.Model):
 class CaseContainsOperator(BaseOperator):
     def to_sql(self):
         return self.operator(
-            func.lower(self.get_sql_expression()), func.lower(*self.params)
+            func.replace(func.lower(self.get_sql_expression()), ' ', ''), func.replace(func.lower(*self.params), ' ', '')
         )
 
 class UserFilter(Filter):
