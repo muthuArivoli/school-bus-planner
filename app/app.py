@@ -1973,7 +1973,11 @@ def validate_students(csvreader_student, user_rows):
                     errors['parentemail'] = 'Student record must match a valid user'
                     critical = True
                 if login.user:
-                    existing_parent = login.user
+                    if login.user.role != RoleEnum.UNPRIVILEGED:
+                        errors['parentemail'] = 'Parent account is privileged'
+                        critical = True
+                    else:
+                        existing_parent = login.user
             
             imported_user = False
             if login is None:
