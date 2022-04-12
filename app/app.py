@@ -2259,7 +2259,7 @@ def remove_buses():
 app.register_blueprint(api, url_prefix='/api')
 
 scheduler = BackgroundScheduler(daemon=True)
-scheduler.add_job(remove_buses, trigger='interval', seconds=10)
+scheduler.add_job(remove_buses, trigger='interval', seconds=5)
 scheduler.start()
 
 
