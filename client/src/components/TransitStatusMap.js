@@ -89,6 +89,20 @@ export default function RoutePlanner(props) {
             }
             
             setBusses(new_buses);
+
+    
+            var bounds = new window.google.maps.LatLngBounds();
+            for (var i = 0; i < new_buses.length; i++) {
+              if(new_buses[i].latitude != null && new_buses[i].longitude != null){
+                //console.log("bounds updated");
+                bounds.extend(new_buses[i].location);
+              }
+            }
+            map.fitBounds(bounds);
+            if(map.getZoom() > 15){
+              map.setZoom(15);
+            }
+
         }
       }
       else{
