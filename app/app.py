@@ -1706,7 +1706,7 @@ def bulkImport():
             
 
         for student in students:
-            associated_school = School.query.filter(func.lower(School.name) == func.lower(student[3].strip())).first()
+            associated_school = School.query.filter(func.replace(func.lower(School.name), ' ', '') == func.replace(func.lower(student[3]), ' ', '')).first()
             login = Login.query.filter(func.lower(Login.email) == func.lower(student[1].strip())).first()
             associated_parent = login.user
 
@@ -1952,7 +1952,7 @@ def validate_students(csvreader_student, user_rows):
             # curr_user = User.query.filter_by(email = get_jwt_identity()).first() 
             login = Login.query.filter_by(email = get_jwt_identity()).first()
             curr_user = login.user               
-            existing_school = School.query.filter(func.lower(School.name) == func.lower(school_name)).first()
+            existing_school = School.query.filter(func.replace(func.lower(School.name),' ', '') == func.replace(func.lower(school_name),' ','')).first()
             if existing_school is None:
                 errors['school'] = 'Student record must match an existing school'
                 critical = True
