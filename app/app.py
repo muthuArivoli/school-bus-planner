@@ -505,7 +505,7 @@ def users(user_id=None):
             email_user = Login.query.filter_by(email=email).first()
             if email_user and email_user.user.id != int(user_id):
                 return {'success': False, "msg": "Account already exists with this email"}
-            email_user.email = email
+            user.login.email = email
         if 'name' in content:
             full_name = content.get('name', None)
             if type(full_name) is not str:
